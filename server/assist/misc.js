@@ -9,6 +9,7 @@ require("babel-core/register")
 var fs=require('fs')
 //var general=require('../assist/general').general
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
+var gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
 //var input_validate=require('../error_define/input_validate').input_validate
 
 var randomStringType=require('../define/enum/node').node.randomStringType
@@ -628,11 +629,24 @@ var generateRandomString=function(len=4,type=randomStringType.normal){
 /*    if(undefined===len || false===dataTypeCheck.isInt(len)){
         len=4
     }*/
-是
 /*    strict= strict ? true:false
     let validString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     let result=''
     if(true===strict){validString+=`${validString}!@#$%^&*()+={}[]|\?/><`}*/
+    let validString
+    let basicString='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    switch (type){
+        case randomStringType.basic:
+            validString=basicString
+            break;
+        case randomStringType.normal:
+            validString=`${basicString}abcdefghijklmnopqrstuvwxyz`
+            break;
+        case randomStringType.complicated:
+            validString=basicString+'abcdefghijklmnopqrstuvwxyz'+"`"+`!@#%&)(_=}{:"><,;'[]\^$*+|?.-`
+            break;
+    }
+    //console.log(validString)
     let validStringLen=validString.length
     let result='';
     for(let i=0;i<len;i++){
@@ -681,18 +695,18 @@ var parseGmFileSize=function(fileSize){
     var p=/(\d{1,}(\.\d{1,})?)([KkMmGg]i)?/ //1.8Ki
     var parseResult=fileSize.match(p)
     if(null===parseResult){
-        return miscError.gmImage.cantParseGmFileSize
+        return gmError.cantParseGmFileSize
     }
     if(parseResult[0]!==fileSize ){
-        return miscError.gmImage.cantParseGmFileSize
+        return gmError.cantParseGmFileSize
     }
     var fileSizeNum=parseFloat(parseResult[1])
     if(isNaN(fileSizeNum)){
-        return  miscError.gmImage.cantParseGmFileSizeNum
+        return  gmError.cantParseGmFileSizeNum
     }
     //单位是Gi，直接返回大小超限
     if('Gi'===parseResult[3]){ //正则中的第二个子表达式只是用来把小数及之后的数字 放在一起做判断，而无需取出使用
-        return miscError.gmImage.exceedMaxSize
+        return gmError.exceedMaxSize
     }
     return {rc:0,msg:{sizeNum:parseResult[1],sizeUnit:parseResult[3]}}
 }
@@ -704,28 +718,28 @@ var convertImageFileSizeToByte=function(fileSizeNum,fileSizeUnit){
     if(undefined===fileSizeUnit ){
         imageFileSizeInByte=parseInt(fileSizeNum)
         if(isNaN(imageFileSizeInByte)){
-            return miscError.gmImage.cantParseGmFileSizeNum
+            return gmError.cantParseGmFileSizeNum
         }
         if(imageFileSizeInByte>1024 || imageFileSizeInByte<0){
-            return miscError.gmImage.invalidFileSizeInByte
+            return gmError.invalidFileSizeInByte
         }
-        return isNaN(imageFileSizeInByte) ?  miscError.gmImage.fileSizeEmpty:{rc:0,msg:imageFileSizeInByte}
+        return isNaN(imageFileSizeInByte) ?  gmError.fileSizeEmpty:{rc:0,msg:imageFileSizeInByte}
     }
     if('Ki'===fileSizeUnit){
 //console.log('k')
         imageFileSizeNum =parseFloat(fileSizeNum)
-        return isNaN(imageFileSizeNum) ? miscError.gmImage.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024)}
+        return isNaN(imageFileSizeNum) ? gmError.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024)}
     }
     if('Mi'===fileSizeUnit){
         imageFileSizeNum=parseFloat(fileSizeNum)
-        return isNaN(imageFileSizeNum) ? miscError.gmImage.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024*1024)}
+        return isNaN(imageFileSizeNum) ? gmError.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024*1024)}
     }
     if('Gi'===fileSizeUnit){
         imageFileSizeNum=parseFloat(fileSizeNum)
-        return isNaN(imageFileSizeNum) ? miscError.gmImage.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024*1024*1024)}
+        return isNaN(imageFileSizeNum) ? gmError.cantParseGmFileSizeNum:{rc:0,msg:parseInt(fileSizeNum*1024*1024*1024)}
     }
 
-    return miscError.gmImage.invalidSizeUnit
+    return gmError.invalidSizeUnit
 }
 
 var getPemFile=function(pemPath){

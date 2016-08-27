@@ -3,6 +3,7 @@
 /**
  * Created by ada on 2016/8/7.
  */
+/**/
 var fs = require('fs');
 var error = require('../../../define/error/asyncNodeError').asyncNodeError;
 

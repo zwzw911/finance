@@ -51,110 +51,128 @@ var inputRule={
         name:{
             chineseName: '员工姓名',
             type:inputDataType.string,
-            require: {define: true, error: {rc: 10020},mongoError:{rc:20020}},
-            minLength:{define:2,error:{rc:10022},mongoError:{rc:20022}},
-            maxLength:{define:4,error:{rc:10024},mongoError:{rc:20024}},
+            require: {define: true, error: {rc: 10020},mongoError:{rc:20020,msg:'员工姓名不能为空'}},
+            format:{define:regex.userName,error:{rc:10022},mongoError:{rc:20022,msg:'员工姓名必须由2-20个字符组成'}}
+/*            minLength:{define:2,error:{rc:10022},mongoError:{rc:20022}},
+            maxLength:{define:4,error:{rc:10024},mongoError:{rc:20024}},*/
+        },
+        leader:{
+            chineseName: '上级主管',
+            type:inputDataType.string,
+            require: {define: false, error: {rc: 10024},mongoError:{rc:20024,msg:'员工姓名不能为空'}},
+            format:{define:regex.objectId,error:{rc:10026},mongoError:{rc:20026,msg:'所属部门的id格式不正确'}},
         },
         department:{
             chineseName:'所属部门',
             type:inputDataType.string,
-            require: {define: true, error: {rc: 10026},mongoError:{rc:20026}},
-            format:{define:regex.objectId,error:{rc:10028},mongoError:{rc:20028}},//format == mongodb_match
+            require: {define: true, error: {rc: 10030},mongoError:{rc:20030,msg:'所属部门不能为空'}},
+            format:{define:regex.objectId,error:{rc:10032},mongoError:{rc:20032,msg:'所属部门的id格式不正确'}},//format == mongodb_match
+        },
+        onBoardDate:{
+            chineseName:'入职日期',
+            type:inputDataType.date,
+            require: {define: false, error: {rc: 10036},mongoError:{rc:20036,msg:'入职日期不能为空'}},
         },
         cDate:{
             chineseName:'创建日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10030},mongoError:{rc:20030}},
+            require: {define: true, error: {rc: 10038},mongoError:{rc:20038,msg:'创建日期不能为空'}},
         },
         uDate:{
             chineseName:'修改日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10032},mongoError:{rc:20032}},
+            require: {define: true, error: {rc: 10039},mongoError:{rc:20039,msg:'修改日期不能为空'}},
+        },
+        dDate:{
+            chineseName:'删除日期',
+            type:inputDataType.date,
+            require: {define: false, error: {rc: 10040},mongoError:{rc:20040,msg:'删除日期不能为空'}},
         }
     },
     billType:{
         name:{
             chineseName: '单据类别',
             type:inputDataType.string,
-            require: {define: true, error: {rc: 10040},mongoError:{rc:20040}},
-            minLength:{define:2,error:{rc:10042},mongoError:{rc:20042}},
-            maxLength:{define:4,error:{rc:10044},mongoError:{rc:20044}},
+            require: {define: true, error: {rc: 10041},mongoError:{rc:20041,msg:'单据类别不能为空'}},
+            minLength:{define:2,error:{rc:10042},mongoError:{rc:20042,msg:'单据类别至少2个字符'}},
+            maxLength:{define:40,error:{rc:10044},mongoError:{rc:20044,msg:'单据类别的长度不能超过40个字符'}},
         },
         parentBillType:{
             chineseName:'父类别',
             type:inputDataType.string,
-            require: {define: true, error: {rc: 10046},mongoError:{rc:20046}},
-            format:{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048}},//format == mongodb_match
+            require: {define: true, error: {rc: 10046},mongoError:{rc:20046,msg:'父类别不能为空'}},
+            format:{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'父类别的id格式不正确'}},//format == mongodb_match
         },
         cDate:{
             chineseName:'创建日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10050},mongoError:{rc:20050}},
+            require: {define: true, error: {rc: 10050},mongoError:{rc:20050,msg:'创建日期不能为空'}},
         },
         uDate:{
             chineseName:'修改日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10052},mongoError:{rc:20052}},
+            require: {define: true, error: {rc: 10052},mongoError:{rc:20052,msg:'修改日期不能为空'}},
         },
         dDate:{
             chineseName:'删除日期',
             type:inputDataType.date,
-            require: {define: false, error: {rc: 10054},mongoError:{rc:20054}},
+            require: {define: false, error: {rc: 10054},mongoError:{rc:20054,msg:'删除日期不能为空'}},
         }
     },
     bill:{
         title:{
             chineseName: '单据抬头',
             type:inputDataType.string,
-            require: {define: false, error: {rc: 10060},mongoError:{rc:20060}},
-            minLength:{define:2,error:{rc:10062},mongoError:{rc:20062}},
-            maxLength:{define:20,error:{rc:10064},mongoError:{rc:20064}},
+            require: {define: false, error: {rc: 10060},mongoError:{rc:20060,msg:'单据抬头不能为空'}},
+            minLength:{define:2,error:{rc:10062},mongoError:{rc:20062,msg:'单据抬头至少2个字符'}},
+            maxLength:{define:20,error:{rc:10064},mongoError:{rc:20064,msg:'单据抬头的长度不能超过20个字符'}},
         },
         content:{
             chineseName: '单据内容',
             type:inputDataType.string,
-            require: {define: false, error: {rc: 10066},mongoError:{rc:20066}},
-            minLength:{define:2,error:{rc:10068},mongoError:{rc:20068}},
-            maxLength:{define:60,error:{rc:10070},mongoError:{rc:20070}},
+            require: {define: false, error: {rc: 10066},mongoError:{rc:20066,msg:'单据内容不能为空'}},
+            minLength:{define:2,error:{rc:10068},mongoError:{rc:20068,msg:'单据内容至少2个字符'}},
+            maxLength:{define:60,error:{rc:10070},mongoError:{rc:20070,msg:'单据内容的长度不能超过60个字符'}},
         },
         billType:{
             chineseName:'单据类别',
             type:inputDataType.string,
-            require: {define: false, error: {rc: 10072},mongoError:{rc:20072}},
-            format:{define:regex.objectId,error:{rc:10074},mongoError:{rc:20074}},//format == mongodb_match
+            require: {define: false, error: {rc: 10072},mongoError:{rc:20072,msg:'单据类别不能为空'}},
+            format:{define:regex.objectId,error:{rc:10074},mongoError:{rc:20074,msg:'单据类别的id格式不正确'}},//format == mongodb_match
         },
         billDate:{
             chineseName:'单据日期',
             type:inputDataType.date,
-            require: {define: false, error: {rc: 10076},mongoError:{rc:20076}},
-        },
-        reimburser:{
-            chineseName:'报销员工',
-            type:inputDataType.string,
-            require: {define: true, error: {rc: 10078},mongoError:{rc:20078}},
-            format:{define:regex.objectId,error:{rc:10080},mongoError:{rc:20080}},//format == mongodb_match
+            require: {define: false, error: {rc: 10076},mongoError:{rc:20076,msg:'单据日期不能为空'}},
         },
         amount:{
             chineseName:'报销金额',
             type:inputDataType.float,
-            require: {define: true, error: {rc: 10084},mongoError:{rc:20084}},
-            min:{define:0,error: {rc: 10086},mongoError:{rc:20086}},
-            max:{define:100000,error: {rc: 10088},mongoError:{rc:20088}},
+            require: {define: true, error: {rc: 10078},mongoError:{rc:20078,msg:'报销金额不能为空'}},
+            min:{define:0,error: {rc: 10080},mongoError:{rc:20080,msg:'报销金额不能小于0元'}},
+            max:{define:100000,error: {rc: 10082},mongoError:{rc:20082,msg:'报销金额不能大于100000元'}},
         },
+        reimburser:{
+            chineseName:'报销员工',
+            type:inputDataType.string,
+            require: {define: true, error: {rc: 10884},mongoError:{rc:20084,msg:'报销员工不能为空'}},
+            format:{define:regex.objectId,error:{rc:10086},mongoError:{rc:20086,msg:'报销员工的id格式不正确'}},//format == mongodb_match
+        },
+
         cDate:{
             chineseName:'创建日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10090},mongoError:{rc:20090}},
+            require: {define: true, error: {rc: 10090},mongoError:{rc:20090,msg:'创建日期不能为空'}},
         },
         uDate:{
             chineseName:'修改日期',
             type:inputDataType.date,
-            require: {define: true, error: {rc: 10092},mongoError:{rc:20092}},
+            require: {define: true, error: {rc: 10092},mongoError:{rc:20092,msg:'修改日期不能为空'}},
         },
         dDate:{
             chineseName:'删除日期',
             type:inputDataType.date,
-            require: {define: false, error: {rc: 10094},mongoError:{rc:20094}},
+            require: {define: false, error: {rc: 10094},mongoError:{rc:20094,msg:'删除日期不能为空'}},
         }
     }
 }

@@ -74,8 +74,8 @@ var clientRuleType={
 }
 
 exports.enum={
-    dataType:dataType,
-    ruleType:ruleType,
-    otherFiledName:otherFiledName,
-    clientRuleType:clientRuleType,
+    dataType,
+    ruleType,
+    otherFiledName,
+    clientRuleType,
 }

@@ -1,0 +1,15 @@
+<div class="" style="display:flex;flex-flow:row wrap;justify-content:space-between;align-items: center;align-content: flex-start">
+    <div class="">
+        <a href="/main"><img src="/image/logo.png"/></a>
+    </div>
+    <div class=""></div>
+    <!--分割logo和search-->
+    <div class="marginR_7" style="width:300px;flex-shrink:0">
+        <div class="input-group">
+            <input class="form-control col-lg-9" type="text" name="search" placeholder="输入搜索内容" ng-model="searchString" ng-keydown="search($event)"/>
+        <span class="input-group-btn">
+           <button class="btn btn-primary" ng-click="searchButton()">搜索</button>
+        </span>
+        </div>
+    </div>
+</div>

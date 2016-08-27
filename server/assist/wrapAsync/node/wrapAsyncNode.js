@@ -1,6 +1,7 @@
 /**
  * Created by ada on 2016/8/7.
  */
+    /*全部使用reslove返回数据，便于调试，以及便于通过rc判断*/
 var fs=require('fs')
 var error=require('../../../define/error/asyncNodeError').asyncNodeError
 
