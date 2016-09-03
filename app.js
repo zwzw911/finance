@@ -4,9 +4,11 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var lessMiddleware = require('less-middleware');
 /*var routes = require('./routes/index');
 var users = require('./routes/users');*/
+var main= require('./server/controller/main/main')
+
 
 var app = express();
 
@@ -24,15 +26,27 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+//使用和express.static一样的路径（举例，必须是/cliect而不能是/client/stylesheets）
+//force：每次请求都重新编译
+var force=false
+if(app.get('env') === 'development'){
+  force=true
+}
+
+app.use(lessMiddleware(path.join(__dirname + '/client'),[{debug:true,force:force,render:{compress:'false', 'yuicompress':false}}]))
+
+
 //开发环境，使用express自带的功能；生产环境，使用nginx
 if(app.get('env') === 'development'){
-  var static=['client/stylesheets','client/javascripts','client/images','resource']
-  static.forEach(function(e){
+  // var staticResource=['client/stylesheets','client/javascripts','client/images','resource']
+  var staticResource=['client','resource']
+  staticResource.forEach(function(e){
     app.use(express.static(path.join(__dirname, e)));
   })
 
 }
-
+//
+app.use('/main',main)
 
 /*app.use('/', routes);
 app.use('/users', users);*/

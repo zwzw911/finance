@@ -1,16 +1,16 @@
+
+
 body {
   padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
-
 
 .long_word_break {
   word-break: break-all;
   word-wrap: break-word;
 }
 .page_bg {
-  background:linear-gradient(to right,#fffff0,#ffffe8)
-  //background-color:#f6f6f6;
+  background:linear-gradient(to bottom,#fffff0,#ffffe8)
 }
 .page_ele_bg{
   background-color: #ffffff;
@@ -57,10 +57,31 @@ body {
   opacity: 1;
   color:black;
 }
+
+/*
+*   finance only
+*/
+aside>div>span:first-of-type{
+  .marginT_4
+}
+aside>div>span:not(:first-of-type){
+  .marginV_4
+}
+
+
+
+
+/*
+*   公式
+*/
+/**************************************************************/
+/**************** margin and padding ************************/
+/**************************************************************/
 @base:5px;
 .marginL(@num){
-  margin-left: @num*@base;
+  margin-left: @base *@num ;
 }
+
 .marginR(@num){
   margin-right: @num*@base;
 }
@@ -68,7 +89,7 @@ body {
   margin-top: @num*@base;
 }
 .marginB(@num){
-  margin-bottom: @num*@base;
+  margin-bottom: @num * @base;
 }
 .marginV(@num){
   .marginT(@num);
@@ -233,16 +254,16 @@ body {
 /* padding */
 
 .paddingL(@num){
-  padding-left: @base*@num;
+  padding-left: @num*@base;
 }
 .paddingR(@num){
-  padding-right: @base*@num;
+  padding-right: @num*@base;
 }
 .paddingT(@num){
-  padding-top: @base*@num;
+  padding-top: @num*@base;
 }
 .paddingB(@num){
-  padding-bottom: @base*@num;
+  padding-bottom: @num*@base;
 }
 .paddingV(@num){
   .paddingT(@num);
@@ -405,6 +426,119 @@ body {
   .paddingH(20);
 }
 
+/**************************************************************/
+/**************** radius ************************/
+/**************************************************************/
+@base-radius:2px;
+.radius(@num){
+  border-radius:@base-radius * @num;
+}
+
+.radius1{
+  .radius(1)
+}
+.radius2{
+  .radius(2)
+}
+.radius3{
+  .radius(3)
+}
+.radius4{
+  .radius(4)
+}
+.radius5{
+  .radius(5)
+}
+.radius6{
+  .radius(6)
+}
+.radius7{
+  .radius(7)
+}
+
+.topleft-radius(@num){
+  border-top-left-radius:@base-radius * @num;
+}
+.topleft-radius1{
+  .topleft-radius(1)
+}
+.topleft-radius2{
+  .topleft-radius(2)
+}
+.topleft-radius3{
+  .topleft-radius(3)
+}.topleft-radius4{
+   .topleft-radius(4)
+ }
+.topleft-radius5{
+  .topleft-radius(5)
+}
+.topleft-radius6{
+  .topleft-radius(6)
+}
+.topleft-radius7{
+  .topleft-radius(7)
+}
+
+.topright-radius(@num){
+  border-top-right-radius:@base-radius * @num;
+}
+.topright-radius1{
+  .topright-radius(1)
+}
+.topright-radius2{
+  .topright-radius(2)
+}
+.topright-radius3{
+  .topright-radius(3)
+}.topright-radius4{
+   .topright-radius(4)
+ }
+.topright-radius5{
+  .topright-radius(5)
+}
+.topright-radius6{
+  .topright-radius(6)
+}
+.topright-radius7{
+  .topright-radius(7)
+}
+
+
+.top-radius1{
+  .topleft-radius(1);
+  .topright-radius(1);
+}
+.top-radius2{
+  .topleft-radius(2);
+  .topright-radius(2);
+}
+.top-radius3{
+  .topleft-radius(3);
+  .topright-radius(3);
+}
+.top-radius4{
+  .topleft-radius(4);
+  .topright-radius(4);
+}
+.top-radius5{
+  .topleft-radius(5);
+  .topright-radius(5);
+}
+.top-radius1{
+  .topleft-radius(5);
+  .topright-radius(5);
+}
+.top-radius1{
+  .topleft-radius(1);
+  .topright-radius(1);
+}
+
+/**************************************************************/
+/**************** border ************************/
+/**************************************************************/
+
+
 .borderSet(@width:thin,@type,@color){
   border: @width @type @color;
 }
@@ -419,4 +553,47 @@ body {
 
 .cursor_pointer{
   .cursor(pointer);
+}
+
+/*
+**********************************************************
+*******************  finance   ***************************
+**********************************************************
+*/
+/*
+* 从bootstrap.css中copy出。因为import不起作用
+*/
+.bg-primary {
+  color: #fff;
+  background-color: #428bca;
+}
+
+
+/*
+* 只有less才能把class作为内容引用，css不行（css只能设置属性）
+*/
+.tabBorder{
+  border-top: 1px solid silver;
+  border-left: 1px solid silver;
+  border-right: 1px solid silver;
+}
+
+.content-border{
+  border: 1px solid silver;
+}
+aside span:hover{
+  .bg-primary;
+  font-size: 21px; //默认字体 14px；为了保持纵向距离不变，paddingV从2减到1，对应的fontsize从14到21px
+  .paddingV_1
+}
+
+#configuration>span:hover{
+  //background-color:#f8fdff;
+  .tabBorder;
+  .cursor_pointer
+}
+
+#configuration>span.activate{
+  background-color:#f8fdff;
+  .tabBorder;
 }

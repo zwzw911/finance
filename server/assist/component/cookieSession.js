@@ -2,7 +2,7 @@
  * Created by ada on 2015/5/15.
  */
     /*
-    set cookie and express-session configuration
+    set cookie and express-session main
     for session, reuse mongodb connection
     */
 var mongooseConnect=require('../model/dbConnection').mongoose;

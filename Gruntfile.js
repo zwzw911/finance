@@ -36,6 +36,7 @@ module.exports = function(grunt){
 			}
 		},
 		//use grunt-contrubite-less since plugin post-less in developing
+		//不能转换*，所以用less-middleware代替
 		less:{
 			options:{
 				// paths:['./public/stylesheets/private/'],//无需，直接在files中指定路径+文件名即可

@@ -15,10 +15,10 @@ module.exports = function(grunt){
 	grunt.loadNpmTasks('grunt-contrib-csslint');
 	
 	grunt.initConfig({
-		pkg:grunt.file.readJSON('../../package.json'),
-		origLessPatch:'./client/styleSheets/own/',
-		//3rdÏÂµÄÎÄ¼þ²»ÓÃ×ª
-		origCssPath:'./client/styleSheets/own/',
+		pkg:grunt.file.readJSON('package.json'),
+		origLessPatch:'./client/stylesheets/own/',
+		//3rdï¿½Âµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½×ª
+		origCssPath:'./client/stylesheets/own/',
 		watch:{
 			less2autoprefix:{
 				files:[
@@ -32,27 +32,28 @@ module.exports = function(grunt){
 					  ////extDot: 'first'   // Extensions in filenames begin after the first dot						
 					// },
 				],
-				tasks: ['less:main','postcss:main'],
+				//tasks: ['less:main','postcss:main'],
+				tasks: ['less:main'],
 			}
 		},
 		//use grunt-contrubite-less since plugin post-less in developing
 		less:{
-			options:{
-				// paths:['./public/stylesheets/private/'],//ÎÞÐè£¬Ö±½ÓÔÚfilesÖÐÖ¸¶¨Â·¾¶+ÎÄ¼þÃû¼´¿É
-				// rootPath:'./public/stylesheets/private/',//ÎÞÐè£¬Ö±½ÓÔÚfilesÖÐÖ¸¶¨Â·¾¶+ÎÄ¼þÃû¼´¿É
+/*			options:{
+				// paths:['./public/stylesheets/private/'],//ï¿½ï¿½ï¿½è£¬Ö±ï¿½ï¿½ï¿½ï¿½filesï¿½ï¿½Ö¸ï¿½ï¿½Â·ï¿½ï¿½+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				// rootPath:'./public/stylesheets/private/',//ï¿½ï¿½ï¿½è£¬Ö±ï¿½ï¿½ï¿½ï¿½filesï¿½ï¿½Ö¸ï¿½ï¿½Â·ï¿½ï¿½+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 				compress:false,
 				strictImports:true,
-				strictMath:true,
+				strictMath:false,
 				strictUnits:false,//enable 3*5px=15px
 				syncImport:true,
-			},
+			},*/
 			main:{
 				//////files can set multiple src-target
 				files:[
 					{
 						expand:true,
 						cwd:'<%=origLessPath%>',
-						src:'./*.less',
+						src:['common.less'],
 						dest:'./',
 						ext:'.css',
 						extDot:'first',
@@ -67,19 +68,19 @@ module.exports = function(grunt){
 				map: false,
 				processors: [
 					require('autoprefixer')({
-						browsers: ['last 2 versions']
+						browsers: ['last 4 versions']
 					})
 				]
 			},			
 			main:{
-				
-				files:[
+				src:'./client/stylesheets/own/*.css',
+/*				files:[
 					{
 						expand:true,
-						// cwd:'<%=origCssPath%>',//²»ÄÜÊ¹ÓÃcwd£¬·ñÔò¼°Ê±ÔËÐÐÁËtask£¬Ò²²»»áÌí¼Ó¶ÔÓ¦µÄprefix£¿
-						src:'<%=origCssPath%>/*.css',
+						// cwd:'<%=origCssPath%>',//ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½cwdï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½taskï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¶ï¿½Ó¦ï¿½ï¿½prefixï¿½ï¿½
+						src:'<%=origCssPath%>/!*.css',
 					}
-				],
+				],*/
 			},
 		},
 		//check if css valid(no use since not print line number)
@@ -89,14 +90,15 @@ module.exports = function(grunt){
 				'box-model':2,
 			},
 			main:{
-				files:[
+
+/*				files:[
 					{
 						expand:true,
 						cwd:'<%=origCssPath%>',						
 						//src:'./public/stylesheets/admin.css',
-						src:'./*.css',
+						src:'./!*.css',
 					}
-				],
+				],*/
 			},
 		},
 	});	
