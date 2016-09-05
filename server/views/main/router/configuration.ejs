@@ -1,0 +1,13 @@
+<div id="configuration" class="marginT_7 col-lg-11" style="margin-bottom: -3px;z-index: 1">
+  <!--hover时，字体发生变化，导致span元素大小改变，影响bill的位置；为了抵消这一影响，改变span的paddingB属性-->
+  <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4 " ui-sref-active="activate" ui-sref="configuration.billType">单据类别</span>
+  <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4" ui-sref-active="activate" ui-sref="configuration.departmentInfo">部门信息</span>
+  <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4" ui-sref-active="activate" ui-sref="configuration.employeeInfo">员工信息</span>
+</div>
+<!--marginT_X, where x equal above span's paddingV_Y; x=y-->
+<!--实现边框部分遮盖效果-->
+<div id="bill-border" class="col-lg-11 tabBorder marginT_2 content-border marginB_5 radius1" style="" >
+  <div id="content" ui-view>
+
+  </div>
+</div>

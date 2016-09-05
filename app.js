@@ -39,14 +39,15 @@ app.use(lessMiddleware(path.join(__dirname + '/client'),[{debug:true,force:force
 //开发环境，使用express自带的功能；生产环境，使用nginx
 if(app.get('env') === 'development'){
   // var staticResource=['client/stylesheets','client/javascripts','client/images','resource']
-  var staticResource=['client','resource']
+  //使用ui-router时，要把templaterUrl中的文件设为可以直接访问
+  var staticResource=['client','resource','/server/views/main/router']
   staticResource.forEach(function(e){
     app.use(express.static(path.join(__dirname, e)));
   })
 
 }
 //
-app.use('/main',main)
+app.use(['/main','/'],main)
 
 /*app.use('/', routes);
 app.use('/users', users);*/

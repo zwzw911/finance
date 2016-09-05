@@ -42,6 +42,19 @@ var dataType={
     password:Symbol('string'),
     // format:Symbol('regex'),
 }
+
+//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
+var clientRule={
+    require:'require',
+    maxLength:'maxLength',
+    minLength:'minLength',
+    //exactLength:'exactLength',
+    min:'min',
+    max:'max',
+    /*    format:'format',
+     equalTo:'equalTo',*/
+}
+
 //input对应的rule(server)
 /*var ruleType={
     require:Symbol('require'),
@@ -76,6 +89,7 @@ var clientRuleType={
 exports.enum={
     dataType,
     ruleType,
+    clientRule,
     otherFiledName,
     clientRuleType,
 }

@@ -39,6 +39,8 @@ var ruleTypeCheck=require('../assist/misc').func.ruleTypeCheck*/
 //var fs=require('fs')
 var dataType=require('../define/enum/validEnum').enum.dataType
 var ruleType=require('../define/enum/validEnum').enum.ruleType
+var clientRuleType=require('../define/enum/validEnum').enum.clientRuleType
+
 var otherFiledNameEnum=require('../define/enum/validEnum').enum.otherFiledName
 //var rightResult={rc:0}
 //var CRUDGlobalSetting=require('../model/redis/common/CRUDGlobalSetting').CRUDGlobalSetting
@@ -952,7 +954,8 @@ exports.CRUDGlobalSetting={
 var validate={
     _private:{
         generateErrorMsg:{
-            require(chineseName,useDefaultValueFlag){
+            //itemDefine无用，只是为了格式统一
+            require(chineseName,itemDefine,useDefaultValueFlag){
                 if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
                     useDefaultValueFlag=false
                 }
@@ -1385,15 +1388,7 @@ console.log(currentItemRule['type'])*/
                 rc[itemName]['msg']=`${itemName}${validateError.typeWrong.msg}`
                 continue
             }
-            /*        console.log(itemName)
-             console.log(rc)
 
-             if(rc[itemName] && rc[itemName]['rc']>0){
-             //console.log(1)
-             break
-             return rc
-             }*/
-//console.log(currentItemRule)
             //    4. 检查出了maxLength之外的每个rule进行检测
             for(let singleItemRuleName in currentItemRule){
                 if('chineseName'!==singleItemRuleName && 'default'!==singleItemRuleName && 'type'!==singleItemRuleName && 'unit'!== singleItemRuleName){
@@ -1403,7 +1398,7 @@ console.log(currentItemRule['type'])*/
                             if(ruleDefine){
                                 if(true===emptyFlag){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
-                                    rc[itemName]['msg']=validate._private.generateErrorMsg.require(currentChineseName,useDefaultValueFlag)
+                                    rc[itemName]['msg']=validate._private.generateErrorMsg.require(currentChineseName,ruleDefine,useDefaultValueFlag) //参数ruleDefine无用，只是为了函数格式统一
                                 }
                             }
                             break;
@@ -1519,6 +1514,104 @@ console.log(currentItemRule['type'])*/
 }
 
 
+
+/*根据server端rule define，生成客户端input的属性，以便angularjs对input进行检查
+ * obj:server端item的rule define
+ * level：深度（2）
+ * resultObj: 因为采用递归调用，所以结果参数，而不是直接return结果
+ */
+var generateClientDefine=function(obj,level,resultObj){
+    // let resultObj={}
+    if('object'===typeof obj){
+        for(let key in obj){
+            resultObj[key]={}
+            //深度为1，到达最底层
+            if(1===level){
+                let tmpChineseName=obj[key]['chineseName']
+                let temInputDataType
+                switch (obj[key]['type']){
+                    case dataType.number:
+                        temInputDataType='number';
+                        break;
+                    case dataType.password:
+                        temInputDataType='password';
+                        break;
+                    case dataType.date:
+                        temInputDataType='date';
+                        break;
+                    default:
+                        temInputDataType='text'
+                }
+                resultObj[key]={value:'',originalValue:'',blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,valid:undefined,errorMsg:""}
+                //obj[key]['chineseName']=tmpChineseName
+            }else{
+                //如果值是对象，递归调用
+                if('object'===typeof obj[key]){
+                    let currentLvl=level-1
+                    //console.log(currentLvl)
+                    generateClientDefine(obj[key],currentLvl,resultObj[key])
+                }
+                /*                else{
+                 obj[key]={}
+                 //func()
+                 }*/
+            }
+        }
+    }
+    // return resultObj
+}
+
+/*根据server端rule define，生成客户端rule define
+* obj:server端item的rule define
+* level：深度（2）
+* resultObj: 因为采用递归调用，所以结果参数，而不是直接return结果
+*/
+var generateClientRule=function(obj,level,resultObj){
+    // let resultObj={}
+    if('object'===typeof obj){
+        for(let key in obj){
+            resultObj[key]={}
+            //深度为1,达到subItem
+            if(1===level){
+                for(let field in clientRuleType){
+                    //rule有定义
+                    if(undefined!==obj[key][field] && null!==obj[key][field]){
+                        //读取rule定义
+                        if(undefined!==obj[key][field]['define'] && null!==obj[key][field]['define']){
+                            resultObj[key][field]={}
+                            resultObj[key][field]['define']=obj[key][field]['define']
+                            //产生错误信息，以便angularjs检查input错误时使用
+                            resultObj[key][field]['msg']=validate._private.generateErrorMsg[field](resultObj[key]['chineseName'],obj[key][field]['define'],obj[key]['default'])
+                        }
+                    }
+                }
+                /*                let tmpChineseName=obj[key]['chineseName']
+                 obj[key]={}
+                 obj[key]['chineseName']=tmpChineseName*/
+            }else{
+                //如果值是对象，递归调用
+                if('object'===typeof obj[key]){
+                    let currentLvl=level-1
+                    generateClientRule(obj[key],currentLvl,resultObj[key])
+                }
+
+            }
+        }
+    }
+    // return resultObj
+}
+var ruleDefine=require('../define/validateRule/inputRule').inputRule
+var resultResult={}
+
+/*generateClientDefine(ruleDefine,2,resultResult)
+console.log(resultResult)*/
+
+resultResult={}
+generateClientRule(ruleDefine,2,resultResult)
+console.log(resultResult)
+
+
+
 var encodeHtml = function(s){
     if(undefined===s){return "";}
     if('string'!=typeof(s)){s= s.toString();};
@@ -1540,59 +1633,7 @@ var encodeHtml = function(s){
      return r.join("");
      });*/
 };
-/*exports.inputValid={
-    ruleTypeCheck:ruleTypeCheck,
-    checkInput:checkInput
-}*/
 
-
-/*
-exports.func={
-    dataTypeCheck,
-    ruleTypeCheck:ruleTypeCheck,
-    CRUDGlobalSetting:CRUDGlobalSetting,
-    generateRandomString:generateRandomString,
-    leftMSInDay:leftMSInDay,
-    leftSecondInDay:leftSecondInDay,
-
-    parseGmFileSize:parseGmFileSize,
-    convertImageFileSizeToByte:convertImageFileSizeToByte,
-    convertURLSearchString:convertURLSearchString,
-    getUserInfo:getUserInfo,
-    //generateSimpleRandomString:generateSimpleRandomString,
-    checkUserState:checkUserState,
-    //checkUserIdFormat:checkUserIdFormat,
-    checkInterval:checkInterval,// use Lua instead of session(although sesssion use redis too)
-    preCheck:preCheck,
-    getPemFile:getPemFile,
-    //objectIndexOf:objectIndexOf,
-    //extractKey:extractKey,
-    validate:validate,
-}*/
-/*var test=async function (){
-/!*    let a=await ioredisClient.hexists(['search','maxKeyNum'])
-    //console.log(a)
-    if(1==a){*!/
-       // await ioredisClient.hget(['search']).catch((e)=>{console.log(`hget err is ${e}`);return {rc:1234}})
-await redisWrapAsync.asyncHget(['search'])
-    //}
-
-
-    //return a
-}*/
-/*var test=function (cb){
-    /!*    let a=await ioredisClient.hexists(['search','maxKeyNum'])
-     //console.log(a)
-     if(1==a){*!/
-    ioredisClient.hget([''],function(err,data){
-        if(err){console.log(`err is ${err}`)}else{console.log(`data is ${data}`)}
-    })
-    //console.log(b)
-    //}
-
-
-    //return a
-}*/
 exports.func={
     dataTypeCheck,
     ruleTypeCheck,
@@ -1614,7 +1655,8 @@ exports.func={
     //objectIndexOf:objectIndexOf,
     //extractKey:extractKey,
     validate,
-    //test,
+    generateClientDefine,
+    generateClientRule,
     encodeHtml,
 }
 

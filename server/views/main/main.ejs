@@ -10,6 +10,9 @@
         <link rel="stylesheet" href="stylesheets/3rd/bootstrap.css"/>
         <link rel="stylesheet" href="stylesheets/3rd/font-awesome.min.css"/>
         <title><%= title %></title>
+
+        <base href="/" />
+
     </head>
     <body class="row page_bg" >
         <header>
@@ -24,29 +27,15 @@
                 <button class="btn btn-default">单据信息</button>-->
                 <div class="radius3 marginH_4 paddingV_4 page_ele_bg" style="display:flex;flex-flow: column nowrap;justify-content: space-around;align-items: center;align-content: flex-start" ng-controller="asideController">
                     <!--margin defined in common.css-->
-                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ng-repeat="name in asideName">{{name}}</span>
+                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ng-repeat="(key,value) in asideName" ui-sref="{{key}}" ui-sref-active="aside-hover-choosen">{{value}}</span>
                 </div>
 
             </aside>
             <article class=" col-lg-9" >
-                <div id="detail" class=" page_ele_bg " style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
-                    <!--<div class="col-lg-10 col-lg-pull-1" style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: flex-start;align-content: space-around;">-->
-                        <div id="configuration" class="marginT_7 col-lg-11" style="margin-bottom: -3px;z-index: 1">
-                            <!--hover时，字体发生变化，导致span元素大小改变，影响bill的位置；为了抵消这一影响，改变span的paddingB属性-->
-                            <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4 activate" >单据类别</span>
-                            <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4">部门信息</span>
-                            <span class=" marginL_2 paddingT_2 paddingB_2 paddingH_2 topleft-radius2 topright-radius4">员工信息</span>
-                        </div>
-                        <!--marginT_X, where x equal above span's paddingV_Y; x=y-->
-                        <!--实现边框部分遮盖效果-->
-                        <div id="bill-border" class="col-lg-11 tabBorder marginT_2 paddingV_4 content-border" style="" >
-                            <div id="content">
-                                a
-                            </div>
-                        </div>
-                    </div>
+                <div id="detail" ui-view class=" page_ele_bg " style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
 
-                <!--</div>-->
+                </div>
+
 
             </article>
         </div>
