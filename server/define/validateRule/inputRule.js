@@ -16,6 +16,8 @@ var inputDataType=require('../enum/validEnum').enum.dataType
 //mongodb的validate error是client input validate的一个子集
 //只需要error定义，input value的msg是由validate函数自动产生的；
 //每个rule都有对应的mongo error，但是具体是否使用，在mongoValidate中定义
+
+//rule分成2种：一种是逐条检测（min/max/minLength/maxLength）；另一种是一次检测（regex）。前者用在client端，以便返回详细信息给客户；后者用在server端，一次检测完，并返回所有错误信息（当然server也可以使用前者，视情况而定）
 var inputRule={
     department:{//名称必须和mongo中的一致
         name:{
@@ -23,7 +25,8 @@ var inputRule={
             type:inputDataType.string,
             require: {define: true, error: {rc: 10000},mongoError:{rc:20000,msg:'部门名称不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
             minLength:{define:2,error:{rc:10002},mongoError:{rc:20002,msg:'部门名称至少2个字符'}},
-            maxLength:{define:10,error:{rc:10004},mongoError:{rc:20004,msg:'部门名称的长度不能超过10个字符'}},
+            maxLength:{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'部门名称的长度不能超过20个字符'}},
+            format:{define:regex.userName,error:{rc:10005},mongoError:{rc:20005,msg:'部门名称必须由2-10个字符组成'}} //server端使用
         },
         parentDepartment:{
             chineseName:'上级部门',
@@ -52,7 +55,9 @@ var inputRule={
             chineseName: '员工姓名',
             type:inputDataType.string,
             require: {define: true, error: {rc: 10020},mongoError:{rc:20020,msg:'员工姓名不能为空'}},
-            format:{define:regex.userName,error:{rc:10022},mongoError:{rc:20022,msg:'员工姓名必须由2-20个字符组成'}}
+            minLength:{define:2,error:{rc:10021},mongoError:{rc:20021,msg:'员工姓名至少2个字符'}},
+            maxLength:{define:20,error:{rc:10022},mongoError:{rc:20022,msg:'员工姓名的长度不能超过20个字符'}},//lient或者server从使用
+            format:{define:regex.userName,error:{rc:10023},mongoError:{rc:20023,msg:'员工姓名必须由2-20个字符组成'}} //server端使用
 /*            minLength:{define:2,error:{rc:10022},mongoError:{rc:20022}},
             maxLength:{define:4,error:{rc:10024},mongoError:{rc:20024}},*/
         },

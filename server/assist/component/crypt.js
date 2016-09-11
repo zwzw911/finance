@@ -109,6 +109,7 @@ var hmac=function(hashType,string,pemFilePath){
 
 }
 
+//console.log(hash('11111111','md5'))
 /*exports.hash=hash;
 exports.hmac=hmac;
 exports.crypt=crypt;

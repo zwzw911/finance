@@ -89,6 +89,14 @@ var assistError={
             notEqual:{rc:68006,msg:{client:'验证码不正确',server:'验证码不正确'}},
             //genCaptchaDataUrlFail:{rc:68008,msg:{client:'验证码生成失败',server:'验证码无法转换成DataURL'}},
         },
+        deleteNonNeededObject:{
+            origObjTypeWrong:{rc:69000,msg:{client:'无法删除对象中的内容',server:'函数deleteNonNeeded中的参数origObj不是对象'}},
+            skipListTypeWrong:{rc:69002,msg:{client:'无法删除对象中的内容',server:'函数deleteNonNeeded中的参数skipList不是对象'}},
+        },
+        objectIdToRealField:{
+            origObjTypeWrong:{rc:69004,msg:{client:'无法匹配对象中的内容',server:'函数objectIdToRealField中的参数origObj不是对象'}},
+            matchListTypeWrong:{rc:69006,msg:{client:'无法匹配对象中的内容',server:'函数objectIdToRealField中的参数matchList不是对象'}},
+        }
     }
 }
 

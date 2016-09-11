@@ -1,0 +1,3 @@
+1. inputRule是根据db的字段生成的，因为所有的输入大部分最终是要存入db的。
+2. inputRule分成client用和server用。client一般逐条检测（而不用正则，因为防止黑客读取分析正则的漏洞），而server端直接使用正则（因为方便），当然也可以逐条分析
+3. inputRule经过generateClientRule/generateClientDefine生成client使用的rule和inputAttr，然后通过deleteNonNeededObject删除一些不必要的字段（date等，是db自动生成而非用户输入），然后再经过objectIdToRealField，把外键转换成实际在页面要使用的字段（例如，外键是id，但是实际在页面输入的时候是name）

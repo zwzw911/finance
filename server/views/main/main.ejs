@@ -27,12 +27,13 @@
                 <button class="btn btn-default">单据信息</button>-->
                 <div class="radius3 marginH_4 paddingV_4 page_ele_bg" style="display:flex;flex-flow: column nowrap;justify-content: space-around;align-items: center;align-content: flex-start" ng-controller="asideController">
                     <!--margin defined in common.css-->
-                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ng-repeat="(key,value) in asideName" ui-sref="{{key}}" ui-sref-active="aside-hover-choosen">{{value}}</span>
+                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer"  ui-sref="configuration" ui-sref-active="aside-hover-choosen"><span class="fa fa-gear marginR_3"></span>配置信息</span>
+                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ui-sref="bill" ui-sref-active="aside-hover-choosen"><span class="fa fa-cny marginR_3"></span>报销记录</span>
                 </div>
 
             </aside>
             <article class=" col-lg-9" >
-                <div id="detail" ui-view class=" page_ele_bg " style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
+                <div id="detail" ui-view class=" page_ele_bg col-lg-12" style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
 
                 </div>
 
@@ -47,7 +48,10 @@
     <script src="javascripts/3rd/angular.min.js"></script>
     <script  src="javascripts/3rd/jquery-2.2.3.min.js"></script>
     <script  src="javascripts/3rd/bootstrap.min.js"></script>
-    <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
 
+
+    <script  src="javascripts/own/main/constant.js"></script>
     <script  src="javascripts/own/main/mainController.js"></script>
+
+    <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
 </html>
