@@ -15,31 +15,33 @@
 
     </head>
     <body class="row page_bg" >
-        <header>
+        <header id="test" >
             <%- include('../component/header') -%>
         </header>
-        <div id="body" ng-app="app" class="row" style="display:flex;flex-flow: row nowrap;justify-content: flex-start;align-items: flex-start;align-content: space-around" ng-controller="asideController">
+        <!--<article id="body" ng-app="app" class="row" style="display:flex;flex-flow: row nowrap;justify-content: flex-start;align-items: flex-start;align-content: space-around" ng-controller="asideController">-->
+        <article id="body" ng-app="app" class="row flex-vertical" ng-controller="asideController">
 
-
-            <aside class="col-lg-3 ">
+            <div id="navbar" class="col-lg-12 flex-horizontal">
+                <span class="center radius1 paddingV_2 paddingH_2  marginL_3 cursor_pointer"  ui-sref="configuration" ui-sref-active="aside-hover-choosen">配置信息</span>
+                <span class="center radius1 paddingV_2 paddingH_2  marginL_3 cursor_pointer" ui-sref="bill" ui-sref-active="aside-hover-choosen">报销记录</span>
     <!--            <button class="btn btn-default">配置信息</button>
                 <button class="btn btn-default">人员信息</button>
                 <button class="btn btn-default">单据信息</button>-->
-                <div class="radius3 marginH_4 paddingV_4 page_ele_bg" style="display:flex;flex-flow: column nowrap;justify-content: space-around;align-items: center;align-content: flex-start" ng-controller="asideController">
+                <!--<div class="radius3 marginH_4 paddingV_4 page_ele_bg" style="display:flex;flex-flow: column nowrap;justify-content: space-around;align-items: center;align-content: flex-start" ng-controller="asideController">-->
                     <!--margin defined in common.css-->
-                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer"  ui-sref="configuration" ui-sref-active="aside-hover-choosen"><span class="fa fa-gear marginR_3"></span>配置信息</span>
-                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ui-sref="bill" ui-sref-active="aside-hover-choosen"><span class="fa fa-cny marginR_3"></span>报销记录</span>
+                    <!--<span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer"  ui-sref="configuration" ui-sref-active="aside-hover-choosen"><span class="fa fa-gear marginR_3"></span>配置信息</span>
+                    <span class="col-lg-10 center radius3 paddingV_2 paddingH_2  cursor_pointer" ui-sref="bill" ui-sref-active="aside-hover-choosen"><span class="fa fa-cny marginR_3"></span>报销记录</span>-->
+                <!--</div>-->
+
+            </div>
+            <div class=" col-lg-12 marginT_7" >
+                <div id="detail" ui-view class="  col-lg-12" style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
+
                 </div>
 
-            </aside>
-            <article class=" col-lg-9" >
-                <div id="detail" ui-view class=" page_ele_bg col-lg-12" style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
 
-                </div>
-
-
-            </article>
-        </div>
+            </div>
+        </article>
         <footer class="col-lg-12">
             <%- include('../component/footer') -%>
         </footer>
@@ -49,9 +51,11 @@
     <script  src="javascripts/3rd/jquery-2.2.3.min.js"></script>
     <script  src="javascripts/3rd/bootstrap.min.js"></script>
 
-
+    <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
+    <script  src="javascripts/3rd/event.js"></script>
     <script  src="javascripts/own/main/constant.js"></script>
+    <script  src="javascripts/own/component/component-compiled.js"></script>
     <script  src="javascripts/own/main/mainController.js"></script>
 
-    <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
+
 </html>

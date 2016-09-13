@@ -342,6 +342,75 @@ app.constant('cont',{
                 "errorMsg": ""
             }
         }
+    },
+    
+    //用来给查询字段select提供option，详见angularjs。md
+    queryField:{
+        "department": [
+            {
+                "key": "部门名称",
+                "value": "name"
+            },
+            {
+                "key": "上级部门",
+                "value": "parentDepartment"
+            }
+        ],
+        "employee": [
+            {
+                "key": "员工姓名",
+                "value": "name"
+            },
+            {
+                "key": "上级主管",
+                "value": "leader"
+            },
+            {
+                "key": "所属部门",
+                "value": "department"
+            },
+            {
+                "key": "入职日期",
+                "value": "onBoardDate"
+            }
+        ],
+        "billType": [
+            {},
+            {
+                "key": "单据类别",
+                "value": "name"
+            },
+            {
+                "key": "父类别",
+                "value": "parentBillType"
+            }
+        ],
+        "bill": [
+            {
+                "key": "单据抬头",
+                "value": "title"
+            },
+            {
+                "key": "单据内容",
+                "value": "content"
+            },
+            {
+                "key": "单据类别",
+                "value": "billType"
+            },
+            {
+                "key": "单据日期",
+                "value": "billDate"
+            },
+            {
+                "key": "报销金额",
+                "value": "amount"
+            },
+            {
+                "key": "报销员工",
+                "value": "reimburser"
+            }
+        ]
     }
 
     

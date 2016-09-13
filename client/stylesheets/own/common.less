@@ -443,6 +443,9 @@ aside>div>span:not(:first-of-type){
   border-radius:@base-radius * @num;
 }
 
+.radius0{
+  .radius(0)
+}
 .radius1{
   .radius(1)
 }
@@ -465,82 +468,113 @@ aside>div>span:not(:first-of-type){
   .radius(7)
 }
 
-.topleft-radius(@num){
+.top-left-radius(@num){
   border-top-left-radius:@base-radius * @num;
 }
-.topleft-radius1{
-  .topleft-radius(1)
+.top-left-radius0{
+  .top-left-radius(0)
 }
-.topleft-radius2{
-  .topleft-radius(2)
+.top-left-radius1{
+  .top-left-radius(1)
 }
-.topleft-radius3{
-  .topleft-radius(3)
-}.topleft-radius4{
-   .topleft-radius(4)
+.top-left-radius2{
+  .top-left-radius(2)
+}
+.top-left-radius3{
+  .top-left-radius(3)
+}.top-left-radius4{
+   .top-left-radius(4)
  }
-.topleft-radius5{
-  .topleft-radius(5)
+.top-left-radius5{
+  .top-left-radius(5)
 }
-.topleft-radius6{
-  .topleft-radius(6)
+.top-left-radius6{
+  .top-left-radius(6)
 }
-.topleft-radius7{
-  .topleft-radius(7)
+.top-left-radius7{
+  .top-left-radius(7)
 }
 
-.topright-radius(@num){
+.top-right-radius(@num){
   border-top-right-radius:@base-radius * @num;
 }
-.topright-radius1{
-  .topright-radius(1)
+.top-right-radius0{
+  .top-right-radius(0)
 }
-.topright-radius2{
-  .topright-radius(2)
+.top-right-radius1{
+  .top-right-radius(1)
 }
-.topright-radius3{
-  .topright-radius(3)
-}.topright-radius4{
-   .topright-radius(4)
+.top-right-radius2{
+  .top-right-radius(2)
+}
+.top-right-radius3{
+  .top-right-radius(3)
+}.top-right-radius4{
+   .top-right-radius(4)
  }
-.topright-radius5{
-  .topright-radius(5)
+.top-right-radius5{
+  .top-right-radius(5)
 }
-.topright-radius6{
-  .topright-radius(6)
+.top-right-radius6{
+  .top-right-radius(6)
 }
-.topright-radius7{
-  .topright-radius(7)
+.top-right-radius7{
+  .top-right-radius(7)
 }
 
 
-.top-radius1{
-  .topleft-radius(1);
-  .topright-radius(1);
+.bottom-left-radius(@num){
+  border-bottom-left-radius:@base-radius * @num;
 }
-.top-radius2{
-  .topleft-radius(2);
-  .topright-radius(2);
+.bottom-left-radius0{
+  .bottom-left-radius(0)
 }
-.top-radius3{
-  .topleft-radius(3);
-  .topright-radius(3);
+.bottom-left-radius1{
+  .bottom-left-radius(1)
 }
-.top-radius4{
-  .topleft-radius(4);
-  .topright-radius(4);
+.bottom-left-radius2{
+  .bottom-left-radius(2)
 }
-.top-radius5{
-  .topleft-radius(5);
-  .topright-radius(5);
+.bottom-left-radius3{
+  .bottom-left-radius(3)
+}.bottom-left-radius4{
+   .bottom-left-radius(4)
+ }
+.bottom-left-radius5{
+  .bottom-left-radius(5)
 }
-.top-radius1{
-  .topleft-radius(5);
-  .topright-radius(5);
+.bottom-left-radius6{
+  .bottom-left-radius(6)
 }
-.top-radius1{
-  .topleft-radius(1);
-  .topright-radius(1);
+.bottom-left-radius7{
+  .bottom-left-radius(7)
+}
+
+.bottom-right-radius(@num){
+  border-bottom-right-radius:@base-radius * @num;
+}
+.bottom-right-radius0{
+  .bottom-right-radius(0)
+}
+.bottom-right-radius1{
+  .bottom-right-radius(1)
+}
+.bottom-right-radius2{
+  .bottom-right-radius(2)
+}
+.bottom-right-radius3{
+  .bottom-right-radius(3)
+}.bottom-right-radius4{
+   .bottom-right-radius(4)
+ }
+.bottom-right-radius5{
+  .bottom-right-radius(5)
+}
+.bottom-right-radius6{
+  .bottom-right-radius(6)
+}
+.bottom-right-radius7{
+  .bottom-right-radius(7)
 }
 
 /**************************************************************/
@@ -594,11 +628,11 @@ aside>div>span:not(:first-of-type){
 
 .aside-hover-choosen{
   .bg-primary;
-  font-size: 21px; //默认字体 14px；为了保持纵向距离不变，paddingV从2减到1，对应的fontsize从14到21px
-  .paddingV_1
+  //font-size: 21px; //默认字体 14px；为了保持纵向距离不变，paddingV从2减到1，对应的fontsize从14到21px
+  //.paddingV_1
 }
 
-aside span:hover{
+#navbar span:hover{
   .aside-hover-choosen
 }
 

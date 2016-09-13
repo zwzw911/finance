@@ -5,22 +5,34 @@
     <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===queryFlag" ng-init="queryFlag=false" ng-click="clickQueryFlag()"></span>
     <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===queryFlag" ng-click="clickQueryFlag()"></span>
   </div>
-  <!--<div class="" style="animation:myfirst;animation-duration:2s;-webkit-animation:myfirst 2s;animation-fill-mode: forwards;">-->
-    <div class="form-group col-lg-12 delete-padding-1" ng-repeat="(key,value) in inputAttr" ng-show="queryFlag">
-      <!--<div >-->
-        <!--<div class="flex-vertical">-->
-          <label class="control-label col-lg-2 text-center">{{value.chineseName}}</label>
-          <div class="col-lg-4">
-            <input class="form-control input-sm" type="{{value['inputDataType']}}" ng-model="value.value">
-          </div>
-          <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
+  <div class="form-group col-lg-12 delete-padding-1" ng-show="queryFlag">
+    <label class="control-label col-lg-2 text-center">选择查询字段</label>
+    <div class="col-lg-2">
+      <select class="form-control input-sm"  ng-model="currentQueryField" ng-options="option.key for option in queryField" ng-change="change(currentQueryField)">
 
-          <p class="col-lg-offset-2 col-lg-4 text-danger">error msg</p>
-        <!--</div>-->
-      <!--</div>-->
-
+      </select>
     </div>
-  <!--</div>-->
+    <div class="col-lg-2">
+      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px">
+      <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
+
+      </select>
+    </div>
+    <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
+  </div>
+  <div id="selectedQueryField">
+
+  </div>
+  <!--<div class="" style="animation:myfirst;animation-duration:2s;-webkit-animation:myfirst 2s;animation-fill-mode: forwards;">-->
+<!--  <div class="form-group col-lg-12 delete-padding-1" ng-repeat="(key,value) in inputAttr" ng-show="queryFlag">
+        <label class="control-label col-lg-2 text-center">{{value.chineseName}}</label>
+        <div class="col-lg-4">
+          <input class="form-control input-sm" type="{{value['inputDataType']}}" ng-model="value.value">
+        </div>
+        <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
+        <p class="col-lg-offset-2 col-lg-4 text-danger">error msg</p>
+  </div>-->
+
 </div>
 
 
