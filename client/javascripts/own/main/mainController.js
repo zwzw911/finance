@@ -1,7 +1,7 @@
 /**
  * Created by ada on 2016/8/28.
  */
-var app=angular.module('app',['ui.router','ui.event','contDefine','component'])
+var app=angular.module('app',['ui.router','ui.event','ngSanitize','MassAutoComplete','contDefine','component'])
 /*app.constant('cont',{
     asideName:{configuration:'配置信息',bill:'单据信息'},//aside菜单名称
     //根据dbstructure设置查询条件
@@ -53,51 +53,102 @@ app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
     })
 
 })
-app.controller('asideController',function($scope,cont){
-    $scope.asideName=cont.asideName
+
+app.controller('mainController',function($scope,cont,helper,$sce){
+
+
+
+
+
+
+
+
+
+    helper.adjustFooterPosition()
+/*    $scope.adjustFooterPosition=function(){
+        console.log('main resize')
+        helper.adjustFooterPosition()
+    }*/
+    window.onresize=function(){
+        helper.adjustFooterPosition()
+    }
+/*    window.onresize=function(){
+        var offset={leftOffset:0,topOffset:0, widthOffset:-18,heightOffset:0}
+        helper.setCoverEle('coveredEle','coveringEle',offset)
+    }*/
+/*    $('body').resize(function(){
+        helper.adjustFooterPosition()
+    })*/
 })
 
-app.controller('configurationController',function($scope,cont){
-
+app.controller('configurationController',function($scope,cont,helper){
+    $scope.adjustFooterPosition=function(){
+        //console.log('configuration resize')
+        helper.adjustFooterPosition()
+    }
+/*    window.onresize=function(){
+        console.log('resize')
+        helper.adjustFooterPosition()
+    }*/
 })
 
 /*test=function(){
     console.log('test in')
 }*/
-app.controller('configuration.billType.Controller',function($scope,cont,helper){
+app.controller('configuration.billType.Controller',function($scope,cont,helper,$sce){
+    $scope.dirty = {};
+
+    var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
+
+    function suggest_state(term) {
+        var q = term.toLowerCase().trim();
+        var results = [];
+
+        // Find first 10 states that start with `term`.
+        for (var i = 0; i < states.length && results.length < 10; i++) {
+            var state = states[i];
+            if (state.toLowerCase().indexOf(q) === 0)
+                results.push({ label: state, value: state });
+        }
+
+        return results;
+    }
+
+    $scope.autocomplete_options = {
+        suggest: suggest_state
+    };
+
+/*    $scope.tags = [];
+
+    function add_tag(selected) {
+        // $scope.tags.push(selected.value);
+        // Clear model
+        // $scope.dirty.selected_tag = undefined;
+    };*/
+
+    $scope.ac_option_tag_select = {
+        suggest: suggest_state,
+        // on_select: add_tag
+    };
+
+
+
+    helper.adjustFooterPosition()
     $scope.inputAttr=cont.inputAttr.billType
 
-    //helper.setCoverEle('coveredEle','coveringEle')
-    //console.log(document.getElementById('coveredEle').offsetWidth)
-    //console.log($('#coveredEle').width())
-    //console.log($('#coveredEle').offsetWidth())
-    //console.log(document.getElementById('coveringEle').offsetLeft)
-/*    console.log($('#coveredEle').width())
-    console.log($('#coveredEle').height())
-    console.log($('#coveredEle').offset())*/
-
-/*    console.log(document.getElementById('coveredEle').offsetLeft)
-var s=document.getElementById('coveredEle')
-
-    var t=document.getElementById('coveringEle')
-    t.style.position='absolute'
-    t.style.left  =s.offsetLeft+'px'
-    t.style.top   =s.offsetTop+'px'
-    t.style.width =s.offsetWidth-20+'px'
-    t.style.height=s.offsetHeight+'px'*/
+/*$scope.filter=function(){
+    console.log('out')
+    $('#coveredEle').click()
+    //$('#coveredEle').attr('size',2)
+}*/
+/*    $('#coveredEle').click(function(){console.log('text click')})
     var offset={leftOffset:0,topOffset:0, widthOffset:-18,heightOffset:0}
-    helper.setCoverEle('coveredEle','coveringEle',offset)
+    helper.setCoverEle('coveredEle','coveringEle',offset)*/
     
-/*    $scope.reSetCoverEle=function(){
-        console.log('in')
+
+/*    window.onresize=function(){
         helper.setCoverEle('coveredEle','coveringEle',offset)
     }*/
-/*    window.onload=function(){
-        helper.setCoverEle('coveredEle','coveringEle',offset)
-    }*/
-    window.onresize=function(){
-        helper.setCoverEle('coveredEle','coveringEle',offset)
-    }
     $scope.queryField=cont.queryField.billType
     $scope.change=function(selectedQueryField){
         let testValue={
@@ -134,6 +185,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont){
     ]
 })
 app.controller('configuration.employeeInfo.Controller',function($scope,cont){
+    helper.adjustFooterPosition()
     $scope.inputAttr=cont.inputAttr.employee
 
     $scope.clickQueryFlag=function(){
@@ -146,9 +198,12 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont){
     ]
 })
 
-app.controller('billController',function($scope,cont){
-
+app.controller('billController',function($scope,cont,helper){
+    $scope.adjustFooterPosition=function(){
+        //console.log('main resize')
+        helper.adjustFooterPosition()
+    }
 })
 app.controller('bill.billInfo.Controller',function($scope,cont){
-
+    helper.adjustFooterPosition()
 })

@@ -1,8 +1,8 @@
 
 1. 菜单栏从侧面移动到上面（导航条的方式）======>done
 2. employee添加age和gender字段
-3. footer固定在底部
+3. footer固定在底部======>done
 4. 查询以list的方式提供field（而不是全部显示），以节省空间========> part done
 	4.1 设置input text，覆盖select，以便实现input输入，select过滤的功能======>done
-	4.2 input输入，select会下拉显示符合的option
+	4.2 input输入，select会下拉显示符合的option=============>done 使用3rd控件 MassAutoComplete
 5. 已经选择的查询条件，显示在界面上，后跟X表示可以删除

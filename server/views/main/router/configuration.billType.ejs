@@ -8,15 +8,20 @@
   <div class="form-group col-lg-12 delete-padding-1" ng-show="queryFlag">
     <label class="control-label col-lg-2 text-center">选择查询字段</label>
     <div class="col-lg-2">
-      <select class="form-control input-sm"  ng-model="currentQueryField" ng-options="option.key for option in queryField" ng-change="change(currentQueryField)">
+      <select id="queryField" class="form-control input-sm"  ng-model="currentQueryField" ng-options="option.key for option in queryField" ng-change="change(currentQueryField)">
 
       </select>
     </div>
     <div class="col-lg-2">
-      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px">
+<!--      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px;border-right:none" ng-change="filter()" ng-model="text">
       <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
 
-      </select>
+      </select>-->
+      <div mass-autocomplete>
+        <input class="form-control input-sm" ng-model="dirty.value" mass-autocomplete-item="autocomplete_options">
+      </div>
+
+
     </div>
     <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
   </div>
