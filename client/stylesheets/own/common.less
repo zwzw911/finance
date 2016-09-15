@@ -654,7 +654,9 @@ aside>div>span:not(:first-of-type){
   color: #fff;
   background-color: #428bca;
 }
-
+.bg-warning {
+  background-color: #fcf8e3;
+}
 
 /*
 * 只有less才能把class作为内容引用，css不行（css只能设置属性）
@@ -680,17 +682,29 @@ aside>div>span:not(:first-of-type){
   .aside-hover-choosen
 }
 
-#configuration>span:hover{
+#configuration>span:hover,#bill>span:hover{
   //background-color:#f8fdff;
   .tabBorder;
   .cursor_pointer
 }
 
-#configuration>span.activate{
+#configuration>span.activate,#bill>span.activate{
   background:-moz-linear-gradient(#ffffff,#fdfdfd);
   .tabBorder;
   box-shadow:2px 0px 0px 0px silver;
 }
 
+
+//
+.activeQueryValue:hover{
+  .bg-warning;
+
+}
+.activeQueryValue>span.fa{
+  color: transparent;
+}
+.activeQueryValue:hover>span.fa {
+  color: black;
+}
 //让footer保持在最底部，结合js一起使用
 .fixed-footer {position: fixed;bottom: 0;left:0;width:100%;}

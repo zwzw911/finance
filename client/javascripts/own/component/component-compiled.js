@@ -77,6 +77,18 @@ app.factory('helper', function (basicHelper) {
                 //console.log('remove')
                 $("footer").removeClass("fixed-footer");
             }
+        },
+
+        /*
+        *   说明： bootstrap提供的modal-dialog只能水平居中，本函数用作垂直居中
+        * */
+        verticalCenter: function verticalCenter(dialogId) {
+            var dialog = document.getElementById(dialogId);
+            var windowHeight = $(window).height();
+            var dialogHeight = dialog.offsetHeight;
+
+            var top = (windowHeight - dialogHeight) / 2;
+            dialog.style.top = top + 'px';
         }
     };
 });

@@ -57,8 +57,8 @@ var extractSelectKeyValueFromInputAttr=function(inputAttr){
         result[coll]=[]
         for(let field in inputAttr[coll]){
             let tmpResult={}
-            tmpResult['key']=inputAttr[coll][field]['chineseName']
-            tmpResult['value']=field
+            tmpResult['value']=inputAttr[coll][field]['chineseName']
+            tmpResult['key']=field
             result[coll].push(tmpResult)
         }
     }

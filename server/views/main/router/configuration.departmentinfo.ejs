@@ -1,49 +1,75 @@
 <div class="flex-vertical">
     <div class="page-header h3 text-primary col-lg-12" sytle="">
         设置查询条件
-        <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===queryFlag" ng-init="queryFlag=false" ng-click="clickQueryFlag()"></span>
-        <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===queryFlag" ng-click="clickQueryFlag()"></span>
+        <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.queryFieldEnable" ng-init="allData.queryFieldEnable=false" ng-click="clickQueryFlag()"></span>
+        <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===allData.queryFieldEnable" ng-click="clickQueryFlag()"></span>
     </div>
-    <!--<div class="" style="animation:myfirst;animation-duration:2s;-webkit-animation:myfirst 2s;animation-fill-mode: forwards;">-->
-    <div class="form-group col-lg-12 delete-padding-1" ng-repeat="(key,value) in inputAttr" ng-show="queryFlag">
-        <!--<div >-->
-        <!--<div class="flex-vertical">-->
-        <label class="control-label col-lg-2 text-center">{{value.chineseName}}</label>
-        <div class="col-lg-4">
-            <input class="form-control input-sm" type="{{value['inputDataType']}}" ng-model="value.value">
+    <div class="form-group col-lg-12 delete-padding-1" ng-show="allData.queryFieldEnable">
+        <label class="control-label col-lg-2 text-left" style="font-size:18px;font-weight:700;font-family:serif">选择查询字段</label>
+        <div class="col-lg-2">
+            <select id="queryField" class="form-control input-sm"  ng-model="allData.selectedQueryField" ng-options="option.value for option in allData.queryField" ng-change="change(allData.selectedQueryField)">
+
+            </select>
         </div>
-        <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
+        <div class="col-lg-2">
+            <!--      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px;border-right:none" ng-change="filter()" ng-model="text">
+                  <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
 
-        <p class="col-lg-offset-2 col-lg-4 text-danger">error msg</p>
-        <!--</div>-->
-        <!--</div>-->
+                  </select>-->
+            <div mass-autocomplete>
+                <input class="form-control input-sm" ng-model="allData.dirty" mass-autocomplete-item="allData.suggestValue">
+            </div>
+
+
+        </div>
+        <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.dirty.length || 0==allData.selectedQueryField.length,enable:0<allData.dirty.length && 0<allData.selectedQueryField.length}" ng-click="addQueryValue(allData.selectedQueryField.key,allData.dirty,allData.activeQueryValue)">确定</button>
 
     </div>
-    <!--</div>-->
+
+    <div id="activeQueryValue" class="col-lg-12" ng-if="undefined!==allData.activeQueryValue" ng-show="allData.queryFieldEnable">
+        <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
+        <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
+            <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
+            <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="deleteQueryValue(key,queryValue,allData.activeQueryValue)"></span></span>
+        </div>
+    </div>
+    <!--  <div id="activeQueryValue" ng-show="undefined!==activeQueryValue">
+          <label></label>
+      </div>-->
+    <!--<div class="" style="animation:myfirst;animation-duration:2s;-webkit-animation:myfirst 2s;animation-fill-mode: forwards;">-->
+    <!--  <div class="form-group col-lg-12 delete-padding-1" ng-repeat="(key,value) in inputAttr" ng-show="queryFlag">
+            <label class="control-label col-lg-2 text-center">{{value.chineseName}}</label>
+            <div class="col-lg-4">
+              <input class="form-control input-sm" type="{{value['inputDataType']}}" ng-model="value.value">
+            </div>
+            <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
+            <p class="col-lg-offset-2 col-lg-4 text-danger">error msg</p>
+      </div>-->
+
+
 </div>
 
 <div class="flex-vertical">
     <div class="page-header h3 text-primary col-lg-12" sytle="">
         数据
     </div>
+    <button class="btn btn-primary btn-sm marginL_3" ng-click="switchDialogStatus()"><span class="fa fa-plus marginR_1 "></span>添加</button>
+    <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
 
     <div class="col-lg-12">
-        <span style="align-self: center" class="marginB_X h4 text-warning" ng-if="undefined==recorder">无数据</span>
-
-        <button class="btn btn-primary btn-sm" ng-if="undefined!=recorder"><span class="fa fa-plus marginR_1"></span>添加</button>
-        <table class="table table-hover table-bordered marginT_4" ng-if="undefined!=recorder">
+        <table class="table table-hover table-bordered marginT_4" ng-if="undefined!=allData.recorder[0]">
             <thead>
             <!--<th><input  type="checkbox" name="all" ng-model=""></th>-->
             <th class="text-primary">编号</th>
             <!--<th>所属目录</th>-->
-            <th class="text-primary ">单据类别</th>
+            <th class="text-primary ">部门名称</th>
             <th class="text-primary hidden-sm">上级部门</th>
             <th class="text-primary hidden-xs hidden-sm">创建时间</th>
             <!--<th class="text-primary hidden-xs hidden-sm">修改时间</th>-->
             <th class="text-primary">操作</th>
             </thead>
             <tbody>
-            <tr ng-repeat="(idx,value) in recorder">
+            <tr ng-repeat="(idx,value) in allData.recorder">
                 <td>{{idx}}</td>
                 <td>{{value.name}}</td>
                 <td>{{value.parentDepartmentName}}</td>

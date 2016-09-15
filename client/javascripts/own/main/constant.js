@@ -348,67 +348,66 @@ app.constant('cont',{
     queryField:{
         "department": [
             {
-                "key": "部门名称",
-                "value": "name"
+                "value": "部门名称",
+                "key": "name"
             },
             {
-                "key": "上级部门",
-                "value": "parentDepartment"
+                "value": "上级部门",
+                "key": "parentDepartment"
             }
         ],
         "employee": [
             {
-                "key": "员工姓名",
-                "value": "name"
+                "value": "员工姓名",
+                "key": "name"
             },
             {
-                "key": "上级主管",
-                "value": "leader"
+                "value": "上级主管",
+                "key": "leader"
             },
             {
-                "key": "所属部门",
-                "value": "department"
+                "value": "所属部门",
+                "key": "department"
             },
             {
-                "key": "入职日期",
-                "value": "onBoardDate"
+                "value": "入职日期",
+                "key": "onBoardDate"
             }
         ],
         "billType": [
-            {},
             {
-                "key": "单据类别",
-                "value": "name"
+                "value": "单据类别",
+                "key": "name"
             },
             {
-                "key": "父类别",
-                "value": "parentBillType"
+                "value": "父类别",
+                "key": "parentBillType"
             }
         ],
         "bill": [
             {
-                "key": "单据抬头",
-                "value": "title"
+                "value": "单据抬头",
+                "key": "title"
             },
             {
-                "key": "单据内容",
-                "value": "content"
+                "value": "单据内容",
+                "key": "content"
             },
             {
-                "key": "单据类别",
-                "value": "billType"
+                "value": "单据类别",
+                "key": "billType"
             },
             {
-                "key": "单据日期",
-                "value": "billDate"
+                "value": "单据日期",
+                "key": "billDate"
             },
             {
-                "key": "报销金额",
-                "value": "amount"
+                "value": "报销金额",
+                "key": "amount"
             },
             {
-                "key": "报销员工",
-                "value": "reimburser"
+                "value": "报销员工",
+                "key": "reimburser"
             }
         ]
     }
