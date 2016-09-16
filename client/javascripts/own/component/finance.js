@@ -3,28 +3,64 @@
  */
 'use strict'
 var app=angular.module('finance',[]);
-app.factory('financeHelper',function(){
+app.factory('financeCRUDHelper',function($http){
     return {
-        //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
-        deleteQueryValue:function(field,value,activateQueryFieldAndValue){
-            for(var i=0;i<activateQueryFieldAndValue[field].length;i++){
-                if(value===activateQueryFieldAndValue[field][i]){
-                    activateQueryFieldAndValue[field].splice(i,1)
-                    break
+        billType:{
+            //idx无用，只是为了统一使用参数
+            'create':function(idx,inputAttr,recorder){
+                //首先加入db
+                
+                //然后加入client数据，防止多次返回
+                var tmpRecorder={}
+                for(var field in inputAttr){
+                    tmpRecorder[field]=inputAttr[field]['value']
+
+                    //清除不必要的数据
+                    inputAttr[field]['value']=''
+                    inputAttr[field]['originalValue']=''
                 }
-            }
-            if( 0===activateQueryFieldAndValue[field].length){
-                delete activateQueryFieldAndValue[field]
-            }
+                //加入angular端的数据集合
+                recorder.push(tmpRecorder)
+                // console.log(recorder)
+            },
+            'delete':function(idx,recorder){
+                //首先更新数据到db
+                
+                //然后更新client端数据 
+                recorder.splice(idx,1)
+            },
+            'update':function(idx,inputAttr,recorder){
+                //首先更新数据到db
+                
+                // console.log(idx)
+                //然后更新client端数据
+                for(var field in inputAttr){
+                    recorder[idx][field]=inputAttr[field]['value']
+                    //清除不必要的数据
+                    // inputAttr[field]['value']=''
+                    inputAttr[field]['originalValue']=''
+                }
+            },
+            'read':function(){},
         },
-        //将选中的field和value加入到allData.activeQueryValue
-        addQueryValue:function(field,value,activateQueryFieldAndValue){
-            console.log(field)
-            if(undefined===activateQueryFieldAndValue[field]){
-                activateQueryFieldAndValue[field]=[]
-            }
-            activateQueryFieldAndValue[field].push(value)
-            console.log(activateQueryFieldAndValue)
+        departmentInfo:{
+            'create':function(){},
+            'delete':function(){},
+            'update':function(){},
+            'read':function(){},
+        },
+        employeeInfo:{
+            'create':function(){},
+            'delete':function(){},
+            'update':function(){},
+            'read':function(){},
+        },
+        billInfo:{
+            'create':function(){},
+            'delete':function(){},
+            'update':function(){},
+            'read':function(){},
         }
+
     }
 })

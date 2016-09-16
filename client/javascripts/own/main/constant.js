@@ -87,7 +87,7 @@ app.constant('cont',{
                     "msg": "单据类别不能为空"
                 },
                 "maxLength": {
-                    "define": 40,
+                    "define": 4,
                     "msg": "单据类别所包含的字符数不能超过40个"
                 },
                 "minLength": {
@@ -95,20 +95,20 @@ app.constant('cont',{
                     "msg": "单据类别包含的字符数不能少于2个"
                 }
             },
- /*           "parentBillType": {
+            "parentBillType": {
                 "require": {
-                    "define": true,
+                    "define": false,
                     "msg": "父类别不能为空"
                 },
                 "maxLength": {
                     "define": 40,
-                    "msg": "单据类别所包含的字符数不能超过40个"
+                    "msg": "父类别所包含的字符数不能超过40个"
                 },
                 "minLength": {
                     "define": 2,
-                    "msg": "单据类别包含的字符数不能少于2个"
+                    "msg": "父类别包含的字符数不能少于2个"
                 }
-            }*/
+            }
         },
         "bill": {
             "title": {
@@ -203,7 +203,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "部门名称",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "parentDepartment": {
                 "value": "",
@@ -213,7 +214,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "上级部门",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             }
         },
         "employee": {
@@ -225,7 +227,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "员工姓名",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "leader": {
                 "value": "",
@@ -235,7 +238,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "上级主管",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "department": {
                 "value": "",
@@ -245,7 +249,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "所属部门",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "onBoardDate": {
                 "value": "",
@@ -255,7 +260,8 @@ app.constant('cont',{
                 "inputDataType": "date",
                 "inputIcon": "",
                 "chineseName": "入职日期",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             }
         },
         "billType": {
@@ -267,7 +273,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "单据类别",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "parentBillType": {
                 "value": "",
@@ -277,7 +284,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "父类别",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             }
         },
         "bill": {
@@ -289,7 +297,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "单据抬头",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "content": {
                 "value": "",
@@ -299,7 +308,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "单据内容",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "billType": {
                 "value": "",
@@ -309,7 +319,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "单据类别",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "billDate": {
                 "value": "",
@@ -319,7 +330,8 @@ app.constant('cont',{
                 "inputDataType": "date",
                 "inputIcon": "",
                 "chineseName": "单据日期",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "amount": {
                 "value": "",
@@ -329,7 +341,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "报销金额",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             },
             "reimburser": {
                 "value": "",
@@ -339,7 +352,8 @@ app.constant('cont',{
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "报销员工",
-                "errorMsg": ""
+                "errorMsg": "",
+                "validated": "undefined"
             }
         }
     },

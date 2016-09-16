@@ -3,17 +3,82 @@
  */
 'use strict';
 
-var app = angular.module('component', []);
-app.factory('basicHelper', function () {
-    return {
-        dataTypeCheck: {
-            isNumber: function isNumber(value) {
-                return isNaN(parseFloat(value));
-            }
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
+var app = angular.module('component', []);
+
+app.factory('basicHelper', function () {
+    var dataTypeCheck = {
+        isArray: function isArray(obj) {
+            return obj && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && Array == obj.constructor;
+        },
+
+        isNumber: function isNumber(value) {
+            return isNaN(parseFloat(value));
+        },
+        isString: function isString(value) {
+            return typeof value === 'string';
+        },
+        isDate: function isDate(date) {
+            var parsedDate = new Date(date);
+            if (parsedDate.toLocaleString() === 'Invalid Date') {
+                return false;
+            }
+            return parsedDate;
+            //}
+        },
+        isPositive: function isPositive(value) {
+            var parsedValue = parseFloat(value);
+            /*        if(isNaN(parsedValue)){
+             return false
+             }*/
+            return parsedValue > 0;
         }
     };
+
+    var ruleTypeCheck = {
+        inputValueTypeCheck: function inputValueTypeCheck(value) {
+            if (false === dataTypeCheck.isArray(value) && false === dataTypeCheck.isNumber(value) && dataTypeCheck.isString(value)) {
+                return false;
+            } else {
+                return true;
+            }
+        },
+        exceedMaxLength: function exceedMaxLength(value, maxLength) {
+            //length属性只能在数字/字符/数组上执行
+            if (false == this.inputValueTypeCheck(value)) {
+                // console.log(false)
+                return false;
+            }
+            //client都是字符
+            // console.log(value.length)
+            return value.length > maxLength;
+        },
+        exceedMinLength: function exceedMinLength(value, minLength) {
+            if (false == this.inputValueTypeCheck(value)) {
+                return false;
+            }
+            //client都是字符
+            return value.length < minLength;
+        },
+        exactLength: function exactLength(value, _exactLength) {
+            if (false == this.inputValueTypeCheck(value)) {
+                return false;
+            }
+            //client都是字符
+            return value.length === _exactLength;
+        },
+        exceedMax: function exceedMax(value, definedValue) {
+            return parseFloat(value) > parseFloat(definedValue);
+        },
+        exceedMin: function exceedMin(value, definedValue) {
+            return parseFloat(value) < parseFloat(definedValue);
+        }
+    };
+
+    return { dataTypeCheck: dataTypeCheck, ruleTypeCheck: ruleTypeCheck };
 });
+
 app.factory('helper', function (basicHelper) {
     return {
         /*
@@ -86,9 +151,111 @@ app.factory('helper', function (basicHelper) {
             var dialog = document.getElementById(dialogId);
             var windowHeight = $(window).height();
             var dialogHeight = dialog.offsetHeight;
-
-            var top = (windowHeight - dialogHeight) / 2;
+            /*console.log(windowHeight)
+                        console.log(dialogHeight)*/
+            //60是botstrap中为diaglog定义的上下margin，略微上移，符合人类审美
+            var top = (windowHeight - dialogHeight) / 2 - 60;
+            if (top < 0) {
+                top = 0;
+            }
             dialog.style.top = top + 'px';
+        }
+    };
+});
+
+app.factory('financeHelper', function (basicHelper) {
+    return {
+        //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
+        deleteQueryValue: function deleteQueryValue(field, value, activateQueryFieldAndValue) {
+            for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
+                if (value === activateQueryFieldAndValue[field][i]) {
+                    activateQueryFieldAndValue[field].splice(i, 1);
+                    break;
+                }
+            }
+            if (0 === activateQueryFieldAndValue[field].length) {
+                delete activateQueryFieldAndValue[field];
+            }
+        },
+        //将选中的field和value加入到allData.activeQueryValue
+        addQueryValue: function addQueryValue(field, value, activateQueryFieldAndValue) {
+            console.log(field);
+            if (undefined === activateQueryFieldAndValue[field]) {
+                activateQueryFieldAndValue[field] = [];
+            }
+            activateQueryFieldAndValue[field].push(value);
+            console.log(activateQueryFieldAndValue);
+        },
+
+        //检查input value
+        checkInput: function checkInput(field, inputRule, inputAttr) {
+            /*            console.log('blur')
+                        console.log(field)*/
+            var requireFlag = inputRule[field]['require']['define'];
+            var currentValue = inputAttr[field]['value'];
+            if (undefined === requireFlag) {
+                requireFlag = false;
+            }
+
+            if ('' === currentValue) {
+                if (false === requireFlag) {
+                    return true;
+                }
+                if (true === requireFlag) {
+                    inputAttr[field]['errorMsg'] = inputRule[field]['require']['msg'];
+                    return false;
+                }
+            }
+            //input不空，检查当前字段除了require之外的其他所有rule
+            if ('' !== currentValue) {
+                for (var singleRule in inputRule[field]) {
+                    var ruleCheckFunc = void 0;
+                    if ('require' === singleRule) {
+                        continue;
+                    }
+                    switch (singleRule) {
+                        case 'max':
+                            ruleCheckFunc = 'exceedMax';
+                            break;
+                        case 'min':
+                            ruleCheckFunc = 'exceedMin';
+                            break;
+                        case 'maxLength':
+                            ruleCheckFunc = 'exceedMaxLength';
+                            break;
+                        case 'minLength':
+                            ruleCheckFunc = 'exceedMinLength';
+                            break;
+                    }
+
+                    if (true === basicHelper.ruleTypeCheck[ruleCheckFunc](currentValue, inputRule[field][singleRule]['define'])) {
+                        inputAttr[field]['errorMsg'] = inputRule[field][singleRule]['msg'];
+                        inputAttr[field]['validated'] = false;
+                        break;
+                    } else {
+                        inputAttr[field]['errorMsg'] = "";
+                        inputAttr[field]['validated'] = true;
+                    }
+                }
+            }
+        },
+        //init input
+        initInput: function initInput(field, inputAttr) {
+            /*            console.log('focus')
+                        console.log(field)
+                        console.log(inputAttr)*/
+            inputAttr[field]['errorMsg'] = '';
+        },
+        //是否所有的input检测都通过了（或者无需）
+        allInputValidCheck: function allInputValidCheck(inputAttr) {
+            // console.log('validate')
+            for (var field in inputAttr) {
+                if (false === inputAttr[field]['validated']) {
+                    // console.log(inputAttr[field])
+                    return false;
+                }
+            }
+            return true;
         }
     };
 });

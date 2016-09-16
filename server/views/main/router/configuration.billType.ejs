@@ -1,21 +1,30 @@
+<!--ng-class="{show:allData.recorderDialogShow,fade:!allData.recorderDialogShow}"-->
+<div id="modal" class="modal" ng-class="{show:allData.recorderDialogShow,fade:!allData.recorderDialogShow}" >
+  <div id="CRUDRecorder" class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" ng-click="switchDialogStatus()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" >{{modal.title[allData.currentOperation]}}</h4>
+      </div>
+      <div class="modal-body">
+        <!--<div >-->
+          <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-class="{'has-error': 0<value.errorMsg.length}">
+            <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
+            <input class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
+            <!--ng-change="modal.checkInput(key)"
 
-  <div id="modal" class="modal" ng-class="{show:allData.recorderDialogShow,fade:!allData.recorderDialogShow}">
-    <div id="CRUDRecorder" class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-          <h4 class="modal-title">Modal title</h4>
-        </div>
-        <div class="modal-body">
-          <p>One fine body&hellip;</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="switchDialogStatus()">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-      </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-  </div>
+             -->
+            <p class="text-danger" style="height:20px">{{value.errorMsg}}</p>
+          </div>
+        <!--</div>-->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="switchDialogStatus()">取消</button>
+        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}" ng-init="modal.buttonFlag=false" ng-click="modal.CRUDOperation[allData.currentOperation](allData.currentIdx,allData.inputAttr,allData.recorder)">确定</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
 
 
 
@@ -78,7 +87,7 @@
     数据
   </div>
 
-  <button class="btn btn-primary btn-sm marginL_3"  ng-click="switchDialogStatus()"><span class="fa fa-plus marginR_1 "></span>添加</button>
+  <button class="btn btn-primary btn-sm marginL_3"  ng-click="switchDialogStatus();setOperationType('create',-1)" ><span class="fa fa-plus marginR_1 "></span>添加</button>
   <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
   <div class="col-lg-12" >
     <!--<span style="align-self: center" class="marginB_X h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>-->
@@ -101,8 +110,8 @@
         <td>{{value.cDate}}</td>
         <!--<td>{{value.uDate}}</td>-->
         <td style="align:left">
-          <button class="btn btn-default btn-xs"><span class="fa fa-edit marginR_1" ></span>修改</button>
-          <button class="btn btn-danger btn-xs"><span class="fa fa-trash-o marginR_1"></span>删除</button>
+          <button class="btn btn-default btn-xs" ng-click="switchDialogStatus();setOperationType('update',idx)"><span class="fa fa-edit marginR_1" ></span>修改</button>
+          <button class="btn btn-danger btn-xs" ng-click="setOperationType('delete',idx);allData.CRUDOperation[allData.currentOperation](allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
         </td>
       </tr>
       </tbody>
@@ -111,6 +120,11 @@
 
   </div>
 </div>
+
+
+
+
+
 <!--<div class="page-header">
   内容
   <table>

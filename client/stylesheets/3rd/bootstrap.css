@@ -2589,7 +2589,7 @@ select[multiple].form-group-lg .form-control {
   line-height: 30px;
 }
 .has-success .help-block,
-.has-success .control-label,
+/*.has-success .control-label,*/
 .has-success .radio,
 .has-success .checkbox,
 .has-success .radio-inline,
@@ -2617,7 +2617,7 @@ select[multiple].form-group-lg .form-control {
   color: #3c763d;
 }
 .has-warning .help-block,
-.has-warning .control-label,
+/*.has-warning .control-label,*/
 .has-warning .radio,
 .has-warning .checkbox,
 .has-warning .radio-inline,
@@ -2645,7 +2645,7 @@ select[multiple].form-group-lg .form-control {
   color: #8a6d3b;
 }
 .has-error .help-block,
-.has-error .control-label,
+/*.has-error .control-label,*/
 .has-error .radio,
 .has-error .checkbox,
 .has-error .radio-inline,

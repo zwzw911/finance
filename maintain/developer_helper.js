@@ -43,12 +43,12 @@ var matchList={
 miscFunc.generateClientDefine(ruleDefine,2,inputAttr)
 miscFunc.deleteNonNeededObject(inputAttr,skipList)
 miscFunc.objectIdToRealField(inputAttr,matchList)
-// fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))
+fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))
 
 miscFunc.generateClientRule(ruleDefine,2,clientInputRule)
 miscFunc.deleteNonNeededObject(clientInputRule,skipList)
 miscFunc.objectIdToRealField(clientInputRule,matchList)
-// fs.writeFile('clientInputRule.txt',JSON.stringify(clientInputRule))
+fs.writeFile('clientInputRule.txt',JSON.stringify(clientInputRule))
 
 //从inputAttr提取出用于ng-select(ng-select接受格式为数组，每个元素包含key,value，key为显示在页面上)
 var extractSelectKeyValueFromInputAttr=function(inputAttr){

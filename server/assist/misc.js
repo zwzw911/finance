@@ -1542,7 +1542,7 @@ var generateClientDefine=function(obj,level,resultObj){
                     default:
                         temInputDataType='text'
                 }
-                resultObj[key]={value:'',originalValue:'',blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,valid:undefined,errorMsg:""}
+                resultObj[key]={value:'',originalValue:'',blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
                 //obj[key]['chineseName']=tmpChineseName
             }else{
                 //如果值是对象，递归调用

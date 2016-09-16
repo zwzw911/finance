@@ -71,6 +71,7 @@ app.controller('mainController',function($scope,cont,helper,$sce){
     }*/
     window.onresize=function(){
         helper.adjustFooterPosition()
+        
         //窗口位置大小变化时，重新设置modal的top
         helper.verticalCenter('CRUDRecorder')
     }
@@ -97,10 +98,10 @@ app.controller('configurationController',function($scope,cont,helper){
 /*test=function(){
     console.log('test in')
 }*/
-app.controller('configuration.billType.Controller',function($scope,cont,helper,$sce,financeHelper){
+app.controller('configuration.billType.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.billType,//CRUD记录的时候，对输入进行设置
-        inputRule:undefined,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        inputRule:cont.inputRule.billType,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[//使用数组，以便判断是否为空
         ],
 
@@ -116,8 +117,41 @@ app.controller('configuration.billType.Controller',function($scope,cont,helper,$
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
 
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
+        
+        //从finance/financeCRUDHelper中载入对应CRUD方法
+        CRUDOperation:financeCRUDHelper.billType,
+
+        currentOperation:{
+            'read':function(){},
+            'delete':function(idx,recorder){
+                financeCRUDHelper.billType.delete(idx,recorder)
+            },
+        }, //当前操作的类型（CRUD）
+        currentIdx:-1, //当前操作的记录的idx
     }
 
+    $scope.modal={
+        title:{'create':'添加数据','update':'修改数据'},
+        inputBlur:financeHelper.checkInput,
+        inputFocus:financeHelper.initInput,
+        buttonFlag:false,
+        allInputValidCheck:function(inputAttr){
+            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+        },
+        CRUDOperation:{
+            'create':function(idx,inputAttr,recorder){
+                financeCRUDHelper.billType.create(idx,inputAttr,recorder);
+                $scope.switchDialogStatus()
+            },
+            'update':function(idx,inputAttr,recorder){
+                financeCRUDHelper.billType.update(idx,inputAttr,recorder);
+                $scope.switchDialogStatus();
+            },
+        },
+/*        CRUD
+        createNewRecorder:financeCRUDHelper.billType.create,
+        updateRecorder:financeCRUDHelper.billType.update,*/
+    }
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
     function suggest_state(term) {
@@ -156,11 +190,23 @@ app.controller('configuration.billType.Controller',function($scope,cont,helper,$
     $scope.switchDialogStatus=function(){
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
     }
+    
+    $scope.setOperationType=function(type,idx){
+        $scope.allData.currentOperation=type
+        $scope.allData.currentIdx=idx
+    }
+
+    $scope.loadData=function(idx,inputAttr,recorder){
+        for(var field in inputAttr){
+            inputAttr[field]['value']=recorder[idx][]
+
+        }
+    }
 })
-app.controller('configuration.departmentInfo.Controller',function($scope,cont,helper,$sce,financeHelper){
+app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.department,//CRUD记录的时候，对输入进行设置
-        inputRule:undefined,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        inputRule:cont.inputRule.department,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[//使用数组，以便判断是否为空
         ],
 
@@ -213,10 +259,10 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,he
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
     }
 })
-app.controller('configuration.employeeInfo.Controller',function($scope,cont,helper,$sce,financeHelper){
+app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.employee,//CRUD记录的时候，对输入进行设置
-        inputRule:undefined,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        inputRule:cont.inputRule.employee,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[
             {name:'张三',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
             {name:'李四',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
@@ -280,10 +326,10 @@ app.controller('billController',function($scope,cont,helper){
         helper.adjustFooterPosition()
     }
 })
-app.controller('bill.billInfo.Controller',function($scope,cont,helper,$sce,financeHelper){
+app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.bill,//CRUD记录的时候，对输入进行设置
-        inputRule:undefined,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        inputRule:cont.inputRule.bill,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[
             {title:'asb',content:"打车费",billName:'加班费',billDate:new Date(),amount:1000,cDate:new Date()},
             {title:'alu',content:"餐费",billName:'加班费',billDate:new Date(),amount:2000,cDate:new Date()},
@@ -300,7 +346,12 @@ app.controller('bill.billInfo.Controller',function($scope,cont,helper,$sce,finan
         dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
+        
+        modal:{
+            title:'添加'
+        }
     }
+    
 
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
