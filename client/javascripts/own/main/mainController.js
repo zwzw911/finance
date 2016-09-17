@@ -55,50 +55,28 @@ app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
 })
 
 app.controller('mainController',function($scope,cont,helper,$sce){
-
-
-
-
-
-
-
-
-
     helper.adjustFooterPosition()
-/*    $scope.adjustFooterPosition=function(){
-        console.log('main resize')
-        helper.adjustFooterPosition()
-    }*/
+
     window.onresize=function(){
         helper.adjustFooterPosition()
-        
-        //窗口位置大小变化时，重新设置modal的top
-        helper.verticalCenter('CRUDRecorder')
+        helper.verticalModalCenter('CRUDRecorder')
     }
-/*    window.onresize=function(){
-        var offset={leftOffset:0,topOffset:0, widthOffset:-18,heightOffset:0}
-        helper.setCoverEle('coveredEle','coveringEle',offset)
-    }*/
-/*    $('body').resize(function(){
-        helper.adjustFooterPosition()
-    })*/
 })
 
 app.controller('configurationController',function($scope,cont,helper){
+    helper.adjustFooterPosition()
     $scope.adjustFooterPosition=function(){
         //console.log('configuration resize')
         helper.adjustFooterPosition()
     }
-/*    window.onresize=function(){
-        console.log('resize')
-        helper.adjustFooterPosition()
-    }*/
+
 })
 
 /*test=function(){
     console.log('test in')
 }*/
 app.controller('configuration.billType.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
+
     $scope.allData={
         inputAttr:cont.inputAttr.billType,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.billType,//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -121,36 +99,56 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         //从finance/financeCRUDHelper中载入对应CRUD方法
         CRUDOperation:financeCRUDHelper.billType,
 
-        currentOperation:{
+        currentOperation:'',
+/*        {
             'read':function(){},
             'delete':function(idx,recorder){
                 financeCRUDHelper.billType.delete(idx,recorder)
             },
-        }, //当前操作的类型（CRUD）
+        }, //当前操作的类型（CRUD）*/
         currentIdx:-1, //当前操作的记录的idx
+
+        loadCurrentData:function(idx,inputAttr,recorder){
+// console.log('load data')
+            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+        },
+        initAllInputAttr:function(inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initAllInputAttr(inputAttr,opType)
+        },
+        initSingleAllInputAttr:function(field,inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
     }
 
     $scope.modal={
         title:{'create':'添加数据','update':'修改数据'},
         inputBlur:financeHelper.checkInput,
-        inputFocus:financeHelper.initInput,
-        buttonFlag:false,
+        inputFocus:financeHelper.initSingleAllInputAttr,
+        buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            // console.log($scope.modal.buttonFlag)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
-                financeCRUDHelper.billType.create(idx,inputAttr,recorder);
-                $scope.switchDialogStatus()
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.billType.create(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus()
+                }
             },
             'update':function(idx,inputAttr,recorder){
-                financeCRUDHelper.billType.update(idx,inputAttr,recorder);
-                $scope.switchDialogStatus();
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.billType.update(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus();
+                }
             },
         },
-/*        CRUD
-        createNewRecorder:financeCRUDHelper.billType.create,
-        updateRecorder:financeCRUDHelper.billType.update,*/
+        allCheckInput:financeHelper.allCheckInput,
+
     }
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
@@ -169,7 +167,9 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
     }
     
     helper.adjustFooterPosition()
-    
+    //初始化调用
+
+
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
@@ -182,13 +182,12 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
     }
 
-    //需要设modal为show，才能计算modal的高度
-    $('#modal').addClass('show')
-    helper.verticalCenter('CRUDRecorder')
-    $('#modal').removeClass('show')
-    
+//console.log('billtype')
+//    helper.verticalModalCenter('CRUDRecorder')
     $scope.switchDialogStatus=function(){
+
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+        helper.verticalModalCenter('CRUDRecorder')
     }
     
     $scope.setOperationType=function(type,idx){
@@ -196,14 +195,11 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         $scope.allData.currentIdx=idx
     }
 
-    $scope.loadData=function(idx,inputAttr,recorder){
-        for(var field in inputAttr){
-            inputAttr[field]['value']=recorder[idx][]
-
-        }
-    }
+/*$scope.test=function(){
+    console.log($scope.allData.recorder)
+}*/
 })
-app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
+app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.department,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.department,//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -220,8 +216,63 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
         dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
+
+        recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
+
+        //从finance/financeCRUDHelper中载入对应CRUD方法
+        CRUDOperation:financeCRUDHelper.department,
+
+        currentOperation:'',
+/*        {
+            'read':function(){},
+            'delete':function(idx,recorder){
+                financeCRUDHelper.department.delete(idx,recorder)
+            },
+        }, //当前操作的类型（CRUD）*/
+        currentIdx:-1, //当前操作的记录的idx
+
+        loadCurrentData:function(idx,inputAttr,recorder){
+// console.log('load data')
+            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+        },
+        initAllInputAttr:function(inputAttr,opType){
+            $scope.modal.buttonFlag=true;
+            financeHelper.initAllInputAttr(inputAttr,opType)
+        },
+        initSingleAllInputAttr:function(field,inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
     }
 
+    $scope.modal={
+        title:{'create':'添加数据','update':'修改数据'},
+        inputBlur:financeHelper.checkInput,
+        inputFocus:financeHelper.initSingleAllInputAttr,
+        buttonFlag:true,//初始为true
+        allInputValidCheck:function(inputAttr){
+            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            // console.log($scope.modal.buttonFlag)
+        },
+        CRUDOperation:{
+            //此处idx只是为了格式统一，实际没用
+            'create':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.department.create(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus()
+                }
+            },
+            'update':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.department.update(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus();
+                }
+            },
+        },
+        allCheckInput:financeHelper.allCheckInput,
+
+    }
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
     function suggest_state(term) {
@@ -239,14 +290,9 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     }
 
     helper.adjustFooterPosition()
-    //需要设modal为show，才能计算modal的高度
-    $('#modal').addClass('show')
-    helper.verticalCenter('CRUDRecorder')
-    $('#modal').removeClass('show')
+    //初始化调用
+    helper.verticalModalCenter('CRUDRecorder')
 
-    $scope.switchDialogStatus=function(){
-        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
-    }
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
@@ -258,15 +304,23 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     $scope.clickQueryFlag=function(){
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
     }
+
+
+
+    $scope.switchDialogStatus=function(){
+        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+    }
+    $scope.setOperationType=function(type,idx){
+        $scope.allData.currentOperation=type
+        $scope.allData.currentIdx=idx
+    }
 })
-app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
+app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.employee,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.employee,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[
-            {name:'张三',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
-            {name:'李四',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
-        //使用数组，以便判断是否为空
+            //使用数组，以便判断是否为空
         ],
 
         queryFieldEnable:false,//当前 字段查询是否展开
@@ -279,8 +333,62 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
+        recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
+
+        //从finance/financeCRUDHelper中载入对应CRUD方法
+        CRUDOperation:financeCRUDHelper.employee,
+
+        currentOperation:'',
+/*        {
+            'read':function(){},
+            'delete':function(idx,recorder){
+                financeCRUDHelper.employee.delete(idx,recorder)
+            },
+        }, //当前操作的类型（CRUD）*/
+        currentIdx:-1, //当前操作的记录的idx
+
+        loadCurrentData:function(idx,inputAttr,recorder){
+// console.log('load data')
+            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+        },
+        initAllInputAttr:function(inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initAllInputAttr(inputAttr,opType)
+        },
+        initSingleAllInputAttr:function(field,inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
     }
 
+    $scope.modal={
+        title:{'create':'添加数据','update':'修改数据'},
+        inputBlur:financeHelper.checkInput,
+        inputFocus:financeHelper.initSingleAllInputAttr,
+        buttonFlag:true,//初始为true
+        allInputValidCheck:function(inputAttr){
+            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            // console.log($scope.modal.buttonFlag)
+        },
+        CRUDOperation:{
+            'create':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.employee.create(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus()
+                }
+            },
+            'update':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.employee.update(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus();
+                }
+            },
+        },
+        allCheckInput:financeHelper.allCheckInput,
+
+    }
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
     function suggest_state(term) {
@@ -298,14 +406,9 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
     }
 
     helper.adjustFooterPosition()
-    //需要设modal为show，才能计算modal的高度
-    $('#modal').addClass('show')
-    helper.verticalCenter('CRUDRecorder')
-    $('#modal').removeClass('show')
+    //初始化调用
+    helper.verticalModalCenter('CRUDRecorder')
 
-    $scope.switchDialogStatus=function(){
-        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
-    }
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
@@ -318,6 +421,15 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
     }
 
+
+
+    $scope.switchDialogStatus=function(){
+        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+    }
+    $scope.setOperationType=function(type,idx){
+        $scope.allData.currentOperation=type
+        $scope.allData.currentIdx=idx
+    }
 })
 
 app.controller('billController',function($scope,cont,helper){
@@ -325,14 +437,35 @@ app.controller('billController',function($scope,cont,helper){
         //console.log('main resize')
         helper.adjustFooterPosition()
     }
+
+/*    window.onresize=function(){
+        helper.adjustFooterPosition()
+
+        //窗口位置大小变化时，重新设置modal的top
+        //每次都要先瞬时显示dialog，以便计算高度
+        //首先判断当前modal是否显示，没有的话才瞬时显示
+        if(false===$('#modal').hasClass('show')){
+            $('#modal').addClass('show')
+        }
+        helper.verticalCenter('CRUDRecorder')
+        //当前modal没有打开，则瞬时显示计算完毕后，立刻消失
+        if(false===$('#modal').hasClass('show')){
+            $('#modal').removeClass('show')
+        }
+
+    }*/
 })
-app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper){
+
+
+
+app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
+
     $scope.allData={
         inputAttr:cont.inputAttr.bill,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.bill,//CRUD，对输入进行设置（min/maxLength）以及进行检测
         recorder:[
-            {title:'asb',content:"打车费",billName:'加班费',billDate:new Date(),amount:1000,cDate:new Date()},
-            {title:'alu',content:"餐费",billName:'加班费',billDate:new Date(),amount:2000,cDate:new Date()},
+            {title:'asb',content:"打车费",billName:'加班费',billDate:new Date(),amount:1000,reimburser:'张三',cDate:new Date()},
+            {title:'alu',content:"餐费",billName:'加班费',billDate:new Date(),amount:2000,reimburser:'李四',cDate:new Date()},
             //使用数组，以便判断是否为空
         ],
 
@@ -346,13 +479,57 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
         dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
-        
-        modal:{
-            title:'添加'
+        recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
+
+        //从finance/financeCRUDHelper中载入对应CRUD方法
+        CRUDOperation:financeCRUDHelper.bill,
+
+        currentOperation:'',
+
+        currentIdx:-1, //当前操作的记录的idx
+
+        loadCurrentData:function(idx,inputAttr,recorder){
+// console.log('load data')
+            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+        },
+        initAllInputAttr:function(inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initAllInputAttr(inputAttr,opType)
+        },
+        initSingleAllInputAttr:function(field,inputAttr,opType){
+            // console.log('init')
+            $scope.modal.buttonFlag=true;
+            financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
         }
     }
-    
 
+    $scope.modal={
+        title:{'create':'添加数据','update':'修改数据'},
+        inputBlur:financeHelper.checkInput,
+        inputFocus:financeHelper.initSingleAllInputAttr,
+        buttonFlag:true,//初始为true
+        allInputValidCheck:function(inputAttr){
+            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            // console.log($scope.modal.buttonFlag)
+        },
+        CRUDOperation:{
+            'create':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.bill.create(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus()
+                }
+            },
+            'update':function(idx,inputAttr,recorder){
+                if($scope.modal.buttonFlag){
+                    financeCRUDHelper.bill.update(idx,inputAttr,recorder);
+                    $scope.switchDialogStatus();
+                }
+            },
+        },
+        allCheckInput:financeHelper.allCheckInput,
+
+    }
     var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
     function suggest_state(term) {
@@ -370,14 +547,10 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
     }
 
     helper.adjustFooterPosition()
-    //初始时，先瞬时show modal，才能计算modal的高度，之后立刻hide modal
-    $('#modal').addClass('show')
-    helper.verticalCenter('CRUDRecorder')
-    $('#modal').removeClass('show')
+    //初始化调用
+    helper.verticalModalCenter('CRUDRecorder')
 
-    $scope.switchDialogStatus=function(){
-        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
-    }
+
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
@@ -388,5 +561,16 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
 
     $scope.clickQueryFlag=function(){
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
+    }
+
+
+    $scope.switchDialogStatus=function(){
+        $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+        //初始化调用
+        helper.verticalModalCenter('CRUDRecorder')
+    }
+    $scope.setOperationType=function(type,idx){
+        $scope.allData.currentOperation=type
+        $scope.allData.currentIdx=idx
     }
 })

@@ -1533,6 +1533,12 @@ var generateClientDefine=function(obj,level,resultObj){
                     case dataType.number:
                         temInputDataType='number';
                         break;
+                    case dataType.float:
+                        temInputDataType='number';
+                        break;
+                    case dataType.int:
+                        temInputDataType='number';
+                        break;                    
                     case dataType.password:
                         temInputDataType='password';
                         break;

@@ -87,7 +87,7 @@ app.constant('cont',{
                     "msg": "单据类别不能为空"
                 },
                 "maxLength": {
-                    "define": 4,
+                    "define": 40,
                     "msg": "单据类别所包含的字符数不能超过40个"
                 },
                 "minLength": {
@@ -139,7 +139,7 @@ app.constant('cont',{
                     "msg": "单据内容包含的字符数不能少于2个"
                 }
             },
-            "billType": {
+            "billName": {
                 "require": {
                     "define": false,
                     "msg": "单据类别不能为空"
@@ -311,7 +311,7 @@ app.constant('cont',{
                 "errorMsg": "",
                 "validated": "undefined"
             },
-            "billType": {
+            "billName": {
                 "value": "",
                 "originalValue": "",
                 "blur": false,
@@ -338,7 +338,7 @@ app.constant('cont',{
                 "originalValue": "",
                 "blur": false,
                 "focus": true,
-                "inputDataType": "text",
+                "inputDataType": "number",
                 "inputIcon": "",
                 "chineseName": "报销金额",
                 "errorMsg": "",

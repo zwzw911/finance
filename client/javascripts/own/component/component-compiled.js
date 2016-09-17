@@ -146,25 +146,52 @@ app.factory('helper', function (basicHelper) {
 
         /*
         *   说明： bootstrap提供的modal-dialog只能水平居中，本函数用作垂直居中
-        * */
-        verticalCenter: function verticalCenter(dialogId) {
+        *   窗口位置大小变化时，重新设置modal的top
+        *   因为modal在隐藏时，无法计算得到height（试图通过在载入页面时，先瞬时显示在隐藏modal的方法，来获得height，但是失败），所以直接在元素填入height属性，供js提取使用
+        */
+        verticalModalCenter: function verticalModalCenter(dialogId) {
+            /*            let tmpModalOpenFlag=$('#'+dialogId).hasClass('show')
+                        //当前modal没有打开，则瞬时打开，获得高度，以便计算
+                        if(false===tmpModalOpenFlag){
+                            console.log('sadfin')
+                            $('#'+dialogId).addClass('show')
+                            $('#'+dialogId).removeClass('fade')
+                        }*/
+
             var dialog = document.getElementById(dialogId);
+            //因为此函数可能在整个window上监听insize
+            if (null === dialog) {
+                return false;
+            }
             var windowHeight = $(window).height();
-            var dialogHeight = dialog.offsetHeight;
-            /*console.log(windowHeight)
-                        console.log(dialogHeight)*/
+            //var dialogHeight=dialog.offsetHeight
+            //console.log(dialog.offsetHeight)
+            var dialogHeight = dialog.style.height.replace('px', '');
+            /*console.log(dialog.style.height.replace('px',''))
+                        console.log(windowHeight)
+            
+            console.log(dialogHeight)*/
             //60是botstrap中为diaglog定义的上下margin，略微上移，符合人类审美
             var top = (windowHeight - dialogHeight) / 2 - 60;
             if (top < 0) {
                 top = 0;
             }
+            //console.log(top)
             dialog.style.top = top + 'px';
+
+            /*            //当前modal没有打开，则瞬时显示计算完毕后，立刻消失
+                        if(false===tmpModalOpenFlag){
+                            console.log('in')
+            /!*                $('#'+dialogId).removeClass('show')
+                             $('#'+dialogId).addClass('fade')*!/
+                        }*/
         }
     };
 });
 
 app.factory('financeHelper', function (basicHelper) {
-    return {
+    var allFunc = {};
+    allFunc = {
         //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
         deleteQueryValue: function deleteQueryValue(field, value, activateQueryFieldAndValue) {
             for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
@@ -179,18 +206,14 @@ app.factory('financeHelper', function (basicHelper) {
         },
         //将选中的field和value加入到allData.activeQueryValue
         addQueryValue: function addQueryValue(field, value, activateQueryFieldAndValue) {
-            console.log(field);
             if (undefined === activateQueryFieldAndValue[field]) {
                 activateQueryFieldAndValue[field] = [];
             }
             activateQueryFieldAndValue[field].push(value);
-            console.log(activateQueryFieldAndValue);
         },
 
         //检查input value
         checkInput: function checkInput(field, inputRule, inputAttr) {
-            /*            console.log('blur')
-                        console.log(field)*/
             var requireFlag = inputRule[field]['require']['define'];
             var currentValue = inputAttr[field]['value'];
             if (undefined === requireFlag) {
@@ -199,9 +222,11 @@ app.factory('financeHelper', function (basicHelper) {
 
             if ('' === currentValue) {
                 if (false === requireFlag) {
+                    inputAttr[field]['validated'] = true;
                     return true;
                 }
                 if (true === requireFlag) {
+                    inputAttr[field]['validated'] = false;
                     inputAttr[field]['errorMsg'] = inputRule[field]['require']['msg'];
                     return false;
                 }
@@ -239,16 +264,37 @@ app.factory('financeHelper', function (basicHelper) {
                 }
             }
         },
+        //对所有的input进行检测
+        allCheckInput: function allCheckInput(inputRule, inputAttr) {
+            var tmpResult = void 0;
+            for (var singleField in inputAttr) {
+                tmpResult = allFunc.checkInput(singleField, inputRule, inputAttr);
+                if (false === tmpResult) {
+                    return false;
+                }
+            }
+            return true;
+        },
         //init input
-        initInput: function initInput(field, inputAttr) {
-            /*            console.log('focus')
-                        console.log(field)
-                        console.log(inputAttr)*/
+        initSingleAllInputAttr: function initSingleAllInputAttr(field, inputAttr, opType) {
+            // console.log(opType)
+            if ('create' === opType) {
+                inputAttr[field]['value'] = '';
+            }
+            inputAttr[field]['originalValue'] = '';
+            inputAttr[field]['validated'] = 'undefined';
             inputAttr[field]['errorMsg'] = '';
+        },
+        initAllInputAttr: function initAllInputAttr(inputAttr, opType) {
+            // console.log(inputAttr)
+            for (var singleField in inputAttr) {
+                // console.log(singleField)
+                allFunc.initSingleAllInputAttr(singleField, inputAttr, opType);
+            }
+            // console.log(inputAttr)
         },
         //是否所有的input检测都通过了（或者无需）
         allInputValidCheck: function allInputValidCheck(inputAttr) {
-            // console.log('validate')
             for (var field in inputAttr) {
                 if (false === inputAttr[field]['validated']) {
                     // console.log(inputAttr[field])
@@ -256,8 +302,16 @@ app.factory('financeHelper', function (basicHelper) {
                 }
             }
             return true;
+        },
+        //将当前的记录载入到inputAttr
+        loadCurrentData: function loadCurrentData(idx, inputAttr, recorder) {
+            for (var field in inputAttr) {
+                inputAttr[field]['value'] = recorder[idx][field];
+            }
         }
     };
+
+    return allFunc;
 });
 
 //# sourceMappingURL=component-compiled.js.map
