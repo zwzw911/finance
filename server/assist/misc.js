@@ -1548,8 +1548,7 @@ var generateClientDefine=function(obj,level,resultObj){
                     default:
                         temInputDataType='text'
                 }
-                resultObj[key]={value:'',originalValue:'',blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
-                //obj[key]['chineseName']=tmpChineseName
+                resultObj[key]={value:'',originalValue:'',isAutoComplete:false,autoCompleteCollField:'',suggestList:[],blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
             }else{
                 //如果值是对象，递归调用
                 if('object'===typeof obj[key]){

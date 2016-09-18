@@ -159,7 +159,7 @@ app.factory('helper', function (basicHelper) {
                         }*/
 
             var dialog = document.getElementById(dialogId);
-            //因为此函数可能在整个window上监听insize
+            //因为此函数可能在整个window上监听onsize，所以需要判断modal是否存在，不存在直接退出
             if (null === dialog) {
                 return false;
             }

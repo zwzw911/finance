@@ -198,6 +198,10 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'department.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -209,6 +213,10 @@ app.constant('cont',{
             "parentDepartment": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'department.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -222,6 +230,10 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'employee.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -233,6 +245,10 @@ app.constant('cont',{
             "leader": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'employee.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -244,6 +260,10 @@ app.constant('cont',{
             "department": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'department.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -255,6 +275,10 @@ app.constant('cont',{
             "onBoardDate": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "date",
@@ -268,6 +292,10 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'billType.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -279,6 +307,10 @@ app.constant('cont',{
             "parentBillType": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'billType.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -292,6 +324,10 @@ app.constant('cont',{
             "title": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'bill.title',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -303,6 +339,10 @@ app.constant('cont',{
             "content": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'bill.content',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -314,6 +354,10 @@ app.constant('cont',{
             "billName": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'billType.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -325,6 +369,10 @@ app.constant('cont',{
             "billDate": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "date",
@@ -336,6 +384,10 @@ app.constant('cont',{
             "amount": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "number",
@@ -347,6 +399,10 @@ app.constant('cont',{
             "reimburser": {
                 "value": "",
                 "originalValue": "",
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
+                "autoCompleteCollField":'employee.name',//AC从何处获得数据
+                "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",

@@ -137,7 +137,74 @@ app.factory('financeCRUDHelper',function($http){
             'read':function(){
                 _angularDataOp.read()
             },
-        }
+        },
 
+
+        /*  说明：用来完成自动匹配功能。参数只能采用function(term)的格式。
+        *   term:输入的关键字（用来查找匹配的值）
+        */
+        //
+        'suggest_state': {
+            billType:{
+                name:function (term) {
+                    var q = term.toLowerCase().trim();
+                    var results = [];
+                    var states = ['billType1', 'Alaska', 'California', /* ... */];
+                    // Find first 10 states that start with `term`.
+                    for (var i = 0; i < states.length && results.length < 10; i++) {
+                        var state = states[i];
+                        if (state.toLowerCase().indexOf(q) === 0)
+                            results.push({label: state, value: state});
+                    }
+
+                    return results;
+                },
+            },
+            employee:{
+                name:function (term) {
+                    var q = term.toLowerCase().trim();
+                    var results = [];
+                    var states = ['employee1', 'Alaska', 'California', /* ... */];
+                    // Find first 10 states that start with `term`.
+                    for (var i = 0; i < states.length && results.length < 10; i++) {
+                        var state = states[i];
+                        if (state.toLowerCase().indexOf(q) === 0)
+                            results.push({label: state, value: state});
+                    }
+
+                    return results;
+                },
+            },
+            department:{
+                name:function (term) {
+                    var q = term.toLowerCase().trim();
+                    var results = [];
+                    var states = ['department1', 'Alaska', 'California', /* ... */];
+                    // Find first 10 states that start with `term`.
+                    for (var i = 0; i < states.length && results.length < 10; i++) {
+                        var state = states[i];
+                        if (state.toLowerCase().indexOf(q) === 0)
+                            results.push({label: state, value: state});
+                    }
+
+                    return results;
+                },
+            },
+            bill:{
+                title:function (term) {
+                    var q = term.toLowerCase().trim();
+                    var results = [];
+                    var states = ['bill1', 'Alaska', 'California', /* ... */];
+                    // Find first 10 states that start with `term`.
+                    for (var i = 0; i < states.length && results.length < 10; i++) {
+                        var state = states[i];
+                        if (state.toLowerCase().indexOf(q) === 0)
+                            results.push({label: state, value: state});
+                    }
+
+                    return results;
+                },
+            },
+        }
     }
 })

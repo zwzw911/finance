@@ -9,10 +9,12 @@
         <!--<div >-->
         <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-class="{'has-error': 0<value.errorMsg.length}">
           <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
-          <input class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
-          <!--ng-change="modal.checkInput(key)"
+          <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
 
-           -->
+          <div mass-autocomplete ng-if="value.isCRUDAutoComplete">
+            <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
+          </div>
+
           <p class="text-danger" style="height:20px">{{value.errorMsg}}</p>
         </div>
         <!--</div>-->
@@ -42,14 +44,15 @@
             <!--      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px;border-right:none" ng-change="filter()" ng-model="text">
                   <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
 
-                  </select>-->
-            <div mass-autocomplete>
-                <input class="form-control input-sm" ng-model="allData.dirty" mass-autocomplete-item="allData.suggestValue">
-            </div>
+      </select>-->
+      <!--query：只要是非 text 类型的，都要提供autoComplete-->
+      <div mass-autocomplete ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
+        <input class="form-control input-sm" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']">
+      </div>
+      <input class="form-control input-sm" type="allData.inputAttr[allData.selectedQueryField['key']]['inputDataType']" ng-model="allData.selectedQueryFieldValue" ng-if="!allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
 
-
-        </div>
-        <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.dirty.length || 0==allData.selectedQueryField.length,enable:0<allData.dirty.length && 0<allData.selectedQueryField.length}" ng-click="addQueryValue(allData.selectedQueryField.key,allData.dirty,allData.activeQueryValue)">确定</button>
+    </div>
+    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue)">确定</button>
 
     </div>
 
@@ -85,7 +88,6 @@
     <button class="btn btn-primary btn-sm marginL_3"  ng-click="allData.initAllInputAttr(allData.inputAttr,'create');switchDialogStatus();setOperationType('create',-1)" ><span class="fa fa-plus marginR_1 "></span>添加</button>
     <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
     <div class="col-lg-12" >
-        <!--<span style="align-self: center" class="marginB_X h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>-->
 
         <table class="table table-hover table-bordered marginT_4" ng-if="undefined!=allData.recorder[0] ">
             <thead>

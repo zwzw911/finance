@@ -85,12 +85,10 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
 
         queryFieldEnable:false,//当前 字段查询是否展开
 
-        selectedQueryField:'',
+        selectedQueryField:'', //当前选中的查询字段
+        selectedQueryFieldValue:undefined,//下拉菜单中选中的值
         queryField:cont.queryField.billType, //可选的查询字段
-        
-        suggestValue:{suggest:suggest_state},//当前select下拉值
-        selectedValue:undefined,//下拉菜单中选中的值
-        dirty:'', //当前选择的查询值
+
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
 
@@ -100,27 +98,34 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         CRUDOperation:financeCRUDHelper.billType,
 
         currentOperation:'',
-/*        {
-            'read':function(){},
-            'delete':function(idx,recorder){
-                financeCRUDHelper.billType.delete(idx,recorder)
-            },
-        }, //当前操作的类型（CRUD）*/
         currentIdx:-1, //当前操作的记录的idx
 
         loadCurrentData:function(idx,inputAttr,recorder){
-// console.log('load data')
             financeHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllInputAttr:function(inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initAllInputAttr(inputAttr,opType)
         },
         initSingleAllInputAttr:function(field,inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
+    }
+
+    //当前字段对应的coll/field（从哪个coll/field获得值来完成autocomplete功能）
+    var tmpStr,tmpColl,tmpField
+    for(var field in $scope.allData.inputAttr){
+        if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+            if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
+                alert('配置错误')
+            }else{
+                tmpStr=$scope.allData.inputAttr[field]['autoCompleteCollField'].split('.')
+                tmpColl=tmpStr[0]
+                tmpField=tmpStr[1]
+                //添加/修改记录的时候 提供autoComplete功能
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+            }
         }
     }
 
@@ -131,7 +136,6 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
-            // console.log($scope.modal.buttonFlag)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
@@ -150,22 +154,7 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         allCheckInput:financeHelper.allCheckInput,
 
     }
-    var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
 
-    function suggest_state(term) {
-        var q = term.toLowerCase().trim();
-        var results = [];
-
-        // Find first 10 states that start with `term`.
-        for (var i = 0; i < states.length && results.length < 10; i++) {
-            var state = states[i];
-            if (state.toLowerCase().indexOf(q) === 0)
-                results.push({ label: state, value: state });
-        }
-
-        return results;
-    }
-    
     helper.adjustFooterPosition()
     //初始化调用
 
@@ -174,18 +163,15 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
     $scope.addQueryValue=financeHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
-
-        $scope.allData.selectedQueryField=selectedQueryField
+        $scope.allData.selectedQueryFieldValue=''
     }
 
     $scope.clickQueryFlag=function(){
         $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
     }
 
-//console.log('billtype')
-//    helper.verticalModalCenter('CRUDRecorder')
-    $scope.switchDialogStatus=function(){
 
+    $scope.switchDialogStatus=function(){
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
         helper.verticalModalCenter('CRUDRecorder')
     }
@@ -194,11 +180,10 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
         $scope.allData.currentOperation=type
         $scope.allData.currentIdx=idx
     }
-
-/*$scope.test=function(){
-    console.log($scope.allData.recorder)
-}*/
 })
+
+
+
 app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.department,//CRUD记录的时候，对输入进行设置
@@ -208,12 +193,9 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
 
         queryFieldEnable:false,//当前 字段查询是否展开
 
-        selectedQueryField:'',
+        selectedQueryField:'', //当前选中的查询字段
+        selectedQueryFieldValue:undefined,//下拉菜单中选中的值
         queryField:cont.queryField.department, //可选的查询字段
-
-        suggestValue:{suggest:suggest_state},//当前select下拉值
-        selectedValue:undefined,//下拉菜单中选中的值
-        dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
 
@@ -223,16 +205,9 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
         CRUDOperation:financeCRUDHelper.department,
 
         currentOperation:'',
-/*        {
-            'read':function(){},
-            'delete':function(idx,recorder){
-                financeCRUDHelper.department.delete(idx,recorder)
-            },
-        }, //当前操作的类型（CRUD）*/
         currentIdx:-1, //当前操作的记录的idx
 
         loadCurrentData:function(idx,inputAttr,recorder){
-// console.log('load data')
             financeHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllInputAttr:function(inputAttr,opType){
@@ -240,9 +215,23 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
             financeHelper.initAllInputAttr(inputAttr,opType)
         },
         initSingleAllInputAttr:function(field,inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
+    }
+    //当前字段对应的coll/field（从哪个coll/field获得值来完成autocomplete功能）
+    var tmpStr,tmpColl,tmpField
+    for(var field in $scope.allData.inputAttr){
+        if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+            if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
+                alert('配置错误')
+            }else{
+                tmpStr=$scope.allData.inputAttr[field]['autoCompleteCollField'].split('.')
+                tmpColl=tmpStr[0]
+                tmpField=tmpStr[1]
+                //添加/修改记录的时候 提供autoComplete功能
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+            }
         }
     }
 
@@ -253,7 +242,6 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
-            // console.log($scope.modal.buttonFlag)
         },
         CRUDOperation:{
             //此处idx只是为了格式统一，实际没用
@@ -273,32 +261,16 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
         allCheckInput:financeHelper.allCheckInput,
 
     }
-    var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
-
-    function suggest_state(term) {
-        var q = term.toLowerCase().trim();
-        var results = [];
-
-        // Find first 10 states that start with `term`.
-        for (var i = 0; i < states.length && results.length < 10; i++) {
-            var state = states[i];
-            if (state.toLowerCase().indexOf(q) === 0)
-                results.push({ label: state, value: state });
-        }
-
-        return results;
-    }
 
     helper.adjustFooterPosition()
     //初始化调用
-    helper.verticalModalCenter('CRUDRecorder')
+
 
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
-
-        $scope.allData.selectedQueryField=selectedQueryField
+        $scope.allData.selectedQueryFieldValue=''
     }
 
     $scope.clickQueryFlag=function(){
@@ -309,28 +281,32 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
 
     $scope.switchDialogStatus=function(){
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+        helper.verticalModalCenter('CRUDRecorder')
     }
     $scope.setOperationType=function(type,idx){
         $scope.allData.currentOperation=type
         $scope.allData.currentIdx=idx
     }
 })
+
+
+
 app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
     $scope.allData={
         inputAttr:cont.inputAttr.employee,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.employee,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        //使用数组，以便判断是否为空
         recorder:[
-            //使用数组，以便判断是否为空
+            {name:'张三',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
+            {name:'李四',leaderName:"王五",departmentName:'工业部',onBoardDate:new Date(),cDate:new Date()},
+
         ],
 
         queryFieldEnable:false,//当前 字段查询是否展开
 
-        selectedQueryField:'',
+        selectedQueryField:'', //当前选中的查询字段
+        selectedQueryFieldValue:undefined,//下拉菜单中选中的值
         queryField:cont.queryField.employee, //可选的查询字段
-
-        suggestValue:{suggest:suggest_state},//当前select下拉值
-        selectedValue:undefined,//下拉菜单中选中的值
-        dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
@@ -339,12 +315,6 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         CRUDOperation:financeCRUDHelper.employee,
 
         currentOperation:'',
-/*        {
-            'read':function(){},
-            'delete':function(idx,recorder){
-                financeCRUDHelper.employee.delete(idx,recorder)
-            },
-        }, //当前操作的类型（CRUD）*/
         currentIdx:-1, //当前操作的记录的idx
 
         loadCurrentData:function(idx,inputAttr,recorder){
@@ -352,14 +322,28 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
             financeHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllInputAttr:function(inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initAllInputAttr(inputAttr,opType)
         },
         initSingleAllInputAttr:function(field,inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
+    }
+
+    //当前字段对应的coll/field（从哪个coll/field获得值来完成autocomplete功能）
+    var tmpStr,tmpColl,tmpField
+    for(var field in $scope.allData.inputAttr){
+        if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+            if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
+                alert('配置错误')
+            }else{
+                tmpStr=$scope.allData.inputAttr[field]['autoCompleteCollField'].split('.')
+                tmpColl=tmpStr[0]
+                tmpField=tmpStr[1]
+                //添加/修改记录的时候 提供autoComplete功能
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+            }
         }
     }
 
@@ -370,7 +354,6 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
-            // console.log($scope.modal.buttonFlag)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
@@ -389,32 +372,14 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         allCheckInput:financeHelper.allCheckInput,
 
     }
-    var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
-
-    function suggest_state(term) {
-        var q = term.toLowerCase().trim();
-        var results = [];
-
-        // Find first 10 states that start with `term`.
-        for (var i = 0; i < states.length && results.length < 10; i++) {
-            var state = states[i];
-            if (state.toLowerCase().indexOf(q) === 0)
-                results.push({ label: state, value: state });
-        }
-
-        return results;
-    }
 
     helper.adjustFooterPosition()
-    //初始化调用
-    helper.verticalModalCenter('CRUDRecorder')
 
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
-
-        $scope.allData.selectedQueryField=selectedQueryField
+        $scope.allData.selectedQueryFieldValue=''
     }
 
     $scope.clickQueryFlag=function(){
@@ -422,9 +387,9 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
     }
 
 
-
     $scope.switchDialogStatus=function(){
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+        helper.verticalModalCenter('CRUDRecorder')
     }
     $scope.setOperationType=function(type,idx){
         $scope.allData.currentOperation=type
@@ -459,24 +424,21 @@ app.controller('billController',function($scope,cont,helper){
 
 
 app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper){
-
     $scope.allData={
         inputAttr:cont.inputAttr.bill,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.bill,//CRUD，对输入进行设置（min/maxLength）以及进行检测
+        //使用数组，以便判断是否为空
         recorder:[
-            {title:'asb',content:"打车费",billName:'加班费',billDate:new Date(),amount:1000,reimburser:'张三',cDate:new Date()},
-            {title:'alu',content:"餐费",billName:'加班费',billDate:new Date(),amount:2000,reimburser:'李四',cDate:new Date()},
-            //使用数组，以便判断是否为空
+            {title:'asb',content:"打车费",billName:'加班费',billDate:new Date(),amount:1000,cDate:new Date()},
+            {title:'alu',content:"餐费",billName:'加班费',billDate:new Date(),amount:2000,cDate:new Date()},
         ],
 
         queryFieldEnable:false,//当前 字段查询是否展开
 
-        selectedQueryField:'',
+        selectedQueryField:'', //当前选中的查询字段
+        selectedQueryFieldValue:undefined,//下拉菜单中选中的值
         queryField:cont.queryField.bill, //可选的查询字段
 
-        suggestValue:{suggest:suggest_state},//当前select下拉值
-        selectedValue:undefined,//下拉菜单中选中的值
-        dirty:'', //当前选择的查询值
 
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
@@ -485,7 +447,6 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
         CRUDOperation:financeCRUDHelper.bill,
 
         currentOperation:'',
-
         currentIdx:-1, //当前操作的记录的idx
 
         loadCurrentData:function(idx,inputAttr,recorder){
@@ -493,14 +454,28 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
             financeHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllInputAttr:function(inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initAllInputAttr(inputAttr,opType)
         },
         initSingleAllInputAttr:function(field,inputAttr,opType){
-            // console.log('init')
             $scope.modal.buttonFlag=true;
             financeHelper.initSingleAllInputAttr(field,inputAttr,opType)
+        }
+    }
+
+    //当前字段对应的coll/field（从哪个coll/field获得值来完成autocomplete功能）
+    var tmpStr,tmpColl,tmpField
+    for(var field in $scope.allData.inputAttr){
+        if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+            if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
+                alert('配置错误')
+            }else{
+                tmpStr=$scope.allData.inputAttr[field]['autoCompleteCollField'].split('.')
+                tmpColl=tmpStr[0]
+                tmpField=tmpStr[1]
+                //添加/修改记录的时候 提供autoComplete功能
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+            }
         }
     }
 
@@ -511,18 +486,17 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
-            // console.log($scope.modal.buttonFlag)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.bill.create(idx,inputAttr,recorder);
+                    financeCRUDHelper.department.create(idx,inputAttr,recorder);
                     $scope.switchDialogStatus()
                 }
             },
             'update':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.bill.update(idx,inputAttr,recorder);
+                    financeCRUDHelper.department.update(idx,inputAttr,recorder);
                     $scope.switchDialogStatus();
                 }
             },
@@ -530,33 +504,14 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
         allCheckInput:financeHelper.allCheckInput,
 
     }
-    var states = ['Alabama', 'Alaska', 'California', /* ... */ ];
-
-    function suggest_state(term) {
-        var q = term.toLowerCase().trim();
-        var results = [];
-
-        // Find first 10 states that start with `term`.
-        for (var i = 0; i < states.length && results.length < 10; i++) {
-            var state = states[i];
-            if (state.toLowerCase().indexOf(q) === 0)
-                results.push({ label: state, value: state });
-        }
-
-        return results;
-    }
 
     helper.adjustFooterPosition()
-    //初始化调用
-    helper.verticalModalCenter('CRUDRecorder')
-
 
     $scope.deleteQueryValue=financeHelper.deleteQueryValue
     $scope.addQueryValue=financeHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
-
-        $scope.allData.selectedQueryField=selectedQueryField
+        $scope.allData.selectedQueryFieldValue=''
     }
 
     $scope.clickQueryFlag=function(){
@@ -566,7 +521,6 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
 
     $scope.switchDialogStatus=function(){
         $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
-        //初始化调用
         helper.verticalModalCenter('CRUDRecorder')
     }
     $scope.setOperationType=function(type,idx){
