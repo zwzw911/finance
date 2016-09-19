@@ -49,8 +49,10 @@
       <div mass-autocomplete ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
         <input class="form-control input-sm" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']">
       </div>
-      <input class="form-control input-sm" type="allData.inputAttr[allData.selectedQueryField['key']]['inputDataType']" ng-model="allData.selectedQueryFieldValue" ng-if="!allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
+            <input class="form-control input-sm" type="allData.inputAttr[allData.selectedQueryField['key']]['inputDataType']" ng-model="allData.selectedQueryFieldValue" ng-if="!allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">
+            <select class="form-control input-sm"  ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isSelect']" ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
 
+            </select>
     </div>
     <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue)">确定</button>
 

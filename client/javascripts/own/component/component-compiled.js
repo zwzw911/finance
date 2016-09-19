@@ -209,7 +209,13 @@ app.factory('financeHelper', function (basicHelper) {
             if (undefined === activateQueryFieldAndValue[field]) {
                 activateQueryFieldAndValue[field] = [];
             }
-            activateQueryFieldAndValue[field].push(value);
+
+            //如果是select传递过来的值
+            if (value.key) {
+                activateQueryFieldAndValue[field].push(value.key);
+            } else {
+                activateQueryFieldAndValue[field].push(value);
+            }
         },
 
         //检查input value

@@ -19,47 +19,43 @@ var assistError={
         invalidFileSizeInByte:{rc:69909,msg:{client:'无法读取图片文件的大小',server:'图片文件的大小转换成byte后，不正确'}}
     },
     crypt:{
-        genSaltFail:{rc:69500,msg:{client:'生成随机数失败',server:'调用crupt.randomBytes命令失败'}}
+        genSaltFail:{rc:69500,msg:{client:'生成随机数失败',server:'调用crpt.randomBytes命令失败'}}
     },
     misc:{
         validate:{
+            //以下是检查rule，所以错误只需在server端现实，因此只要msg:'error'的格式，而不要client/server
+            unknownDataType:{rc:69800,msg:'数据类型未定义'},
 
-            unknownDataType:{rc:69800,msg:{client:'数据类型未定义',server:''}},
+            mandatoryFiledNotExist:{rc:69802,msg:'字段必需存在'},
+            chineseNameNotString:{rc:68804,msg:'chineseName字段必须是字符串'},
+            chineseNameEmpty:{rc:68806,msg:'chineseName字段不能为空'},
 
-            mandatoryFiledNotExist:{rc:69802,msg:{client:'字段必需存在',server:''}},
-            chineseNameNotString:{rc:68804,msg:{client:'chineseName字段必须是字符串',server:''}},
-            chineseNameEmpty:{rc:68806,msg:{client:'chineseName字段不能为空',server:''}},
+            typeWrong:{rc:69808,msg:'类型不正确'},
 
-            /*        noRelatedItemDefine:{rc:69802,msg:{client:'关联检测项不存在或者没有定义"},
-             relatedItemDefineNotDefine:{rc:69803,msg:{client:'检测项的define没有定义"},*/
-            /*        noType:{rc:69804,msg:{client:'没有定义输入数据的类型'}},
-             noChineseName:{rc:69805,msg:{client:'没有中文名'}},
-             noRule:{rc:69807,msg:{client:'没有任何检测Rule'}},*/
+            needMin:{rc:69810,msg:'type为int时，必需包含Min属性'},
+            needMax:{rc:69812,msg:'type为int时，必需包含Max属性'},
+            needMaxLength:{rc:69814,msg:'type为number时，必需包含maxLength属性'},
 
-            typeWrong:{rc:69808,msg:{client:'类型不正确',server:''}},
+            ruleDefineNotRight:{rc:69816,msg:'rule的定义不正确'},
+            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
+            minLengthDefineNotInt:{rc:69820,msg:'minLength的定义不是整数'},
+            exactLengthDefineNotInt:{rc:69822,msg:'min的定义不是整数'},
+            maxDefineNotInt:{rc:69824,msg:'max的定义不是整数'},
+            minDefineNotInt:{rc:69826,msg:'min的定义不是整数'},
+            requireDefineNotBoolean:{rc:69828,msg:'require的定义不是布尔值'},
+            enumDefineNotArray:{rc:69829,msg:'enum的定义不是数组'},
 
-            needMin:{rc:69810,msg:{client:'type为int时，必需包含Min属性',server:''}},
-            needMax:{rc:69812,msg:{client:'type为int时，必需包含Max属性',server:''}},
-            needMaxLength:{rc:69814,msg:{client:'type为number时，必需包含maxLength属性',server:''}},
+            ruleDefineNotDefine:{rc:69830,msg:'define字段没有定义'},
+            errorFieldNotDefine:{rc:69832,msg:'error字段不存在'},
+            rcFieldNotDefine:{rc:698234,msg:'rc字段不存在'},
+            msgFieldNotDefine:{rc:69836,msg:'msg字段不存在'},
 
-            ruleDefineNotRight:{rc:69816,msg:{client:'rule的定义不正确',server:''}},
-            maxLengthDefineNotInt:{rc:69818,msg:{client:'maxLength的定义不是整数',server:''}},
-            minLengthDefineNotInt:{rc:69820,msg:{client:'minLength的定义不是整数',server:''}},
-            exactLengthDefineNotInt:{rc:69822,msg:{client:'min的定义不是整数',server:''}},
-            maxDefineNotInt:{rc:69824,msg:{client:'max的定义不是整数',server:''}},
-            minDefineNotInt:{rc:69826,msg:{client:'min的定义不是整数',server:''}},
-            requireDefineNotBoolean:{rc:69828,msg:{client:'require的定义不是布尔值',server:''}},
-
-            ruleDefineNotDefine:{rc:69830,msg:{client:'define字段没有定义',server:''}},
-            errorFieldNotDefine:{rc:69832,msg:{client:'error字段不存在',server:''}},
-            rcFieldNotDefine:{rc:698234,msg:{client:'rc字段不存在',server:''}},
-            msgFieldNotDefine:{rc:69836,msg:{client:'msg字段不存在',server:''}},
-
+            //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
             /*              checkInput              */
-            valueNotDefine:{rc:69838,msg:{client:'待检测的输入值未定义',server:''}},
-            valueNotDefineWithRequireTrue:{rc:699839,msg:{client:'待检测的输入值未定义，而rule中require为ture',server:''}},
-            valueEmpty:{rc:69840,msg:{client:'待检测的输入值不能为空',server:''}},
-            valueRelatedRuleNotDefine:{rc:68842,msg:{client:'带检测的输入值没有对应的检测规则',server:''}},
+            valueNotDefine:{rc:69838,msg:'待检测的输入值未定义'},
+            valueNotDefineWithRequireTrue:{rc:699839,msg:'待检测的输入值未定义，而rule中require为ture'},
+            valueEmpty:{rc:69840,msg:'待检测的输入值不能为空'},
+            valueRelatedRuleNotDefine:{rc:68842,msg:'带检测的输入值没有对应的检测规则'},
             //rule chekc fail
             //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
             /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},

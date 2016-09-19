@@ -28,7 +28,8 @@ var ruleType = {
     min: 'min',
     max: 'max',
     format: 'format',
-    equalTo: 'equalTo'
+    equalTo: 'equalTo',
+    'enum': 'enum'
 };
 var dataType = {
     int: Symbol('int'),
@@ -50,7 +51,10 @@ var clientRule = {
     minLength: 'minLength',
     //exactLength:'exactLength',
     min: 'min',
-    max: 'max'
+    max: 'max',
+    'enum': 'enum'
+    /*    format:'format',
+     equalTo:'equalTo',*/
 };
 
 //input对应的rule(server)

@@ -332,7 +332,9 @@ var ruleTypeCheck = {
     format: function format(value, _format) {
         return _format.test(value);
     },
-
+    enum: function _enum(value, define) {
+        return -1 !== define.indexOf(value);
+    },
 
     //以下函数只能支持数值，必须由调用者确保参数的类型
     exceedMax: function exceedMax(value, definedValue) {
@@ -1151,9 +1153,19 @@ var validate = {
                     default:
                         return "" + chineseName + defaultMsg + "的格式不正确";
                 }
+            },
+
+            //itemDefine无用，只是为了格式统一
+            enum: function _enum(chineseName, itemDefine, useDefaultValueFlag) {
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false;
+                }
+                var defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return "" + chineseName + defaultMsg + "不正确";
             }
         },
-        //require,maxLength,minLength,exactLength,min,max,format
+        //检测数据类型
+        //require,maxLength,minLength,exactLength,min,max,format,format
         //返回值：true/false/unknownDataType
         checkDataTypeBaseOnTypeDefine: function checkDataTypeBaseOnTypeDefine(value, type) {
             switch (type) {
@@ -1197,11 +1209,10 @@ var validate = {
 
                         //console.log(inputRules[inputRule][mandatoryField])
                         if (false === dataTypeCheck.isSetValue(inputRules[inputRule][mandatoryField])) {
+                            //console.log()
                             rc['rc'] = validateError.mandatoryFiledNotExist.rc;
                             rc['msg'] = inputRule + "的字段" + mandatoryField + validateError.mandatoryFiledNotExist.msg;
-                            //console.log(rc)
                             return rc;
-                            //return validateError.mandatoryFiledNotExist
                         }
                     }
                     //1.5 检查chineseName是否为字符，是否空，type是否在指定范围内（require由后面的rule check统一处理）
@@ -1230,7 +1241,7 @@ var validate = {
                     rc['msg'] = inputRule + "的" + validateError.chineseNameEmpty.msg;
                     return rc;
                 }
-                //2 关联字段是否存在
+                //2 某些类型必须有关联rule
                 //console.log(inputRules[inputRule]['type'])
                 switch (inputRules[inputRule]['type']) {
 
@@ -1265,37 +1276,32 @@ var validate = {
                 //不用forEach，因为其参数为function，遇到错误，return，只是退出forEach的function，而不是整个function
                 //for (let i=0;i<rulesLength;i++){
                 for (var singleRule in ruleType) {
-                    //console.log('in')
-                    //let singleRule=rules[i]
+                    //检查rule中必须的字段是否存在（rule定义是否正确）
                     if (true === dataTypeCheck.isSetValue(inputRules[inputRule][singleRule])) {
                         if (false === dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['define'])) {
-                            //console.log(inputRules[inputRule][singleRule])
                             rc['rc'] = validateError.ruleDefineNotDefine.rc;
                             rc['msg'] = inputRule + "的" + singleRule + "的" + validateError.ruleDefineNotDefine.msg;
                             return rc;
-                            //return  validateError.ruleDefineNotDefine
                         }
                         if (false === dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error'])) {
                             rc['rc'] = validateError.errorFieldNotDefine.rc;
                             rc['msg'] = inputRule + "的" + singleRule + "的" + validateError.errorFieldNotDefine.msg;
                             return rc;
-                            //return validateError.errorFieldNotDefine
                         }
                         if (false === dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error']['rc'])) {
                             rc['rc'] = validateError.rcFieldNotDefine.rc;
                             rc['msg'] = inputRule + "的" + singleRule + "的" + validateError.rcFieldNotDefine.msg;
                             return rc;
-                            //return validateError.rcFieldNotDefine
                         }
-                        if (false === dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error']['msg'])) {
-                            rc['rc'] = validateError.msgFieldNotDefine.rc;
-                            rc['msg'] = inputRule + "的" + singleRule + "的" + validateError.msgFieldNotDefine.msg;
-                            return rc;
-                            //return validateError.msgFieldNotDefine
-                        }
+                        //rule的error['msg']由函数generateErrorMsg实时产生，所以无需检测
+                        /*                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error']['msg'])){
+                                                    rc['rc']=validateError.msgFieldNotDefine.rc
+                                                    rc['msg']=`${inputRule}的${singleRule}的${validateError.msgFieldNotDefine.msg}`
+                                                    return rc
+                                                }*/
 
+                        //检测rule define是否正确
                         var singleRuleDefine = inputRules[inputRule][singleRule]['define'];
-
                         switch (singleRule) {
                             case 'require':
                                 if (false !== singleRuleDefine && true !== singleRuleDefine) {
@@ -1343,19 +1349,16 @@ var validate = {
                                 break;
                             case 'equalTo':
                                 break;
+                            case 'enum':
+                                if (false === dataTypeCheck.isArray(singleRuleDefine)) {
+                                    rc['rc'] = validateError.maxDefineNotInt.rc;
+                                    rc['msg'] = inputRule + "的" + validateError.enumDefineNotArray.msg;
+                                    return rc;
+                                }
+                                break;
                             default:
                                 break;
                         }
-
-                        //                检测error['rc']是否定义
-                        /*                        if(undefined===inputRules[inputRule][singleRule]['error'] || null===undefined===inputRules[inputRule][singleRule]['error'] ){
-                                                    return validateError.errorFieldNotDefine
-                                                }
-                                                if(undefined===inputRules[inputRule][singleRule]['error']['rc'] || null===undefined===inputRules[inputRule][singleRule]['error']['rc'] ){
-                                                    return validateError.rcFieldNotDefine
-                                                }*/
-                        /*                if(false===defineOkFlag){
-                           }*/
                     }
                 }
             }
@@ -1443,6 +1446,7 @@ var validate = {
             //var currentItemValue=inputValue[itemName]['value']
             //0 当前待检测的value，有没有对应的检测rule定义
             if (false === dataTypeCheck.isSetValue(inputItemDefine[itemName])) {
+                //console.log(itemName)
                 rc[itemName]['rc'] = validateError.valueRelatedRuleNotDefine.rc;
                 rc[itemName]['msg'] = "" + itemName + validateError.valueRelatedRuleNotDefine.msg;
                 return rc;
@@ -1578,9 +1582,6 @@ var validate = {
                             break;
                         case "exactLength":
                             if (false === emptyFlag) {
-                                /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
-                                 return validateError.exactLengthDefineNotInt
-                                 }*/
                                 if (false === ruleTypeCheck.exactLength(currentItemValue, ruleDefine)) {
                                     rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                     rc[itemName]['msg'] = validate._private.generateErrorMsg.exactLength(currentChineseName, ruleDefine, useDefaultValueFlag);
@@ -1589,26 +1590,14 @@ var validate = {
                             break;
                         case 'max':
                             if (false === emptyFlag) {
-                                /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
-                                 return validateError.maxDefineNotInt
-                                 }*/
-
                                 if (true === ruleTypeCheck.exceedMax(currentItemValue, ruleDefine)) {
                                     rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                     rc[itemName]['msg'] = validate._private.generateErrorMsg.max(currentChineseName, ruleDefine, useDefaultValueFlag, inputItemDefine[itemName]['unit']);
-                                    /*                                if('expireTimeOfRejectTimes'===itemName){
-                                     console.log(rc)
-                                     console.log(inputItemDefine[itemName]['unit'])
-                                     }*/
                                 }
                             }
                             break;
                         case 'min':
                             if (false === emptyFlag) {
-                                /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
-                                 return validateError.minDefineNotInt
-                                 }*/
-                                //if(true===ruleTypeCheck.exceedMin(currentItemValue,ruleDefine,inputItemDefine[itemName]['unit'])){
                                 if (true === ruleTypeCheck.exceedMin(currentItemValue, ruleDefine)) {
                                     rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                     rc[itemName]['msg'] = validate._private.generateErrorMsg.min(currentChineseName, ruleDefine, useDefaultValueFlag, inputItemDefine[itemName]['unit']);
@@ -1622,38 +1611,33 @@ var validate = {
                             }
                             break;
                         case "equalTo":
-                            //1
                             var equalToFiledName = inputItemDefine[itemName][singleItemRuleName]['define'];
-                            //if(false===emptyFlag){
-                            //    rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
-                            //    rc[itemName]['msg']=generateErrorMsg.format(currentChineseName,ruleDefine,useDefaultValueFlag)
-                            //}
+
                             if (true === emptyFlag || true === dataTypeCheck.isEmpty(inputValue[equalToFiledName]['value']) || inputValue[itemName]['value'] !== inputValue[equalToFiledName]['value']) {
                                 rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                 rc[itemName]['msg'] = validate._private.generateErrorMsg.equalTo(currentChineseName, inputItemDefine[equalToFiledName]['chineseName']);
                             }
                             break;
+                        case 'enum':
+                            if (false === ruleTypeCheck.enum(currentItemValue, ruleDefine)) {
+                                rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
+                                rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, ruleDefine, useDefaultValueFlag);
+                            }
+                            break;
                         default:
-
                     }
                 }
                 //检查出错误后，不在继续检测当前item的其它rule，而是直接检测下一个item
                 if (0 !== rc[itemName].rc) {
-                    //console.log('skip')
                     break;
                 }
             }
             //没有检测出错误，对inpputValue的value进行sanity操作
             var tmpType = inputItemDefine[itemName]['type'];
-            /*            console.log(tmpType)
-                        console.log(currentItemValue)*/
             if (tmpType === dataType.int || tmpType === dataType.float || tmpType === dataType.date) {
                 //对默认值或者inputValue进行sanity
                 inputValue[itemName]['value'] = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, tmpType);
-                //console.log(inputValue)
             }
-
-            //console.log(rc)
         }
 
         return rc;
@@ -1694,7 +1678,11 @@ var generateClientDefine = function generateClientDefine(obj, level, resultObj) 
                     default:
                         temInputDataType = 'text';
                 }
-                resultObj[key] = { value: '', originalValue: '', isAutoComplete: false, autoCompleteCollField: '', suggestList: [], blur: false, focus: true, inputDataType: temInputDataType, inputIcon: "", chineseName: tmpChineseName, errorMsg: "", validated: 'undefined' };
+
+                //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
+                //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
+                //isSelect:input是否为select
+                resultObj[key] = { value: '', originalValue: '', isSelect: false, selectOption: [], isQueryAutoComplete: false, isCRUDAutoComplete: false, autoCompleteCollField: '', suggestList: [], blur: false, focus: true, inputDataType: temInputDataType, inputIcon: "", chineseName: tmpChineseName, errorMsg: "", validated: 'undefined' };
             } else {
                 //如果值是对象，递归调用
                 if ('object' === _typeof(obj[key])) {
@@ -1736,9 +1724,6 @@ var generateClientRule = function generateClientRule(obj, level, resultObj) {
                         }
                     }
                 }
-                /*                let tmpChineseName=obj[key]['chineseName']
-                 obj[key]={}
-                 obj[key]['chineseName']=tmpChineseName*/
             } else {
                 //如果值是对象，递归调用
                 if ('object' === _typeof(obj[key])) {
@@ -1802,8 +1787,7 @@ var objectIdToRealField = function objectIdToRealField(origObj, matchList) {
             tmp = matchList[coll][field].split('.');
             tmpColl = tmp[0];
             tmpField = tmp[1];
-            /*            console.log(tmpColl)
-                        console.log(tmpField)*/
+
             //如果是attr（通过判断是否有chineseName），保存原始的chineseName，但是inputDataType换成相关字段的类型
             if (origObj[coll][field]['chineseName']) {
                 origObj[coll][field]['inputDataType'] = origObj[tmpColl][tmpField]['inputDataType'];

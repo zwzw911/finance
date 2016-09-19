@@ -68,6 +68,8 @@ let fieldDefine={
     employee:{
         name:{type:String},
         leader:{type:mongoose.Schema.Types.ObjectId,ref:"employees"},
+        gender:{type:String},
+        birthDay:{type:Date},
         department:{type:mongoose.Schema.Types.ObjectId,ref:"departments"},
         onBoardDate:{type:Date},
         cDate:{type:Date,default:Date.now},
@@ -110,7 +112,7 @@ let ruleMatch={
     format:'match',
 }
 //console.log(fieldDefine['department']['parentDepartment'])
-/*                          设置validator                          */
+/*                          将inputRule中的rule定义转换成mongoose内置validator                          */
 //根据flag确实是否要为field设置内建validator
 if(true===mongoSetting.schemaOptions.validateFlag){
     for(let singleCollectionsName in inputRule){//读取每个collection
@@ -142,8 +144,8 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 }
 
 
-//console.log(fieldDefine['department']['name'])
-//console.log(fieldDefine['employee']['leader'])
+console.log(fieldDefine['department']['name'])
+console.log(fieldDefine['employee']['leader'])
 
 var departmentSchema=new mongoose.Schema(
     fieldDefine['department'],

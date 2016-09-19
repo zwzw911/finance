@@ -67,6 +67,18 @@ var inputRule={
             require: {define: false, error: {rc: 10024},mongoError:{rc:20024,msg:'员工姓名不能为空'}},
             format:{define:regex.objectId,error:{rc:10026},mongoError:{rc:20026,msg:'所属部门的id格式不正确'}},
         },
+        gender:{
+            chineseName: '性别',
+            default:'male',
+            type:inputDataType.string,
+            require: {define: false, error: {rc: 10027},mongoError:{rc:20027,msg:'性别不能为空'}},
+            'enum':{define:['male','female'],error:{rc:10028},mongoError:{rc:20028,msg:'性别不正确'}},
+        },
+        birthDay:{
+            chineseName: '出生日期',
+            type:inputDataType.date,
+            require: {define: false, error: {rc: 10028},mongoError:{rc:20028,msg:'出生日期不能为空'}},
+        },
         department:{
             chineseName:'所属部门',
             type:inputDataType.string,

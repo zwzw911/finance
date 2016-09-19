@@ -117,6 +117,7 @@ app.controller('configuration.billType.Controller',function($scope,cont,basicHel
     var tmpStr,tmpColl,tmpField
     for(var field in $scope.allData.inputAttr){
         if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+
             if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
                 alert('配置错误')
             }else{
@@ -223,6 +224,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     var tmpStr,tmpColl,tmpField
     for(var field in $scope.allData.inputAttr){
         if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+
             if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
                 alert('配置错误')
             }else{
@@ -335,6 +337,7 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
     var tmpStr,tmpColl,tmpField
     for(var field in $scope.allData.inputAttr){
         if(true===$scope.allData.inputAttr[field]['isQueryAutoComplete'] || true===$scope.allData.inputAttr[field]['isCRUDAutoComplete']){
+
             if(''===$scope.allData.inputAttr[field]['autoCompleteCollField']){
                 alert('配置错误')
             }else{

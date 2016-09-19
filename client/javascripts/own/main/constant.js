@@ -67,6 +67,25 @@ app.constant('cont',{
                     "msg": "员工姓名包含的字符数不能少于2个"
                 }
             },
+            "gender": {
+                "require": {
+                    "define": false,
+                    "msg": "性别的默认值不能为空"
+                },
+                "enum": {
+                    "define": [
+                        "male",
+                        "female"
+                    ],
+                    "msg": "性别的默认值不正确"
+                }
+            },
+            "birthDay": {
+                "require": {
+                    "define": false,
+                    "msg": "出生日期不能为空"
+                }
+            },
             "department": {
                 "require": {
                     "define": true,
@@ -257,6 +276,39 @@ app.constant('cont',{
                 "errorMsg": "",
                 "validated": "undefined"
             },
+            "gender": {
+                "value": "",
+                "originalValue": "",
+                isSelect:true,
+                selectOption:[{key:'male',value:'男'},{key:'female',value:'女'}],
+                "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false,
+                "autoCompleteCollField": "",
+                "suggestList": [],
+                //"suggestList": {suggest:function(term){return {key:'male',value:'男'},{key:'female',value:'女'}}},
+                "blur": false,
+                "focus": true,
+                "inputDataType": "text",
+                "inputIcon": "",
+                "chineseName": "性别",
+                "errorMsg": "",
+                "validated": "undefined"
+            },
+            "birthDay": {
+                "value": "",
+                "originalValue": "",
+                "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false,
+                "autoCompleteCollField": "",
+                "suggestList": [],
+                "blur": false,
+                "focus": true,
+                "inputDataType": "date",
+                "inputIcon": "",
+                "chineseName": "出生日期",
+                "errorMsg": "",
+                "validated": "undefined"
+            },
             "department": {
                 "value": "",
                 "originalValue": "",
@@ -434,6 +486,14 @@ app.constant('cont',{
             {
                 "value": "上级主管",
                 "key": "leader"
+            },
+            {
+                "value": "性别",
+                "key": "gender"
+            },
+            {
+                "value": "出生日期",
+                "key": "birthDay"
             },
             {
                 "value": "所属部门",

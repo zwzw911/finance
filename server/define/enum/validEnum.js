@@ -28,6 +28,7 @@ var ruleType={
     max:'max',
     format:'format',
     equalTo:'equalTo',
+    'enum':'enum',
 }
 var dataType={
     int:Symbol('int'),
@@ -43,7 +44,7 @@ var dataType={
     // format:Symbol('regex'),
 }
 
-//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
+/*//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
 var clientRule={
     require:'require',
     maxLength:'maxLength',
@@ -51,9 +52,10 @@ var clientRule={
     //exactLength:'exactLength',
     min:'min',
     max:'max',
-    /*    format:'format',
-     equalTo:'equalTo',*/
-}
+    'enum':'enum'
+    /!*    format:'format',
+     equalTo:'equalTo',*!/
+}*/
 
 //input对应的rule(server)
 /*var ruleType={
@@ -82,6 +84,7 @@ var clientRuleType={
     //exactLength:'exactLength',
     min:'min',
     max:'max',
+    'enum':'enum',
 /*    format:'format',
     equalTo:'equalTo',*/
 }
@@ -89,7 +92,7 @@ var clientRuleType={
 exports.enum={
     dataType,
     ruleType,
-    clientRule,
+    //clientRule,
     otherFiledName,
     clientRuleType,
 }

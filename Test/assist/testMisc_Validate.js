@@ -5,8 +5,8 @@
 require("babel-polyfill");
 require("babel-core/register")
 var testModule=require('../../server/assist/misc').func;
-var miscError=require('../../server/define/error/nodeError').nodeError.miscError
-var validateError=miscError.validate
+var miscError=require('../../server/define/error/nodeError').nodeError.assistError
+var validateError=miscError.misc.validate
 /*          for generateRandomString test       */
 var regex=require('../../server/define/regex/regex').regex
 var dataType=require('../../server/define/enum/validEnum').enum.dataType
@@ -306,7 +306,7 @@ var checkInput=function(test){
     let rule,value,tmpDataType,result,tmp
     let error={rc:1234,msg:''}
 
-    test.expect(9)
+    test.expect(11)
 
     rule={
         userName:{
@@ -387,6 +387,25 @@ var checkInput=function(test){
     }
     result=func(value,rule)
     test.equal(result.userName.rc,rule.userName.exactLength.error.rc,'exactLength check fail')
+
+    rule={
+        user:{
+            chineseName:'用户',
+            type:dataType.string,
+            default:'男',
+            require:{define:true,error:error},
+            'enum':{define:['男','女'],error:{rc:1000,msg:'错误'}}
+        }
+    }
+
+    value={user:{value:'男'}}
+    result=func(value,rule)
+    //console.log(result)
+    test.equal(result.user.rc,0,'value in enum check fail')
+
+    value={user:{value:'人妖'}}
+    result=func(value,rule)
+    test.equal(result.user.rc,rule.user.enum.error.rc,'value not in enum check fail')
 
     test.done()
 }
