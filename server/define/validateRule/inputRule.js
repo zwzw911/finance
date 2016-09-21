@@ -69,7 +69,7 @@ var inputRule={
         },
         gender:{
             chineseName: '性别',
-            default:'male',
+            'default':'male',
             type:inputDataType.string,
             require: {define: false, error: {rc: 10027},mongoError:{rc:20027,msg:'性别不能为空'}},
             'enum':{define:['male','female'],error:{rc:10028},mongoError:{rc:20028,msg:'性别不正确'}},
@@ -164,6 +164,7 @@ var inputRule={
         },
         amount:{
             chineseName:'报销金额',
+            default:'1.20',
             type:inputDataType.float,
             require: {define: true, error: {rc: 10078},mongoError:{rc:20078,msg:'报销金额不能为空'}},
             min:{define:0,error: {rc: 10080},mongoError:{rc:20080,msg:'报销金额不能小于0元'}},

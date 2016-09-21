@@ -38,7 +38,7 @@ var toObjectOptions = {
     getters: true, //apply all getters (path and virtual getters)
     virtuals: true, //apply virtual getters (can override getters option)
     minimize: true, // remove empty objects (defaults to true)
-    depopulate: false, //depopulate any populated paths, replacing them with their original refs (defaults to false)
+    depopulate: false, //如果有外键，直接使用外键而不是外键对应的记录(defaults to false)
     versionKey: false, //whether to include the version key (defaults to true)        //not include version key in result
     retainKeyOrder: false // keep the order of object keys. If this is set to true, Object.keys(new Doc({ a: 1, b: 2}).toObject()) will always produce ['a', 'b'] (defaults to false)
 };
@@ -102,7 +102,7 @@ var ruleMatch = {
     format: 'match'
 };
 //console.log(fieldDefine['department']['parentDepartment'])
-/*                          将inputRule中的rule定义转换成设置validator                          */
+/*                          将inputRule中的rule定义转换成mongoose内置validator                          */
 //根据flag确实是否要为field设置内建validator
 if (true === mongoSetting.schemaOptions.validateFlag) {
     for (var singleCollectionsName in inputRule) {

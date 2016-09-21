@@ -70,10 +70,10 @@ var inputRule = {
         },
         gender: {
             chineseName: '性别',
-            default: '男',
+            'default': 'male',
             type: inputDataType.string,
             require: { define: false, error: { rc: 10027 }, mongoError: { rc: 20027, msg: '性别不能为空' } },
-            'enum': { define: ['男', '女'], error: { rc: 10028 }, mongoError: { rc: 20028, msg: '性别不正确' } }
+            'enum': { define: ['male', 'female'], error: { rc: 10028 }, mongoError: { rc: 20028, msg: '性别不正确' } }
         },
         birthDay: {
             chineseName: '出生日期',

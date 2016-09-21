@@ -50,12 +50,20 @@ var assistError={
             rcFieldNotDefine:{rc:698234,msg:'rc字段不存在'},
             msgFieldNotDefine:{rc:69836,msg:'msg字段不存在'},
 
+            //以下只需返回给server，因此只要msg:'error'的格式，而不要client/server
+            /*              sanity rule             */
+            ruleDefineWrong:function(coll,field,rule){return {rc:69840,msg:`${coll}的字段${field}中的rule ${rule}的define值不正确`}},
+
+
+
+
+
             //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
             /*              checkInput              */
-            valueNotDefine:{rc:69838,msg:'待检测的输入值未定义'},
-            valueNotDefineWithRequireTrue:{rc:699839,msg:'待检测的输入值未定义，而rule中require为ture'},
-            valueEmpty:{rc:69840,msg:'待检测的输入值不能为空'},
-            valueRelatedRuleNotDefine:{rc:68842,msg:'带检测的输入值没有对应的检测规则'},
+            valueNotDefine:{rc:69860,msg:'待检测的输入值未定义'},
+            valueNotDefineWithRequireTrue:{rc:699862,msg:'待检测的输入值未定义，而rule中require为ture'},
+            valueEmpty:{rc:69864,msg:'待检测的输入值不能为空'},
+            valueRelatedRuleNotDefine:{rc:68868,msg:'带检测的输入值没有对应的检测规则'},
             //rule chekc fail
             //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
             /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},

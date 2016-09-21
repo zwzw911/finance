@@ -1366,58 +1366,89 @@ var validate = {
             return rightResult;
         },
 
-        //必须在checkRuleBaseOnRuleDefine通过之后执行
+        //必须在checkRuleBaseOnRuleDefine通过之后执行（保证不会返回false，而是返回sanity的值）
         //对rule的define转换成正确的类型，便于后续操作(无需执行类型转换)
-        sanityRule: function sanityRule(rules) {
-            for (var singleRule in rules) {
-                for (var singleFiled in rules[singleRule]) {
-                    //let singleRuleField
-                    switch (singleFiled) {
-                        case 'chineseName':
-                            //无需sanity
-                            break;
-                        case 'default':
-                            //根据type进行sanity
-                            rules[singleRule][singleFiled] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled], rules[singleRule]['type']);
-                            break;
-                        case 'type':
-                            //无需sanity
-                            break;
-                        case 'require':
-                            //无需sanity，checkRuleBaseOnRuleDefine已经判断过
-                            break;
-                        case 'minLength':
-                            //console.log(rules[singleRule][singleFiled])
-                            rules[singleRule][singleFiled]['define'] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'], dataType.int);
-                            break;
-                        case 'maxLength':
-                            rules[singleRule][singleFiled]['define'] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'], dataType.int);
-                            break;
-                        case 'exactLength':
-                            rules[singleRule][singleFiled]['define'] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'], dataType.int);
-                            break;
-                        case 'min':
-                            rules[singleRule][singleFiled]['define'] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'], dataType.int);
-                            break;
-                        case 'max':
-                            rules[singleRule][singleFiled]['define'] = validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'], dataType.int);
-                            break;
-                        case 'format':
-                            //无需sanity
-                            break;
-                        case 'equalTo':
-                            //无需sanity
-                            break;
+        //在maintain中运行，作为rule check的一部分，而不是在每次check input的时候进行，不然太耗cpu
+        //对每个rule的define进行检查，是否合格（例如，1.1x可能会被转换成1.1使用，要找出这样的错误）
+        sanityRule: function sanityRule(allRules) {
+            var mandatoryFields = ['default', 'minLength', 'maxLength', 'exactLength', 'min', 'max'];
+            for (var singleCollName in allRules) {
+                for (var singleFiledName in allRules[singleCollName]) {
+                    for (var singleRuleName in allRules[singleCollName][singleFiledName]) {
+                        // console.log(`${singleCollName} ${singleFiledName} ${singleRuleName}`)
+                        if (-1 !== mandatoryFields.indexOf(singleRuleName)) {
+
+                            var singleRule = allRules[singleCollName][singleFiledName][singleRuleName];
+                            if ('default' === singleRuleName) {
+                                if (dataType.string === allRules[singleCollName][singleFiledName]['type']) {
+                                    if (false === validate._private.checkDataTypeBaseOnTypeDefine(singleRule, allRules[singleCollName][singleFiledName]['type'])) {
+                                        /*                                        console.log(singleRule)
+                                                                                console.log(allRules[singleCollName][singleFiledName]['type'])
+                                                                                console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
+                                        return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
+                                    }
+                                }
+                                if (dataType.int === allRules[singleCollName][singleFiledName]['type'] || dataType.float === allRules[singleCollName][singleFiledName]['type'] || dataType.number === allRules[singleCollName][singleFiledName]['type']) {
+                                    if (singleRule !== allRules[singleCollName][singleFiledName]['type']) {
+                                        if (false === validate._private.checkDataTypeBaseOnTypeDefine(singleRule, allRules[singleCollName][singleFiledName]['type'])) {
+                                            /*                                            console.log(singleRule)
+                                                                                        console.log(allRules[singleCollName][singleFiledName]['type'])
+                                                                                        console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
+                                            return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
+                                        }
+                                    }
+                                }
+                            }
+                            if ('minLength' === singleRuleName || 'maxLength' === singleRuleName || 'exactLength' === singleRuleName || 'min' === singleRuleName || 'max' === singleRuleName) {
+                                if (singleRule['define'] !== validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'], dataType.int)) {
+
+                                    return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
+                                }
+                            }
+                        }
+
+                        /*                       switch (singleFiled){
+                                                   case 'chineseName': //无需sanity
+                                                       break
+                                                   case 'default': //根据type进行sanity
+                                                       rules[singleRule][singleFiled]=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled],rules[singleRule]['type'])
+                                                       break;
+                                                   case 'type':  //无需sanity
+                                                       break;
+                                                   case 'require':  //无需sanity，checkRuleBaseOnRuleDefine已经判断过
+                                                       break
+                                                   case 'minLength':
+                                                       //console.log(rules[singleRule][singleFiled])
+                                                       rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                                                       break;
+                                                   case 'maxLength':
+                                                       rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                                                       break;
+                                                   case 'exactLength':
+                                                       rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                                                       break;
+                                                   case 'min':
+                                                       rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                                                       break;
+                                                   case 'max':
+                                                       rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                                                       break;
+                                                   case 'format':  //无需sanity
+                                                       break;
+                                                   case 'equalTo': //无需sanity
+                                                       break;
+                                               }*/
                     }
                 }
             }
+            return rightResult;
         }
     },
     /*********************************************/
     /*         主函数，检测input并返回结果        */
     /*********************************************/
     //inputValue:{username:{value:xxx},password:{value:yyy}}
-    //inputItemDefine： adminLogin。每个页面有不同的定义
+    //inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
     checkInput: function checkInput(inputValue, inputItemDefine) {
         var rc = {};
         var tmpResult = void 0;
@@ -1436,7 +1467,8 @@ var validate = {
             return tmpResult;
         }
         //将rule中的define转换成合适的类型（之后进行判断的时候就不用再次转换）
-        validate._private.sanityRule(inputItemDefine);
+        //直接在maintain中完成，省得每次checkInput都调用，浪费CPU
+        // validate._private.sanityRule(inputItemDefine)
         //console.log(inputItemDefine)
 
         for (var itemName in inputValue) {
