@@ -1388,6 +1388,7 @@ var validate = {
                                         return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
                                     }
                                 }
+                                //对于数值，如果是字符形式，也算通过
                                 if (dataType.int === allRules[singleCollName][singleFiledName]['type'] || dataType.float === allRules[singleCollName][singleFiledName]['type'] || dataType.number === allRules[singleCollName][singleFiledName]['type']) {
                                     if (singleRule !== allRules[singleCollName][singleFiledName]['type']) {
                                         if (false === validate._private.checkDataTypeBaseOnTypeDefine(singleRule, allRules[singleCollName][singleFiledName]['type'])) {
@@ -1682,7 +1683,7 @@ var validate = {
  * level：深度（2）
  * resultObj: 因为采用递归调用，所以结果参数，而不是直接return结果
  */
-var generateClientDefine = function generateClientDefine(obj, level, resultObj) {
+var generateClientInputAttr = function generateClientInputAttr(obj, level, resultObj) {
     // let resultObj={}
     if ('object' === (typeof obj === "undefined" ? "undefined" : _typeof(obj))) {
         for (var key in obj) {
@@ -1714,13 +1715,13 @@ var generateClientDefine = function generateClientDefine(obj, level, resultObj) 
                 //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
                 //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
                 //isSelect:input是否为select
-                resultObj[key] = { value: '', originalValue: '', isSelect: false, selectOption: [], isQueryAutoComplete: false, isCRUDAutoComplete: false, autoCompleteCollField: '', suggestList: [], blur: false, focus: true, inputDataType: temInputDataType, inputIcon: "", chineseName: tmpChineseName, errorMsg: "", validated: 'undefined' };
+                resultObj[key] = { value: '', originalValue: '', isSelect: false, selectOption: [], isQueryAutoComplete: false, isCRUDAutoComplete: false, autoCompleteCollField: '', suggestList: {}, blur: false, focus: true, inputDataType: temInputDataType, inputIcon: "", chineseName: tmpChineseName, errorMsg: "", validated: 'undefined' };
             } else {
                 //如果值是对象，递归调用
                 if ('object' === _typeof(obj[key])) {
                     var currentLvl = level - 1;
                     //console.log(currentLvl)
-                    generateClientDefine(obj[key], currentLvl, resultObj[key]);
+                    generateClientInputAttr(obj[key], currentLvl, resultObj[key]);
                 }
                 /*                else{
                  obj[key]={}
@@ -1769,8 +1770,8 @@ var generateClientRule = function generateClientRule(obj, level, resultObj) {
 };
 
 //根据skipList提供的key，在origObj删除对应key
-//专门使用：使用generateClientRule或者generateClientDefine，是从mongodb structure中直接转换，但是其中有些字段，例如cDate，是后台自动创建，无需前台检测，所以需要删除
-//origObj: generateClientRule或者generateClientDefine产生的结果
+//专门使用：使用generateClientRule或者generateClientInputAttr，是从mongodb structure中直接转换，但是其中有些字段，例如cDate，是后台自动创建，无需前台检测，所以需要删除
+//origObj: generateClientRule或者generateClientInputAttr产生的结果
 //skipList:需要删除的字段
 //处理完成返回true
 var deleteNonNeededObject = function deleteNonNeededObject(origObj, skipList) {
@@ -1797,7 +1798,7 @@ var deleteNonNeededObject = function deleteNonNeededObject(origObj, skipList) {
 };
 
 //collection的某些字段是ObjectId，需要对应到具体的字段（例如department.parentDepartment在client实际显示的department name，而不是objectID）
-//origObj: generateClientRule或者generateClientDefine产生的结果
+//origObj: generateClientRule或者generateClientInputAttr产生的结果
 //matchList：指定对应的filed连接到的coll.field(db中字段是objectID，但是用作外键，实际代表字符等，所以需要修改checkRule和inputAttr的chineseName)
 var objectIdToRealField = function objectIdToRealField(origObj, matchList) {
     if (false === dataTypeCheck.isObject(origObj)) {
@@ -1908,7 +1909,7 @@ exports.func = {
     //objectIndexOf:objectIndexOf,
     //extractKey:extractKey,
     validate: validate,
-    generateClientDefine: generateClientDefine,
+    generateClientInputAttr: generateClientInputAttr,
     generateClientRule: generateClientRule,
     deleteNonNeededObject: deleteNonNeededObject,
     objectIdToRealField: objectIdToRealField,

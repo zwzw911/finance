@@ -1532,13 +1532,12 @@ console.log(currentItemRule['type'])*/
 }
 
 
-
 /*根据server端rule define，生成客户端input的属性，以便angularjs对input进行检查
  * obj:server端item的rule define( /server/define/validateRule/inputRule)
  * level：深度（2）
  * resultObj: 因为采用递归调用，所以结果参数，而不是直接return结果
  */
-var generateClientDefine=function(obj,level,resultObj){
+var generateClientInputAttr=function(obj,level,resultObj){
     // let resultObj={}
     if('object'===typeof obj){
         for(let key in obj){
@@ -1570,13 +1569,13 @@ var generateClientDefine=function(obj,level,resultObj){
                 //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
                 //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
                 //isSelect:input是否为select
-                resultObj[key]={value:'',originalValue:'',isSelect:false,selectOption:[],isQueryAutoComplete:false,isCRUDAutoComplete:false,autoCompleteCollField:'',suggestList:[],blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
+                resultObj[key]={value:'',originalValue:'',isSelect:false,selectOption:[],isQueryAutoComplete:false,isCRUDAutoComplete:false,autoCompleteCollField:'',suggestList:{},blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
             }else{
                 //如果值是对象，递归调用
                 if('object'===typeof obj[key]){
                     let currentLvl=level-1
                     //console.log(currentLvl)
-                    generateClientDefine(obj[key],currentLvl,resultObj[key])
+                    generateClientInputAttr(obj[key],currentLvl,resultObj[key])
                 }
                 /*                else{
                  obj[key]={}
@@ -1626,8 +1625,8 @@ var generateClientRule=function(obj,level,resultObj){
 }
 
 //根据skipList提供的key，在origObj删除对应key
-//专门使用：使用generateClientRule或者generateClientDefine，是从mongodb structure中直接转换，但是其中有些字段，例如cDate，是后台自动创建，无需前台检测，所以需要删除
-//origObj: generateClientRule或者generateClientDefine产生的结果
+//专门使用：使用generateClientRule或者generateClientInputAttr，是从mongodb structure中直接转换，但是其中有些字段，例如cDate，是后台自动创建，无需前台检测，所以需要删除
+//origObj: generateClientRule或者generateClientInputAttr产生的结果
 //skipList:需要删除的字段
 //处理完成返回true
 var deleteNonNeededObject=function(origObj,skipList){
@@ -1654,7 +1653,7 @@ var deleteNonNeededObject=function(origObj,skipList){
 }
 
 //collection的某些字段是ObjectId，需要对应到具体的字段（例如department.parentDepartment在client实际显示的department name，而不是objectID）
-//origObj: generateClientRule或者generateClientDefine产生的结果
+//origObj: generateClientRule或者generateClientInputAttr产生的结果
 //matchList：指定对应的filed连接到的coll.field(db中字段是objectID，但是用作外键，实际代表字符等，所以需要修改checkRule和inputAttr的chineseName)
 var objectIdToRealField=function(origObj,matchList){
     if(false===dataTypeCheck.isObject(origObj)) {
@@ -1756,7 +1755,7 @@ exports.func={
     //objectIndexOf:objectIndexOf,
     //extractKey:extractKey,
     validate,
-    generateClientDefine,
+    generateClientInputAttr,
     generateClientRule,
     deleteNonNeededObject,
     objectIdToRealField,

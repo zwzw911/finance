@@ -11,4 +11,7 @@ router.get('/',function(rq,res,next){
     return res.render('login',{ title:'登录',year:new Date().getFullYear()});
 })
 
+router.post('/',function(req,res,next){
+
+})
 module.exports = router;

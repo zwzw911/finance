@@ -8,6 +8,36 @@ app.constant('cont',{
     //angular检查input输入的rule（由服务器端脚本根据inputRule生成：包括去除不必要字段，关联到相关字段等操作）
     inputRule:
     {
+        "user": {
+            "name": {
+                "require": {
+                    "define": true,
+                    "msg": "用户名不能为空"
+                },
+                "maxLength": {
+                    "define": 20,
+                    "msg": "用户名所包含的字符数不能超过20个"
+                },
+                "minLength": {
+                    "define": 2,
+                    "msg": "用户名包含的字符数不能少于2个"
+                }
+            },
+            "password": {
+                "require": {
+                    "define": true,
+                    "msg": "密码不能为空"
+                },
+                "maxLength": {
+                    "define": 20,
+                    "msg": "密码所包含的字符数不能超过20个"
+                },
+                "minLength": {
+                    "define": 6,
+                    "msg": "密码包含的字符数不能少于6个"
+                }
+            }
+        },
         "department": {
             "name": {
                 "require": {
@@ -213,12 +243,50 @@ app.constant('cont',{
     //angularjs处理input需要使用的数据
     inputAttr:
     {
+        "user": {
+            "name": {
+                "value": "",
+                "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false,
+                "autoCompleteCollField": "",
+                "suggestList": [],
+                "blur": false,
+                "focus": true,
+                "inputDataType": "text",
+                "inputIcon": "",
+                "chineseName": "用户名",
+                "errorMsg": "",
+                "validated": "undefined"
+            },
+            "password": {
+                "value": "",
+                "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false,
+                "autoCompleteCollField": "",
+                "suggestList": [],
+                "blur": false,
+                "focus": true,
+                "inputDataType": "text",
+                "inputIcon": "",
+                "chineseName": "密码",
+                "errorMsg": "",
+                "validated": "undefined"
+            }
+        },
         "department": {
             "name": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
-                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true,
+                "isCRUDAutoComplete": false,
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
@@ -232,7 +300,9 @@ app.constant('cont',{
             "parentDepartment": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true,
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -249,6 +319,8 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
@@ -264,6 +336,8 @@ app.constant('cont',{
             "leader": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
@@ -285,7 +359,6 @@ app.constant('cont',{
                 "isCRUDAutoComplete": false,
                 "autoCompleteCollField": "",
                 "suggestList": [],
-                //"suggestList": {suggest:function(term){return {key:'male',value:'男'},{key:'female',value:'女'}}},
                 "blur": false,
                 "focus": true,
                 "inputDataType": "text",
@@ -297,6 +370,8 @@ app.constant('cont',{
             "birthDay": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": false,
                 "isCRUDAutoComplete": false,
                 "autoCompleteCollField": "",
@@ -312,7 +387,9 @@ app.constant('cont',{
             "department": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true,//在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -327,6 +404,8 @@ app.constant('cont',{
             "onBoardDate": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
@@ -344,6 +423,8 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
@@ -359,6 +440,8 @@ app.constant('cont',{
             "parentBillType": {
                 "value": "",
                 "originalValue": "",
+                "isSelect": false,
+                "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
@@ -376,7 +459,9 @@ app.constant('cont',{
             "title": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true,
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'bill.title',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -391,7 +476,9 @@ app.constant('cont',{
             "content": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true,
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'bill.content',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -403,10 +490,12 @@ app.constant('cont',{
                 "errorMsg": "",
                 "validated": "undefined"
             },
-            "billName": {
+            "billType": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true,
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -421,7 +510,9 @@ app.constant('cont',{
             "billDate": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": false,
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -436,7 +527,9 @@ app.constant('cont',{
             "amount": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+                "isQueryAutoComplete": false,
                 "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -451,7 +544,9 @@ app.constant('cont',{
             "reimburser": {
                 "value": "",
                 "originalValue": "",
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isSelect": false,
+                "selectOption": [],
+		"isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -468,6 +563,16 @@ app.constant('cont',{
     
     //用来给查询字段select提供option，详见angularjs。md
     queryField:{
+        "user": [
+            {
+                "value": "用户名",
+                "key": "name"
+            },
+            {
+                "value": "密码",
+                "key": "password"
+            }
+        ],
         "department": [
             {
                 "value": "部门名称",

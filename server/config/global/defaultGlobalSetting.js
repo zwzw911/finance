@@ -15,18 +15,26 @@
 var dataType=require('../../define/enum/validEnum').enum.dataType
 var regex=require('../../define/regex/regex').regex
 
+//maxAge:ms;  负数（-1）：临时cookie，关闭网页就删除cookie；0：立刻删除；正整数：多少毫秒后失效
+ // secure:false, cookie是否只能在https上传输。false，可在http上传
+ //path: URL必须符合才能使用cookie。例如，如果设置path为/test/,则URL必须为/test才能使用。设为/，所有URL均可使用。
+ //domain：域名，必须以.作为开头（或者直接就是IP？？），则所有以此设置为结尾的URL都可使用cookie。domian_path限定了访问cookie的路径
+
+var generalCookieSetting={
+    path:'/', //域名下所有URL都可以使用session
+    domain:'127.0.0.1', //可以使用session的域名（可以是IP)
+    //maxAge:900000, // 整数，ms。默认15分钟
+    secure:false, //只用https
+    httpOnly:true, //通过http传递cookie
+}
+
+
 /*
 * session相关设置，包含cookie和session2部分
 * 直接读取文件，而不用存入redis
 * */
 var session={
-    cookie:{
-        path:'/', //域名下所有URL都可以使用session
-        domain:'127.0.0.1', //可以使用session的域名（可以是IP)
-        maxAge:900000, // 整数，ms。默认15分钟
-        secure:false, //只用https
-        httpOnly:true, //通过http传递cookie
-    },
+    cookie:Object.assign({maxAge:900000},generalCookieSetting),//ms, 900second
     session:{
         secret:'suibian', //进行加密的字符
         resave:false, //即使session内容没有更改，都强制保存session内容到server。设为true，可能会导致竞争（用户开了2个窗口的话）
@@ -35,7 +43,7 @@ var session={
     },
     storeOptions:{
         redis:{
-            ttl:900000,// second
+            ttl:900,// second,和cookie时间一致
             db:0,//redis的db index
             prefix:'sess',//默认记录前缀，默认是'sess'
             

@@ -19,6 +19,57 @@ var inputDataType=require('../enum/validEnum').enum.dataType
 
 //rule分成2种：一种是逐条检测（min/max/minLength/maxLength）；另一种是一次检测（regex）。前者用在client端，以便返回详细信息给客户；后者用在server端，一次检测完，并返回所有错误信息（当然server也可以使用前者，视情况而定）
 var inputRule={
+    user:{
+        name:{
+            chineseName: '用户名',
+            type:inputDataType.string,
+            require: {define: true, error: {rc: 10000},mongoError:{rc:20000,msg:'用户名不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+            minLength:{define:2,error:{rc:10002},mongoError:{rc:20002,msg:'用户名至少2个字符'}},
+            maxLength:{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'用户名的长度不能超过20个字符'}},
+            format:{define:regex.userName,error:{rc:10005},mongoError:{rc:20005,msg:'用户名必须由2-10个字符组成'}} //server端使用
+        },
+        salt:{
+            chineseName: '盐',
+            type:inputDataType.string,
+            require: {define: false, error: {rc: 10000},mongoError:{rc:20000,msg:'盐不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+            minLength:{define:1,error:{rc:10002},mongoError:{rc:20002,msg:'盐至少1个字符'}},
+            maxLength:{define:10,error:{rc:10004},mongoError:{rc:20004,msg:'盐的长度不能超过10个字符'}},
+            format:{define:regex.salt,error:{rc:10005},mongoError:{rc:20005,msg:'盐必须由1-10个字符组成'}} //server端使用
+        },
+        //password会经过转换（所以不存入db）
+        password:{
+            chineseName: '密码',
+            type:inputDataType.string,
+            require: {define: true, error: {rc: 10000},mongoError:{rc:20000,msg:'密码不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+            minLength:{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
+            maxLength:{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},
+            format:{define:regex.password,error:{rc:10005},mongoError:{rc:20005,msg:'密码必须由6-20个字符组成'}} //server端使用
+        },
+        //client无法检测(通过matchList过滤掉)；server端需要，作为可能的mongodb级别的alidator
+        encryptedPassword:{
+            chineseName: '密码',
+            type:inputDataType.string,
+            require: {define: true, error: {rc: 10000},mongoError:{rc:20000,msg:'密码不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
+/*            minLength:{define:6,error:{rc:10002},mongoError:{rc:20002,msg:'密码至少6个字符'}},
+            maxLength:{define:20,error:{rc:10004},mongoError:{rc:20004,msg:'密码的长度不能超过20个字符'}},*/
+            format:{define:regex.sha1Hash,error:{rc:10005},mongoError:{rc:20005,msg:'密码必须由6-20个字符组成'}} //加密密码只在server端使用            
+        },
+        cDate:{
+            chineseName:'创建日期',
+            type:inputDataType.date,
+            require: {define: true, error: {rc: 10010},mongoError:{rc:20010,msg:'创建日期不能为空'}},
+        },
+        uDate:{
+            chineseName:'修改日期',
+            type:inputDataType.date,
+            require: {define: true, error: {rc: 10012},mongoError:{rc:20012,msg:'修改日期不能为空'}},
+        },
+        dDate:{
+            chineseName:'删除日期',
+            type:inputDataType.date,
+            require: {define: false, error: {rc: 10014},mongoError:{rc:20014,msg:'删除日期不能为空'}},
+        }
+    },
     department:{//名称必须和mongo中的一致
         name:{
             chineseName: '部门名称',

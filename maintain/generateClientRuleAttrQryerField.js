@@ -16,6 +16,7 @@ var clientInputRule={}
 var regex=require('../server/define/regex/regex').regex
 
 var skipList={
+    user:['salt','encryptedPassword','cDate','uDate','dDate'],
     department:['cDate','uDate','dDate'],
     employee:['cDate','uDate','dDate'],
     billType:['cDate','uDate','dDate'],
@@ -40,7 +41,7 @@ var matchList={
     }
 }
 
-miscFunc.generateClientDefine(ruleDefine,2,inputAttr)
+miscFunc.generateClientInputAttr(ruleDefine,2,inputAttr)
 miscFunc.deleteNonNeededObject(inputAttr,skipList)
 miscFunc.objectIdToRealField(inputAttr,matchList)
 fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))

@@ -3,7 +3,7 @@
  */
 
 var mongoose=require('mongoose');
-
+var fs=require('fs')
 var regex=require('../../../define/regex/regex').regex
 var dbFinance=require('./connection').dbFinance;
 
@@ -58,6 +58,14 @@ var toObjectOptions={
 
 /*                           department                        */
 let fieldDefine={
+    user:{
+        name:{type:String,unique:true},
+        salt:{type:String},
+        encryptedPassword:{type:String},
+        cDate:{type:Date,default:Date.now},
+        uDate:{type:Date,default:Date.now},
+        dDate:{type:Date},
+    },
     department:{//采用和inputRule一样的名字，以便之后用for循环添加内置validator
         name:{type:String,unique:true},//全部设成{}，即使只有type定义，以便之后添加validator
         parentDepartment:{type:mongoose.Schema.Types.ObjectId,ref:"departments"},
@@ -116,9 +124,9 @@ let ruleMatch={
 /*                          将inputRule中的rule定义转换成mongoose内置validator                          */
 //根据flag确实是否要为field设置内建validator
 if(true===mongoSetting.schemaOptions.validateFlag){
-    for(let singleCollectionsName in inputRule){//读取每个collection
-        for(let singleFiled in inputRule[singleCollectionsName]){//读取每个collection下的字段（path）
-            for(let singleItem in inputRule[singleCollectionsName][singleFiled]){//读取每个字段下的rule
+    for(let singleCollectionsName in fieldDefine){//读取每个collection
+        for(let singleFiled in fieldDefine[singleCollectionsName]){//读取每个collection下的字段（path）
+            for(let singleItem in inputRule[singleCollectionsName][singleFiled]){//读取每个字段下对应在inputRule下的每个rule
                 if(ruleMatch[singleItem]){//rule是否在mongo中有对应的内建validator
                     let singleRuleValue=inputRule[singleCollectionsName][singleFiled][singleItem]
 
@@ -144,9 +152,14 @@ if(true===mongoSetting.schemaOptions.validateFlag){
     }
 }
 
-
+// fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
 //console.log(fieldDefine['department']['name'])
 //console.log(fieldDefine['employee']['gender']['enum'])
+
+var userSchema=new mongoose.Schema(
+    fieldDefine['user'],
+    schemaOptions
+)
 
 var departmentSchema=new mongoose.Schema(
     fieldDefine['department'],
@@ -167,7 +180,7 @@ var billSchema=new mongoose.Schema(
     schemaOptions
 )
 
-
+var userModel=dbFinance.model('users',userSchema)
 var departmentModel=dbFinance.model('departments',departmentSchema)
 var employeeModel=dbFinance.model('employees',employeeSchema)
 var billTypeModel=dbFinance.model('billTypes',billTypeSchema)
@@ -175,6 +188,7 @@ var billModel=dbFinance.model('bills',billSchema)
 
 //console.log(billModel)
 module.exports={
+    userModel,
     departmentModel,
     employeeModel,
     billTypeModel,
