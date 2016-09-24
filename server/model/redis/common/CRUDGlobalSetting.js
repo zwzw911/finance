@@ -7,7 +7,7 @@
 'use strict'
 var defaultSetting=require('../../../config/global/defaultGlobalSetting').defaultSetting
 //use redis to save get golbalSetting
-var redisClient=require('../connection/redis_connections').ioredisClient
+var redisClient=require('../connection/redis_connection').ioredisClient
 var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
 var redisError=require('../../../define/error/redisError').redisError
 var inputValid=require('../../../assist/misc').func.

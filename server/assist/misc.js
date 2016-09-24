@@ -24,7 +24,7 @@ var redisError=require('../define/error/redisError').redisError
 /*      for CRUDGlobalSetting       */
 var defaultSetting=require('../config/global/defaultGlobalSetting').defaultSetting
 //use redis to save get golbalSetting
-var ioredisClient=require('../model/redis/connection/redis_connections').ioredisClient
+var ioredisClient=require('../model/redis/connection/redis_connection').ioredisClient
 /*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
 var redisError=require('../../../define/error/redisError').redisError*/
 //var inputValid=require('./valid').inputValid
@@ -794,13 +794,14 @@ var convertURLSearchString=function(searchString,cb){
 
 //获得当前用户的信息，以便在toolbar上显示对应的信息
 var getUserInfo=function(req){
-    var result
+    return req.session.userName
+/*    var result
     if(req.session.state===userStateEnum.login){
         result=req.session.userName
         //result.userId=req.session.userId
     }
     //console.log(result)
-    return result
+    return result*/
 }
 
 /*var quit=function(req){
@@ -812,13 +813,23 @@ var getUserInfo=function(req){
  
 
 
-
+//返回enum 状态（noSess/notLogin/Login）
 var checkUserState=function(req){
+    //如果是非GET的req，返回noSess说明是黑客攻击
+    if(undefined===req.session){
+        return userStateEnum.noSess
+    }
+    //已经在get方法中获得sess
+    if(undefined===req.session.userName){
+        return userStateEnum.notLogin
+    }
+
+    return userStateEnum.login
     //需要检测状态,如果不是1或者2,就没有session,后续的代码也就不必执行
-    if(userStateEnum.notLogin!=req.session.state && userStateEnum.login!=req.session.state){
+/*    if(userStateEnum.notLogin!=req.session.state && userStateEnum.login!=req.session.state){
         return miscError.user.notLogin
     }
-    return rightResult
+    return rightResult*/
 }
 
 //直接在page中使用valid函数进行判断
@@ -826,14 +837,14 @@ var checkUserState=function(req){
     return input_validate.user._id.type.define.test(req.session.userId) ? rightResult:input_validate.user._id.type.client
 }*/
 
-var checkUserLogin=function(req){
+/*var checkUserLogin=function(req){
     return req.session.state===userStateEnum.login ? rightResult:miscError.user.notLogin
-}
+}*/
 
 //state只要不是undefine就可以
-var checkUserStateNormal=function(req){
+/*var checkUserStateNormal=function(req){
     return (userStateEnum.login===req.session.state || userStateEnum.notLogin===req.session.state) ? rightResult:miscError.user.stateWrong
-}
+}*/
 
 /*
 //新版本,使用新的逻辑
@@ -1745,8 +1756,8 @@ exports.func={
     parseGmFileSize,
     convertImageFileSizeToByte,
     convertURLSearchString,
+
     getUserInfo,
-    //generateSimpleRandomString:generateSimpleRandomString,
     checkUserState,
     //checkUserIdFormat:checkUserIdFormat,
     checkInterval,// use Lua instead of session(although sesssion use redis too)

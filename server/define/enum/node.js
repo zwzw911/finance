@@ -9,6 +9,7 @@ var randomStringType={
 }
 
 var userState={
+    noSess:Symbol('noSess'),
     login:Symbol('login'),
     notLogin:Symbol('not login'),
 

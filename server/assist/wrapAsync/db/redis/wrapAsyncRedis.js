@@ -11,7 +11,7 @@
 * ioredis中，获得数据没有回调（set/hset等）
 * */
 'use strict'
-var ioredisClient=require('../../../../model/redis/connection/redis_connections').ioredisClient
+var ioredisClient=require('../../../../model/redis/connection/redis_connection').ioredisClient
 var redisError=require('../../../../define/error/redisError').redisError
 
 let rcRight={rc:0}

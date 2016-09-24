@@ -8,7 +8,7 @@
 'use strict'
 //var defaultSetting=require('../../assist/defaultGlobalSetting').defaultSetting
 //use redis to save get golbalSetting
-var redisClient=require('../connection/redis_connections').ioredisClient
+var redisClient=require('../connection/redis_connection').ioredisClient
 //var miscFunc=require('../../assist_function/miscellaneous').func
 //var redisClient = require("redis").createClient()
 //var async=require('async')

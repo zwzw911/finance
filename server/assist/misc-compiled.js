@@ -29,7 +29,7 @@ var redisError = require('../define/error/redisError').redisError;
 /*      for CRUDGlobalSetting       */
 var defaultSetting = require('../config/global/defaultGlobalSetting').defaultSetting;
 //use redis to save get golbalSetting
-var ioredisClient = require('../model/redis/connection/redis_connections').ioredisClient;
+var ioredisClient = require('../model/redis/connection/redis_connection').ioredisClient;
 /*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
 var redisError=require('../../../define/error/redisError').redisError*/
 //var inputValid=require('./valid').inputValid

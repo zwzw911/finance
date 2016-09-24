@@ -23,9 +23,9 @@ function asyncHget(key, subKey) {
         // try{
         ioredisClient.hget([key, subKey], function (err, data) {
             if (err) {
-                reject(redisError.cmdError.hgetError);
+                reject(redisError.general.hgetError);
             } else {
-                // console.log(data)
+                console.log(data);
                 rcRight.msg = data;
                 resolve(rcRight);
             }
@@ -42,7 +42,7 @@ function asyncHexists(key, subKey) {
         // reject('test')
         ioredisClient.hexists([key, subKey], function (err, data) {
             if (err) {
-                reject(redisError.cmdError.existsFail);
+                reject(redisError.general.hexistsFail);
             } else {
                 rcRight.msg = data;
                 resolve(rcRight);
@@ -61,3 +61,5 @@ module.exports = {
 };
 
 //# sourceMappingURL=wrapAsyncRedis-compiled.js.map
+
+//# sourceMappingURL=wrapAsyncRedis-compiled-compiled.js.map

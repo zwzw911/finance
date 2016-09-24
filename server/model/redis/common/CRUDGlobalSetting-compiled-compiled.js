@@ -2,11 +2,17 @@
  * Created by zw on 2016/2/10.
  * checkAllSetting:check if all value valid
  * setAllSetting: save to redis if all value are valid
- * 已经移动到misc中，所以不再需要
+ * 还是使用ioredis来操作，可以转换成同步函数，并且因为操作次数比较少，速度和lua差不多
  */
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+} : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+};
 
 var defaultSetting = require('../../../config/global/defaultGlobalSetting').defaultSetting;
 //use redis to save get golbalSetting
@@ -389,3 +395,5 @@ getAllSetting(function(err,result){
 })*/
 
 //# sourceMappingURL=CRUDGlobalSetting-compiled.js.map
+
+//# sourceMappingURL=CRUDGlobalSetting-compiled-compiled.js.map

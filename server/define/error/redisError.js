@@ -15,7 +15,9 @@ exports.redisError={
         lindexFail:{rc:50016,msg:{client:'读取数组某个数据出错',server:'redis lindex命令出错'}},
         lpopFail:{rc:50018,msg:{client:'读取最后输入的数据出错',server:'redis lpop命令出错'}},
         ttlFail:{rc:50020,msg:{client:'读取数据剩余时间出错',server:'redis ttl命令出错'}},
-        luaFail:{rc:50022,msg:{client:'脚本执行失败',server:'redis Lua脚本之心失败'}},
+        luaFail:{rc:50022,msg:{client:'脚本执行失败',server:'redis Lua脚本执行失败'}},
+
+        shaFail:function(file){return {rc:50024,msg:{client:`sha文件${file}失败`,server:`sha文件${file}失败`}}},
     },
     other:{
         notExist(key,subKey){

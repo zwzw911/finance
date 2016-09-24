@@ -18,9 +18,44 @@ var asyncFs={
                 }
             })
         })
-    }
+    },
+    asyncReadFile(file){
+        return new Promise(function(resolve,reject){
+            fs.readFile(file,(err,data)=>{
+                if(err){reject(error.fs.readFileFail(file))}
+                resolve(data)
+            })
+        })
+
+    },
+    asyncReadDir(path){
+        return new Promise(function(resolve,reject){
+            fs.readdir(path,(err,data)=>{
+                if(err){reject(error.fs.readFDirFail(path))}
+                resolve(data)
+            })
+        })
+    },
+    asyncIsFile(file){
+        return new Promise(function(resolve,reject){
+            fs.lstat(file,(err,stats)=>{
+                // console.log(file);
+                if(err){reject(error.fs.fstatFail(file))}
+                // console.log(stats);
+                resolve(stats.isFile())
+            })
+        })
+    },
+    asyncIsDir(dir){
+        return new Promise(function(resolve,reject){
+            fs.lstat(dir,(err,stats)=>{
+                if(err){reject(error.fs.fstatFail(dir))}
+                resolve(stats.isDirectory())
+            })
+        })
+    },
 }
 
-exports.asyncFunc={
+module.exports={
     asyncFs,
 }
