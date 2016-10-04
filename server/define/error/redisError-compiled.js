@@ -4,7 +4,15 @@
  * Created by wzhan039 on 2016-02-14.
  */
 exports.redisError = {
-    general: {
+    LuaError: {
+        LueExecFail: function LueExecFail(fileName) {
+            return { rc: 50000, msg: { client: '数据库操作出错', server: '执行Lua脚本' + fileName + '出错' } };
+        },
+        LueParamNotObject: function LueParamNotObject(fileName) {
+            return { rc: 50000, msg: { client: '参数不正确', server: 'Lua脚本' + fileName + '的参数必须为对象' } };
+        }
+    },
+    cmdError: {
         setError: { rc: 50000, msg: { client: '保存数据出错', server: 'redis set操作失败' } },
         getError: { rc: 50002, msg: { client: '读取数据出错', server: 'redis get操作失败' } },
         hsetError: { rc: 50004, msg: { client: '保存数据出错', server: 'redis hset操作失败' } },
@@ -17,7 +25,16 @@ exports.redisError = {
         lindexFail: { rc: 50016, msg: { client: '读取数组某个数据出错', server: 'redis lindex命令出错' } },
         lpopFail: { rc: 50018, msg: { client: '读取最后输入的数据出错', server: 'redis lpop命令出错' } },
         ttlFail: { rc: 50020, msg: { client: '读取数据剩余时间出错', server: 'redis ttl命令出错' } },
-        luaFail: { rc: 50022, msg: { client: '脚本执行失败', server: 'redis Lua脚本之心失败' } }
+        luaFail: { rc: 50022, msg: { client: '脚本执行失败', server: 'redis Lua脚本执行失败' } },
+
+        shaFail: function shaFail(file) {
+            return { rc: 50024, msg: { client: 'sha文件' + file + '失败', server: 'sha文件' + file + '失败' } };
+        }
+    },
+    other: {
+        notExist: function notExist(key, subKey) {
+            return { rc: 50100, msg: { client: '数据不存在', server: 'redis中，' + key + ' ' + subKey + '不存在' } };
+        }
     },
     captcha: {
         getError: { rc: 50100, msg: { client: '取验证码出错', server: '' } },

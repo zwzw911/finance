@@ -6,3 +6,8 @@
 	4.1 设置input text，覆盖select，以便实现input输入，select过滤的功能======>done
 	4.2 input输入，select会下拉显示符合的option=============>done 使用3rd控件 MassAutoComplete
 5. 已经选择的查询条件，显示在界面上，后跟X表示可以删除=====>done
+
+
+1. billtype/create页面的父类别为下拉框？过滤框？
+2. model调试
+3. lua：判断非页面请求是否超时

@@ -6,100 +6,162 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
-
-require("babel-polyfill");
-require("babel-core/register");
-
-var fs = require('fs');
-//var general=require('../assist/general').general
-var miscError = require('../define/error/nodeError').nodeError.assistError.misc;
-var gmError = require('../define/error/nodeError').nodeError.assistError.gmImage;
-//var input_validate=require('../error_define/input_validate').input_validate
-
-var randomStringType = require('../define/enum/node').node.randomStringType;
-var userStateEnum = require('../define/enum/node').node.userState;
-var regex = require('../define/regex/regex').regex;
-
-/*var ioredis=require('ioredis')
-var ioredisClient=new ioredis()*/
-var LuaSHA = require('../define/enum/Lua').LuaEnum;
-var redisError = require('../define/error/redisError').redisError;
-
-/*      for CRUDGlobalSetting       */
-var defaultSetting = require('../config/global/defaultGlobalSetting').defaultSetting;
-//use redis to save get golbalSetting
-var ioredisClient = require('../model/redis/connection/redis_connection').ioredisClient;
-/*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
-var redisError=require('../../../define/error/redisError').redisError*/
-//var inputValid=require('./valid').inputValid
-
-/*              for input valid         */
-//var regex=require('../define/regex/regex').regex.regex
-var validateError = require('../define/error/nodeError').nodeError.assistError.misc.validate;
-
-/*var dataTypeCheck=require('../assist/misc').func.dataTypeCheck
-var ruleTypeCheck=require('../assist/misc').func.ruleTypeCheck*/
-
-//var fs=require('fs')
-var dataType = require('../define/enum/validEnum').enum.dataType;
-var ruleType = require('../define/enum/validEnum').enum.ruleType;
-var clientRuleType = require('../define/enum/validEnum').enum.clientRuleType;
-
-var otherFiledNameEnum = require('../define/enum/validEnum').enum.otherFiledName;
-//var rightResult={rc:0}
-//var CRUDGlobalSetting=require('../model/redis/common/CRUDGlobalSetting').CRUDGlobalSetting
-//var async=require('async')
-var redisWrapAsync = require('./wrapAsync/db/redis/wrapAsyncRedis.js');
-
-var rightResult = { rc: 0, msg: null };
-
-var checkInterval = function checkInterval(req, cb) {
-    var identify = void 0;
-    if (req.session && req.session.id) {
-        identify = req.session.id;
+/*var checkInterval=function(req,cb){
+    let identify
+    if(req.session && req.session.id){
+        identify=req.session.id
     }
     //req.ip和req.ips，只有在设置了trust proxy之后才能生效，否则一直是undefined
-    if (req.ips && req.ips[0]) {
-        identify = req.ips[0];
+    if(req.ips && req.ips[0]){
+        identify= req.ips[0]
     }
-    if (undefined === identify) {
-        return cb(null, miscError.checkInterval.unknownRequestIdentify);
+    if(undefined===identify){
+        return cb(null,miscError.checkInterval.unknownRequestIdentify)
     }
-    ioredisClient.evalsha(LuaSHA.Lua_check_interval, 1, identify, new Date().getTime(), function (err, checkResult) {
+
+    ioredisClient.evalsha(LuaSHA.Lua_check_interval,1,identify,new Date().getTime(),function(err,checkResult){
         //ioredisClient.eval('../model/redis/lua_script/Lua_check_interval.lua',1,ip,new Date().getTime(),function(err,checkResult){
         //ioredisClient.script('load','../model/redis/lua_script/Lua_check_interval.lua',function(err,sha){
         //    ioredisClient.evalsha(sha,1,ip,new Date().getTime(),function(err,checkResult) {
         if (err) {
             //console.log(err)
-            return cb(null, redisError.general.luaFail);
+            return cb(null, redisError.general.luaFail)
         }
         //let result=checkResult.split(':')
         //if(result[0]==checkResult){
         //console.log(checkResult)
         switch (checkResult[0]) {
             case 0:
-                return cb(null, { rc: 0 });
+                return cb(null, {rc: 0})
             case 10:
-                var rc = {};
-                rc['rc'] = miscError.checkInterval.tooMuchReq.rc;
-                rc['msg'] = miscError.checkInterval.forbiddenReq.msg.client + "，请在" + checkResult[1] + "秒后重试";
+                let rc = {}
+                rc['rc'] = miscError.checkInterval.tooMuchReq.rc
+                rc['msg'] = `${miscError.checkInterval.forbiddenReq.msg.client}，请在${checkResult[1]}秒后重试`
                 //console.log(rc)
-                return cb(null, rc);
+                return cb(null, rc)
             case 11:
                 //console.log(intervalCheckBaseIPNodeError.between2ReqCheckFail)
-                return cb(null, miscError.checkInterval.between2ReqCheckFail);
+                return cb(null, miscError.checkInterval.between2ReqCheckFail)
                 break;
             case 12:
                 //console.log(intervalCheckBaseIPNodeError.exceedMaxTimesInDuration)
-                return cb(null, miscError.checkInterval.exceedMaxTimesInDuration);
+                return cb(null, miscError.checkInterval.exceedMaxTimesInDuration)
                 break;
             default:
         }
         //})
-    });
-};
+    })
+}*/
 
+var checkInterval = function () {
+    var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee(req) {
+        var appSetting, identify, params, result, rc;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+                switch (_context.prev = _context.next) {
+                    case 0:
+                        //return new Promise(function(resolve,reject){
+                        appSetting = require('../config/global/appSetting');
+                        identify = void 0;
+
+                        if (!(req.session && req.session.id)) {
+                            _context.next = 8;
+                            break;
+                        }
+
+                        if (regex.sessionId.test(req.session.id)) {
+                            _context.next = 5;
+                            break;
+                        }
+
+                        return _context.abrupt("return", miscError.checkInterval.sessionIdWrong);
+
+                    case 5:
+                        identify = req.session.id;
+                        _context.next = 13;
+                        break;
+
+                    case 8:
+                        if (true === appSetting['trust proxy']) {
+                            //req.ip和req.ips，只有在设置了trust proxy之后才能生效，否则一直是undefined
+                            if (req.ips && req.ips[0]) {
+                                identify = req.ips[0];
+                            }
+                        } else {
+                            identify = req.connection.remoteAddress;
+                        }
+
+                        if (!(identify && identify.substr(0, 7) == "::ffff:")) {
+                            _context.next = 13;
+                            break;
+                        }
+
+                        identify = identify.substr(7);
+
+                        if (regex.ip.test(identify)) {
+                            _context.next = 13;
+                            break;
+                        }
+
+                        return _context.abrupt("return", miscError.checkInterval.IPWrong);
+
+                    case 13:
+                        if (!(undefined === identify)) {
+                            _context.next = 15;
+                            break;
+                        }
+
+                        return _context.abrupt("return", miscError.checkInterval.unknownRequestIdentify);
+
+                    case 15:
+
+                        //console.log(`trust proxy false ${identify}`)
+
+
+                        params = {};
+
+                        params.setting = intervalCheck;
+                        params.currentTime = new Date().getTime();
+                        params.id = identify;
+
+                        _context.next = 21;
+                        return execSHALua(LuaSHA.Lua_check_interval, params);
+
+                    case 21:
+                        result = _context.sent;
+                        _context.t0 = result['rc'];
+                        _context.next = _context.t0 === 0 ? 25 : _context.t0 === 10 ? 26 : _context.t0 === 11 ? 30 : _context.t0 === 12 ? 32 : 34;
+                        break;
+
+                    case 25:
+                        return _context.abrupt("return", result);
+
+                    case 26:
+                        rc = {};
+
+                        rc['rc'] = miscError.checkInterval.tooMuchReq.rc;
+                        rc['msg'] = miscError.checkInterval.forbiddenReq.msg.client + "，请在" + result['msg'] + "秒后重试";
+                        //console.log(rc)
+                        return _context.abrupt("return", rc);
+
+                    case 30:
+                        return _context.abrupt("return", miscError.checkInterval.between2ReqCheckFail);
+
+                    case 32:
+                        return _context.abrupt("return", miscError.checkInterval.exceedMaxTimesInDuration);
+
+                    case 34:
+                    case "end":
+                        return _context.stop();
+                }
+            }
+        }, _callee, this);
+    }));
+
+    return function checkInterval(_x) {
+        return _ref.apply(this, arguments);
+    };
+}();
 /*//本来先作为路由句柄，但是此功能无法在router上使用（而只能在app上使用）
 //可以作为中间件使用，但是不够灵活（get的时候出错，希望返回页面，post/put/delete的时候返回错误，希望在当前页面跳出对话框提示）。中间件只能对所有方式单一处理。
 var checkIntervalMid=function(req,res,next){
@@ -150,7 +212,55 @@ var checkIntervalMid=function(req,res,next){
     })
 }*/
 
-function sleep(numberMillis) {
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
+
+require("babel-polyfill");
+require("babel-core/register");
+
+var fs = require('fs');
+
+var miscError = require('../define/error/nodeError').nodeError.assistError.misc;
+var gmError = require('../define/error/nodeError').nodeError.assistError.gmImage;
+//var input_validate=require('../error_define/input_validate').input_validate
+
+var randomStringType = require('../define/enum/node').node.randomStringType;
+var userStateEnum = require('../define/enum/node').node.userState;
+var regex = require('../define/regex/regex').regex;
+
+/*var ioredis=require('ioredis')
+var ioredisClient=new ioredis()*/
+var LuaSHA = require('../define/Lua/LuaSHA').LuaSHA;
+var redisError = require('../define/error/redisError').redisError;
+
+/*      for CRUDGlobalSetting       */
+var defaultSetting = require('../config/global/globalSettingRule').defaultSetting;
+//use redis to save get golbalSetting
+var ioredisClient = require('../model/redis/connection/redis_connection').ioredisClient;
+/*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
+var redisError=require('../../../define/error/redisError').redisError*/
+//var inputValid=require('./valid').inputValid
+
+/*              for input valid         */
+//var regex=require('../define/regex/regex').regex.regex
+var validateError = require('../define/error/nodeError').nodeError.assistError.misc.validate;
+
+/*var dataTypeCheck=require('../assist/misc').func.dataTypeCheck
+var ruleTypeCheck=require('../assist/misc').func.ruleTypeCheck*/
+
+//var fs=require('fs')
+var dataType = require('../define/enum/validEnum').enum.dataType;
+var ruleType = require('../define/enum/validEnum').enum.ruleType;
+var clientRuleType = require('../define/enum/validEnum').enum.clientRuleType;
+var intervalCheck = require('../config/global/defaultGlobalSetting').intervalCheck;
+var otherFiledNameEnum = require('../define/enum/validEnum').enum.otherFiledName;
+//var rightResult={rc:0}
+//var CRUDGlobalSetting=require('../model/redis/common/CRUDGlobalSetting').CRUDGlobalSetting
+//var async=require('async')
+var redisWrapAsync = require('./wrapAsync/db/redis/wrapAsyncRedis.js');
+
+var execSHALua = require("./component/shaLua").execSHALua;
+
+var rightResult = { rc: 0, msg: null };function sleep(numberMillis) {
     var now = new Date();
     var exitTime = now.getTime() + numberMillis;
     while (true) {
@@ -440,36 +550,36 @@ var CRUDGlobalSetting = {
     getSingleSetting: function getSingleSetting(key, subKey) {
         var _this = this;
 
-        return _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+        return _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
             var exist, result, value;
-            return regeneratorRuntime.wrap(function _callee$(_context) {
+            return regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
-                    switch (_context.prev = _context.next) {
+                    switch (_context2.prev = _context2.next) {
                         case 0:
-                            _context.next = 2;
+                            _context2.next = 2;
                             return redisWrapAsync.asyncHexists(key, subKey);
 
                         case 2:
-                            exist = _context.sent;
+                            exist = _context2.sent;
 
                             if (!(exist.rc > 0)) {
-                                _context.next = 5;
+                                _context2.next = 5;
                                 break;
                             }
 
-                            return _context.abrupt("return", exist);
+                            return _context2.abrupt("return", exist);
 
                         case 5:
                             if (!(1 === exist.msg)) {
-                                _context.next = 15;
+                                _context2.next = 15;
                                 break;
                             }
 
-                            _context.next = 8;
+                            _context2.next = 8;
                             return redisWrapAsync.asyncHget(key, subKey);
 
                         case 8:
-                            result = _context.sent;
+                            result = _context2.sent;
                             value = result.msg;
 
 
@@ -485,17 +595,17 @@ var CRUDGlobalSetting = {
                                 }
                             rightResult.msg = value;
 
-                            return _context.abrupt("return", rightResult);
+                            return _context2.abrupt("return", rightResult);
 
                         case 15:
-                            return _context.abrupt("return", redisError.other.notExist(key, subKey));
+                            return _context2.abrupt("return", redisError.other.notExist(key, subKey));
 
                         case 16:
                         case "end":
-                            return _context.stop();
+                            return _context2.stop();
                     }
                 }
-            }, _callee, _this);
+            }, _callee2, _this);
         }))();
     },
 
@@ -503,11 +613,11 @@ var CRUDGlobalSetting = {
     getItemSetting: function getItemSetting(item) {
         var _this2 = this;
 
-        return _asyncToGenerator(regeneratorRuntime.mark(function _callee2() {
+        return _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
             var wholeResult, subItem, result;
-            return regeneratorRuntime.wrap(function _callee2$(_context2) {
+            return regeneratorRuntime.wrap(function _callee3$(_context3) {
                 while (1) {
-                    switch (_context2.prev = _context2.next) {
+                    switch (_context3.prev = _context3.next) {
                         case 0:
                             wholeResult = {};
 
@@ -527,27 +637,27 @@ var CRUDGlobalSetting = {
                             //console.log(new Date().getTime())
                             //redisClient.on('ready',function(){
                             //console.log(new Date().getTime())
-                            _context2.t0 = regeneratorRuntime.keys(defaultSetting[item]);
+                            _context3.t0 = regeneratorRuntime.keys(defaultSetting[item]);
 
                         case 3:
-                            if ((_context2.t1 = _context2.t0()).done) {
-                                _context2.next = 13;
+                            if ((_context3.t1 = _context3.t0()).done) {
+                                _context3.next = 13;
                                 break;
                             }
 
-                            subItem = _context2.t1.value;
-                            _context2.next = 7;
+                            subItem = _context3.t1.value;
+                            _context3.next = 7;
                             return _this2.getSingleSetting(item, subItem);
 
                         case 7:
-                            result = _context2.sent;
+                            result = _context3.sent;
 
                             if (!(result.rc && result.rc > 0)) {
-                                _context2.next = 10;
+                                _context3.next = 10;
                                 break;
                             }
 
-                            return _context2.abrupt("return", result);
+                            return _context3.abrupt("return", result);
 
                         case 10:
                             // console.log(result)
@@ -564,19 +674,19 @@ var CRUDGlobalSetting = {
                                             }
                                             //console.log(wholeResult)
                                         })*/
-                            _context2.next = 3;
+                            _context3.next = 3;
                             break;
 
                         case 13:
                             rightResult.msg = wholeResult;
-                            return _context2.abrupt("return", rightResult);
+                            return _context3.abrupt("return", rightResult);
 
                         case 15:
                         case "end":
-                            return _context2.stop();
+                            return _context3.stop();
                     }
                 }
-            }, _callee2, _this2);
+            }, _callee3, _this2);
         }))();
     },
 
@@ -609,12 +719,12 @@ var CRUDGlobalSetting = {
     getAllSetting: function getAllSetting() {
         var _this3 = this;
 
-        return _asyncToGenerator(regeneratorRuntime.mark(function _callee3() {
+        return _asyncToGenerator(regeneratorRuntime.mark(function _callee4() {
             var wholeResult, item, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, subItem, result;
 
-            return regeneratorRuntime.wrap(function _callee3$(_context3) {
+            return regeneratorRuntime.wrap(function _callee4$(_context4) {
                 while (1) {
-                    switch (_context3.prev = _context3.next) {
+                    switch (_context4.prev = _context4.next) {
                         case 0:
                             wholeResult = {};
                             //计算item总数，以便确定合适可以返回全部（因为每读一次，都是异步）
@@ -623,15 +733,15 @@ var CRUDGlobalSetting = {
                                         totalSubItemNum+=Object.keys(defaultSetting[item]).length
                                     }*/
 
-                            _context3.t0 = regeneratorRuntime.keys(defaultSetting);
+                            _context4.t0 = regeneratorRuntime.keys(defaultSetting);
 
                         case 2:
-                            if ((_context3.t1 = _context3.t0()).done) {
-                                _context3.next = 38;
+                            if ((_context4.t1 = _context4.t0()).done) {
+                                _context4.next = 38;
                                 break;
                             }
 
-                            item = _context3.t1.value;
+                            item = _context4.t1.value;
 
                             if (undefined === wholeResult[item]) {
                                 wholeResult[item] = {};
@@ -639,30 +749,30 @@ var CRUDGlobalSetting = {
                             _iteratorNormalCompletion = true;
                             _didIteratorError = false;
                             _iteratorError = undefined;
-                            _context3.prev = 8;
+                            _context4.prev = 8;
                             _iterator = Object.keys(defaultSetting[item])[Symbol.iterator]();
 
                         case 10:
                             if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                                _context3.next = 22;
+                                _context4.next = 22;
                                 break;
                             }
 
                             subItem = _step.value;
 
                             console.log(item + " " + subItem);
-                            _context3.next = 15;
+                            _context4.next = 15;
                             return _this3.getSingleSetting(item, subItem);
 
                         case 15:
-                            result = _context3.sent;
+                            result = _context4.sent;
 
                             if (!(result.rc && result.rc > 0)) {
-                                _context3.next = 18;
+                                _context4.next = 18;
                                 break;
                             }
 
-                            return _context3.abrupt("return", result);
+                            return _context4.abrupt("return", result);
 
                         case 18:
                             wholeResult[item][subItem] = result.msg;
@@ -675,56 +785,56 @@ var CRUDGlobalSetting = {
 
                         case 19:
                             _iteratorNormalCompletion = true;
-                            _context3.next = 10;
+                            _context4.next = 10;
                             break;
 
                         case 22:
-                            _context3.next = 28;
+                            _context4.next = 28;
                             break;
 
                         case 24:
-                            _context3.prev = 24;
-                            _context3.t2 = _context3["catch"](8);
+                            _context4.prev = 24;
+                            _context4.t2 = _context4["catch"](8);
                             _didIteratorError = true;
-                            _iteratorError = _context3.t2;
+                            _iteratorError = _context4.t2;
 
                         case 28:
-                            _context3.prev = 28;
-                            _context3.prev = 29;
+                            _context4.prev = 28;
+                            _context4.prev = 29;
 
                             if (!_iteratorNormalCompletion && _iterator.return) {
                                 _iterator.return();
                             }
 
                         case 31:
-                            _context3.prev = 31;
+                            _context4.prev = 31;
 
                             if (!_didIteratorError) {
-                                _context3.next = 34;
+                                _context4.next = 34;
                                 break;
                             }
 
                             throw _iteratorError;
 
                         case 34:
-                            return _context3.finish(31);
+                            return _context4.finish(31);
 
                         case 35:
-                            return _context3.finish(28);
+                            return _context4.finish(28);
 
                         case 36:
-                            _context3.next = 2;
+                            _context4.next = 2;
                             break;
 
                         case 38:
-                            return _context3.abrupt("return", wholeResult);
+                            return _context4.abrupt("return", wholeResult);
 
                         case 39:
                         case "end":
-                            return _context3.stop();
+                            return _context4.stop();
                     }
                 }
-            }, _callee3, _this3, [[8, 24, 28, 36], [29,, 31, 35]]);
+            }, _callee4, _this3, [[8, 24, 28, 36], [29,, 31, 35]]);
         }))();
     },
     setSingleSetting: function setSingleSetting(item, subItem, newValue) {
@@ -926,13 +1036,14 @@ var convertURLSearchString = function convertURLSearchString(searchString, cb) {
 
 //获得当前用户的信息，以便在toolbar上显示对应的信息
 var getUserInfo = function getUserInfo(req) {
-    var result;
-    if (req.session.state === userStateEnum.login) {
-        result = req.session.userName;
-        //result.userId=req.session.userId
-    }
-    //console.log(result)
-    return result;
+    return req.session.userName;
+    /*    var result
+        if(req.session.state===userStateEnum.login){
+            result=req.session.userName
+            //result.userId=req.session.userId
+        }
+        //console.log(result)
+        return result*/
 };
 
 /*var quit=function(req){
@@ -942,12 +1053,23 @@ var getUserInfo = function getUserInfo(req) {
 
  }*/
 
+//返回enum 状态（noSess/notLogin/Login）
 var checkUserState = function checkUserState(req) {
-    //需要检测状态,如果不是1或者2,就没有session,后续的代码也就不必执行
-    if (userStateEnum.notLogin != req.session.state && userStateEnum.login != req.session.state) {
-        return miscError.user.notLogin;
+    //如果是非GET的req，返回noSess说明是黑客攻击
+    if (undefined === req.session) {
+        return userStateEnum.noSess;
     }
-    return rightResult;
+    //已经在get方法中获得sess
+    if (undefined === req.session.userName) {
+        return userStateEnum.notLogin;
+    }
+
+    return userStateEnum.login;
+    //需要检测状态,如果不是1或者2,就没有session,后续的代码也就不必执行
+    /*    if(userStateEnum.notLogin!=req.session.state && userStateEnum.login!=req.session.state){
+            return miscError.user.notLogin
+        }
+        return rightResult*/
 };
 
 //直接在page中使用valid函数进行判断
@@ -955,14 +1077,14 @@ var checkUserState = function checkUserState(req) {
     return input_validate.user._id.type.define.test(req.session.userId) ? rightResult:input_validate.user._id.type.client
 }*/
 
-var checkUserLogin = function checkUserLogin(req) {
-    return req.session.state === userStateEnum.login ? rightResult : miscError.user.notLogin;
-};
+/*var checkUserLogin=function(req){
+    return req.session.state===userStateEnum.login ? rightResult:miscError.user.notLogin
+}*/
 
 //state只要不是undefine就可以
-var checkUserStateNormal = function checkUserStateNormal(req) {
-    return userStateEnum.login === req.session.state || userStateEnum.notLogin === req.session.state ? rightResult : miscError.user.stateWrong;
-};
+/*var checkUserStateNormal=function(req){
+    return (userStateEnum.login===req.session.state || userStateEnum.notLogin===req.session.state) ? rightResult:miscError.user.stateWrong
+}*/
 
 /*
 //新版本,使用新的逻辑
@@ -1451,28 +1573,34 @@ var validate = {
     //inputValue:{username:{value:xxx},password:{value:yyy}}
     //inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
     checkInput: function checkInput(inputValue, inputItemDefine) {
+
         var rc = {};
         var tmpResult = void 0;
         //检查参数的更是，必需是Object，且含有key
+        console.log("input para is " + JSON.stringify(inputValue));
         if (false === dataTypeCheck.isSetValue(inputValue)) {
             /*            rc['rc']=validateError.valueNotDefine.rc
                         rc['msg']=`${inputV}validateError`*/
+            //console.log('start check1')
             return validateError.valueNotDefine;
         }
         if (dataTypeCheck.isEmpty(inputValue)) {
+            //console.log('start check2')
             return validateError.valueEmpty;
         }
-        //检查rule是否合格
-        tmpResult = validate._private.checkRuleBaseOnRuleDefine(inputItemDefine);
-        if (0 < tmpResult.rc) {
-            return tmpResult;
-        }
+        //检查rule是否合格（不用每次都执行，而是预先做好一次即可）
+        /*        tmpResult=validate._private.checkRuleBaseOnRuleDefine(inputItemDefine)
+                if(0<tmpResult.rc){
+                    return tmpResult
+                }*/
         //将rule中的define转换成合适的类型（之后进行判断的时候就不用再次转换）
         //直接在maintain中完成，省得每次checkInput都调用，浪费CPU
         // validate._private.sanityRule(inputItemDefine)
         //console.log(inputItemDefine)
 
         for (var itemName in inputValue) {
+            /*console.log(itemName)
+                        console.log(inputItemDefine[itemName])*/
             rc[itemName] = {};
             rc[itemName]['rc'] = 0;
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
@@ -1482,21 +1610,21 @@ var validate = {
                 //console.log(itemName)
                 rc[itemName]['rc'] = validateError.valueRelatedRuleNotDefine.rc;
                 rc[itemName]['msg'] = "" + itemName + validateError.valueRelatedRuleNotDefine.msg;
+
                 return rc;
                 //return validateError.noRelatedItemDefine
             }
+
             var currentItemRule = inputItemDefine[itemName];
 
             var currentChineseName = inputItemDefine[itemName]['chineseName'];
             //先行判断输入值是否empty，然后赋值给变量；而不是多次使用isEmpty函数。如此，可以加快代码执行速度
             //let emptyFlag=(false=== dataTypeCheck.isSetValue(inputValue[itemName]) &&  false===dataTypeCheck.isSetValue(inputValue[itemName]['value']))
             var emptyFlag = false;
-            if (false === dataTypeCheck.isSetValue(inputValue[itemName])) {
+            /*            console.log(`misc1 ${dataTypeCheck.isSetValue(inputValue[itemName])}`)
+                        console.log(`misc2 ${dataTypeCheck.isSetValue(inputValue[itemName]['value'])}`)*/
+            if (false === dataTypeCheck.isSetValue(inputValue[itemName]) || false === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
                 emptyFlag = true;
-            } else {
-                if (false === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
-                    emptyFlag = true;
-                }
             }
 
             //let currentItemValue=dataTypeCheck.isEmpty(inputValue[itemName]['value']) ? undefined:inputValue[itemName]['value']
@@ -1543,7 +1671,7 @@ var validate = {
                 //value不为空，付给变量，以便后续操作
                 currentItemValue = inputValue[itemName]['value'];
             }
-
+            //console.log(`empty check is ${JSON.stringify(rc)}`)
             //console.log(currentItemValue)
             //如果currentItemValue为空，说明没有获得default，或者require为false
             //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
@@ -1888,6 +2016,30 @@ var encodeHtml = function encodeHtml(s) {
      });*/
 };
 
+//前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成mongoose能辨认的格式{filed:'xxx'}
+var convertClientValueToServerFormat = function convertClientValueToServerFormat(values) {
+    var result = {};
+    for (var key in values) {
+        if (values[key]['value']) {
+            result[key] = values[key]['value'];
+        }
+    }
+    return result;
+};
+
+//将server返回的rc格式化成client能接受的格式
+//server可能是{rc:xxxx,msg:{client:'yyy',server:'zzz'}======>client  {rc:xxx,msg:yyy}
+var formatRc = function formatRc(rc) {
+    var clientFlag = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
+
+    if (rc.msg && (rc.msg.client || rc.msg.server)) {
+        if (clientFlag) {
+            rc.msg = rc.msg.client;
+        } else {
+            rc.msg = rc.msg.server;
+        }
+    }
+};
 exports.func = {
     dataTypeCheck: dataTypeCheck,
     ruleTypeCheck: ruleTypeCheck,
@@ -1899,8 +2051,8 @@ exports.func = {
     parseGmFileSize: parseGmFileSize,
     convertImageFileSizeToByte: convertImageFileSizeToByte,
     convertURLSearchString: convertURLSearchString,
+
     getUserInfo: getUserInfo,
-    //generateSimpleRandomString:generateSimpleRandomString,
     checkUserState: checkUserState,
     //checkUserIdFormat:checkUserIdFormat,
     checkInterval: checkInterval, // use Lua instead of session(although sesssion use redis too)
@@ -1914,7 +2066,9 @@ exports.func = {
     deleteNonNeededObject: deleteNonNeededObject,
     objectIdToRealField: objectIdToRealField,
 
-    encodeHtml: encodeHtml
+    encodeHtml: encodeHtml,
+    convertClientValueToServerFormat: convertClientValueToServerFormat,
+    formatRc: formatRc
 };
 
 // CRUDGlobalSetting.setDefault()

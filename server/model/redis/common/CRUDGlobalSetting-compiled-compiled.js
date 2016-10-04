@@ -2,7 +2,7 @@
  * Created by zw on 2016/2/10.
  * checkAllSetting:check if all value valid
  * setAllSetting: save to redis if all value are valid
- * 还是使用ioredis来操作，可以转换成同步函数，并且因为操作次数比较少，速度和lua差不多
+ * 已经移动到misc中，所以不再需要
  */
 'use strict';
 
@@ -14,7 +14,7 @@ var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "sym
     return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
 };
 
-var defaultSetting = require('../../../config/global/defaultGlobalSetting').defaultSetting;
+var defaultSetting = require('../../../config/global/globalSettingRule').defaultSetting;
 //use redis to save get golbalSetting
 var redisClient = require('../connection/redis_connection').ioredisClient;
 var dataTypeCheck = require('../../../assist/misc').func.dataTypeCheck;

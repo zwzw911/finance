@@ -1,3 +1,4 @@
+'use strict'
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -12,8 +13,13 @@ var main= require('./server/controller/main/main')
 
 var app = express();
 
+var appSetting=require('./server/config/global/appSetting')
 //设定环境
-app.set('env','development')
+for(let singleKey in appSetting){
+  //console.log(`${singleKey}:${appSetting[singleKey]}`)
+  app.set(singleKey,appSetting[singleKey])
+}
+//app.set('env','development')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'server/views'));

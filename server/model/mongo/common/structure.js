@@ -10,7 +10,7 @@ var dbFinance=require('./connection').dbFinance;
 //使用ES6的promise
 //mongoose.Promise=Promise
 //mongoose.Promise = Promise
-var mongoSetting=require('../../../config/global/defaultGlobalSetting').mongoSetting
+var mongoSetting=require('../../../config/global/globalSettingRule').mongoSetting
 
 var inputRule=require('../../../define/validateRule/inputRUle').inputRule
 
@@ -155,6 +155,7 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 // fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
 //console.log(fieldDefine['department']['name'])
 //console.log(fieldDefine['employee']['gender']['enum'])
+//console.log(JSON.stringify(fieldDefine['billType']))
 
 var userSchema=new mongoose.Schema(
     fieldDefine['user'],

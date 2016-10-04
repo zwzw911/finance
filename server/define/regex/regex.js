@@ -8,6 +8,7 @@
 var regex={
     singleSpecialChar:/^[A-Za-z0-9~`!@#%&)(_=}{:"><,;'\[\]\\\^\$\*\+\|\?\.\-]$/,
     email:/(\w+\.)*\w+@(\w+\.)+[A-Za-z]+/,
+    sessionId:/\w+/,
     ip:/(((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))/,
     sha1Hash:/^[0-9a-f]{40}$/,
     objectId:/^[0-9a-f]{24}$/,//mongodb objectid
@@ -43,6 +44,10 @@ var regex={
     },
 
     encodeHtmlChar:/[\s"&'<>]|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g,//把某些特殊字符转换成&xxx格式，传到client
+
+    lua:{
+        paramsConvert:/([{,])"(\w+)"/g, //传入lua脚本的参数固定为一个JSON转换的字符；因为lua无法处理引号(双或者单)括起的key，所以需要通过正则替换。对象===>JSON.stringify()===>字符===>正则去除双引号（stringify都为双引号）转换后的字符
+    }
 }
 module.exports={
 	regex,

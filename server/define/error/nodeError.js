@@ -75,11 +75,14 @@ var assistError={
              equalToCheckFail:{rc:68856,msg:{client:'两个输入值不相等'}},*/
         },
         checkInterval:{
+            sessionIdWrong:{rc:69900,msg:{client:'请求格式不正确',server:'session格式不正确'}},
+            IPWrong:{rc:69902,msg:{client:'请求格式不正确',server:'IP格式不正确'}},
+            unknownRequestIdentify:{rc:69924,msg:{client:'无法识别请求id',server:'请求既无IP也无sessionId'}},
             forbiddenReq:{rc:69916,msg:{client:'请求被禁止',server:'请求被禁止'}},
             between2ReqCheckFail:{rc:69918,msg:{client:'请求过于频繁，请稍候再尝试',server:'两次请求间隔小于预订值'}},
             exceedMaxTimesInDuration:{rc:69920,msg:{client:'请求过于频繁，请稍候再尝试',server:'定义的时间段内，请求次数超出最大值'}},
             tooMuchReq:{rc:69922,msg:{client:'请求过于频繁，请稍候再尝试',server:'request过于频繁'}},
-            unknownRequestIdentify:{rc:69924,msg:{client:'无法识别请求源头',server:'请求既无IP也无sessionId'}},
+
         },
         user:{
             stateWrong:{rc:69910,msg:{client:'您的状态不正确',server:'用户状态不正确'}},

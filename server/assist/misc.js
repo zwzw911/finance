@@ -7,7 +7,7 @@ require("babel-polyfill");
 require("babel-core/register")
 
 var fs=require('fs')
-//var general=require('../assist/general').general
+
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
 //var input_validate=require('../error_define/input_validate').input_validate
@@ -18,11 +18,11 @@ var regex=require('../define/regex/regex').regex
 
 /*var ioredis=require('ioredis')
 var ioredisClient=new ioredis()*/
-var LuaSHA=require('../define/enum/Lua').LuaEnum
+var LuaSHA=require('../define/Lua/LuaSHA').LuaSHA
 var redisError=require('../define/error/redisError').redisError
 
 /*      for CRUDGlobalSetting       */
-var defaultSetting=require('../config/global/defaultGlobalSetting').defaultSetting
+var defaultSetting=require('../config/global/globalSettingRule').defaultSetting
 //use redis to save get golbalSetting
 var ioredisClient=require('../model/redis/connection/redis_connection').ioredisClient
 /*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
@@ -40,16 +40,18 @@ var ruleTypeCheck=require('../assist/misc').func.ruleTypeCheck*/
 var dataType=require('../define/enum/validEnum').enum.dataType
 var ruleType=require('../define/enum/validEnum').enum.ruleType
 var clientRuleType=require('../define/enum/validEnum').enum.clientRuleType
-
+var intervalCheck=require('../config/global/defaultGlobalSetting').intervalCheck
 var otherFiledNameEnum=require('../define/enum/validEnum').enum.otherFiledName
 //var rightResult={rc:0}
 //var CRUDGlobalSetting=require('../model/redis/common/CRUDGlobalSetting').CRUDGlobalSetting
 //var async=require('async')
 var redisWrapAsync=require('./wrapAsync/db/redis/wrapAsyncRedis.js')
 
+var execSHALua=require("./component/shaLua").execSHALua
+
 var rightResult={rc:0,msg:null}
 
-var checkInterval=function(req,cb){
+/*var checkInterval=function(req,cb){
     let identify
     if(req.session && req.session.id){
         identify=req.session.id
@@ -61,6 +63,7 @@ var checkInterval=function(req,cb){
     if(undefined===identify){
         return cb(null,miscError.checkInterval.unknownRequestIdentify)
     }
+
     ioredisClient.evalsha(LuaSHA.Lua_check_interval,1,identify,new Date().getTime(),function(err,checkResult){
         //ioredisClient.eval('../model/redis/lua_script/Lua_check_interval.lua',1,ip,new Date().getTime(),function(err,checkResult){
         //ioredisClient.script('load','../model/redis/lua_script/Lua_check_interval.lua',function(err,sha){
@@ -93,8 +96,77 @@ var checkInterval=function(req,cb){
         }
         //})
     })
-}
+}*/
 
+async function checkInterval(req){
+    //return new Promise(function(resolve,reject){
+    var appSetting=require('../config/global/appSetting')
+    let identify
+
+
+    if(req.session && req.session.id){
+        if(!regex.sessionId.test(req.session.id)){
+            return miscError.checkInterval.sessionIdWrong
+        }
+        identify=req.session.id
+    }else{
+        if(true===appSetting['trust proxy']){
+            //req.ip和req.ips，只有在设置了trust proxy之后才能生效，否则一直是undefined
+            if(req.ips && req.ips[0]){
+                identify= req.ips[0]
+            }
+        }else{
+            identify=req.connection.remoteAddress
+        }
+
+        if (identify && identify.substr(0, 7) == "::ffff:") {
+            identify = identify.substr(7)
+            if(!regex.ip.test(identify)){
+                return miscError.checkInterval.IPWrong
+            }
+        }
+
+    }
+
+
+    if(undefined===identify){
+        return miscError.checkInterval.unknownRequestIdentify
+        //return cb(null,)
+    }
+
+
+    //console.log(`trust proxy false ${identify}`)
+
+
+    let params={}
+    params.setting=intervalCheck
+    params.currentTime=new Date().getTime()
+    params.id=identify
+
+    let result=await execSHALua(LuaSHA.Lua_check_interval,params)
+    //console.log(result.rc)
+    //result=JSON.parse(result)
+    switch (result['rc']) {
+        case 0:
+            return result
+        case 10:
+            let rc = {}
+            rc['rc'] = miscError.checkInterval.tooMuchReq.rc
+            rc['msg'] = `${miscError.checkInterval.forbiddenReq.msg.client}，请在${result['msg']}秒后重试`
+            //console.log(rc)
+            return  rc
+        case 11:
+            //console.log(intervalCheckBaseIPNodeError.between2ReqCheckFail)
+            return  miscError.checkInterval.between2ReqCheckFail
+            break;
+        case 12:
+            //console.log(intervalCheckBaseIPNodeError.exceedMaxTimesInDuration)
+            return miscError.checkInterval.exceedMaxTimesInDuration
+            break;
+        default:
+    }
+    //})
+}
 /*//本来先作为路由句柄，但是此功能无法在router上使用（而只能在app上使用）
 //可以作为中间件使用，但是不够灵活（get的时候出错，希望返回页面，post/put/delete的时候返回错误，希望在当前页面跳出对话框提示）。中间件只能对所有方式单一处理。
 var checkIntervalMid=function(req,res,next){
@@ -1311,31 +1383,48 @@ var validate={
     /*********************************************/
     /*         主函数，检测input并返回结果        */
     /*********************************************/
-//inputValue:{username:{value:xxx},password:{value:yyy}}
-//inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
-    checkInput(inputValue,inputItemDefine){
+    /*
+    * inputValue:{username:{value:xxx},password:{value:yyy}}
+    * inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
+    * basedOnInputValue: 对输入进行检查是，是根据inputValue的字段分别检查（true），还是根据inputRule的字段定义进行检查。
+    *                   一般当create时，false，根据inputRule的字段定义进行检查（所有字段都检查）
+    *                   当update是，true，只对输入的字段进行检查
+    * */
+    checkInput(inputValue,inputItemDefine,basedOnInputValue=true){
+
         let rc={}
         let tmpResult
         //检查参数的更是，必需是Object，且含有key
+        //console.log(`input para is ${JSON.stringify(inputValue)}`)
         if(false===dataTypeCheck.isSetValue(inputValue)){
 /*            rc['rc']=validateError.valueNotDefine.rc
             rc['msg']=`${inputV}validateError`*/
+            //console.log('start check1')
             return validateError.valueNotDefine
         }
         if(dataTypeCheck.isEmpty(inputValue)){
+            //console.log('start check2')
             return validateError.valueEmpty
         }
-        //检查rule是否合格
-        tmpResult=validate._private.checkRuleBaseOnRuleDefine(inputItemDefine)
+        //检查rule是否合格（不用每次都执行，而是预先做好一次即可）
+/*        tmpResult=validate._private.checkRuleBaseOnRuleDefine(inputItemDefine)
         if(0<tmpResult.rc){
             return tmpResult
-        }
+        }*/
         //将rule中的define转换成合适的类型（之后进行判断的时候就不用再次转换）
         //直接在maintain中完成，省得每次checkInput都调用，浪费CPU
         // validate._private.sanityRule(inputItemDefine)
 //console.log(inputItemDefine)
 
-        for (let itemName in inputValue ){
+        let base
+        if(basedOnInputValue){
+            base=inputValue
+        }else{
+            base=inputItemDefine
+        }
+        for (let itemName in base ){
+/*console.log(itemName)
+            console.log(inputItemDefine[itemName])*/
             rc[itemName]={}
             rc[itemName]['rc']=0
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
@@ -1345,21 +1434,21 @@ var validate={
                 //console.log(itemName)
                 rc[itemName]['rc']=validateError.valueRelatedRuleNotDefine.rc
                 rc[itemName]['msg']=`${itemName}${validateError.valueRelatedRuleNotDefine.msg}`
+
                 return rc
                 //return validateError.noRelatedItemDefine
             }
+
             let currentItemRule=inputItemDefine[itemName]
 
             let currentChineseName=inputItemDefine[itemName]['chineseName']
             //先行判断输入值是否empty，然后赋值给变量；而不是多次使用isEmpty函数。如此，可以加快代码执行速度
             //let emptyFlag=(false=== dataTypeCheck.isSetValue(inputValue[itemName]) &&  false===dataTypeCheck.isSetValue(inputValue[itemName]['value']))
             let emptyFlag=false
-            if(false===dataTypeCheck.isSetValue(inputValue[itemName])){
+/*            console.log(`misc1 ${dataTypeCheck.isSetValue(inputValue[itemName])}`)
+            console.log(`misc2 ${dataTypeCheck.isSetValue(inputValue[itemName]['value'])}`)*/
+            if(false===dataTypeCheck.isSetValue(inputValue[itemName]) || false===dataTypeCheck.isSetValue(inputValue[itemName]['value'])){
                 emptyFlag=true
-            }else{
-                if(false===dataTypeCheck.isSetValue(inputValue[itemName]['value'])){
-                    emptyFlag=true
-                }
             }
 
             //let currentItemValue=dataTypeCheck.isEmpty(inputValue[itemName]['value']) ? undefined:inputValue[itemName]['value']
@@ -1407,7 +1496,7 @@ var validate={
                 //value不为空，付给变量，以便后续操作
                 currentItemValue=inputValue[itemName]['value']
             }
-
+//console.log(`empty check is ${JSON.stringify(rc)}`)
 //console.log(currentItemValue)
             //如果currentItemValue为空，说明没有获得default，或者require为false
             //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
@@ -1745,6 +1834,30 @@ var encodeHtml = function(s){
      });*/
 };
 
+
+//前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成mongoose能辨认的格式{filed:'xxx'}
+var convertClientValueToServerFormat=function(values){
+    let result={}
+    for(let key in values){
+        if(values[key]['value']){
+            result[key]=values[key]['value']
+        }
+    }
+    return result
+}
+
+
+//将server返回的rc格式化成client能接受的格式
+//server可能是{rc:xxxx,msg:{client:'yyy',server:'zzz'}======>client  {rc:xxx,msg:yyy}
+var  formatRc=function(rc,clientFlag=true){
+    if(rc.msg && (rc.msg.client || rc.msg.server)){
+        if(clientFlag){
+            rc.msg=rc.msg.client
+        }else{
+            rc.msg=rc.msg.server
+        }
+    }
+}
 exports.func={
     dataTypeCheck,
     ruleTypeCheck,
@@ -1772,6 +1885,8 @@ exports.func={
     objectIdToRealField,
 
     encodeHtml,
+    convertClientValueToServerFormat,
+    formatRc,
 }
 
 // CRUDGlobalSetting.setDefault()

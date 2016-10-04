@@ -4,7 +4,7 @@
 
 
 var LuaSHA={
-    Lua_check_interval:'566736faee61f7c5c919283021776f5fa917799a',
+    Lua_check_interval:'27a1e990d5d3fd2ce87469973afa1dccf4290b38',
     adminLogin:{
         //adminLogin:'61031831d67275e2a2eef1e968049979cb4efbf1',
         adminLogin_saveUserPassword:'8e2a0849243d28a462c59ecbe088fbf2c842c475',
@@ -13,6 +13,6 @@ var LuaSHA={
     },
 
 }
-exports.LuaSHA={
-    LuaSHA:LuaSHA,
+module.exports={
+    LuaSHA,
 }

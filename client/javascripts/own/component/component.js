@@ -1,5 +1,6 @@
 /**
  * Created by wzhan039 on 2016-08-18.
+ * 通用函数（可供finance调用）
  */
     'use strict'
 var app=angular.module('component',[]);
@@ -185,6 +186,7 @@ console.log(dialogHeight)*/
                  $('#'+dialogId).addClass('fade')*!/
             }*/
         },
+
     }
 })
 
@@ -219,7 +221,7 @@ app.factory('financeHelper',function(basicHelper){
 
         },
 
-        //检查input value
+        //检查input value（对单个field进行检查，inputRule/inputAttr是coll级别）
         checkInput:function(field,inputRule,inputAttr){
             var requireFlag=inputRule[field]['require']['define']
             var currentValue=inputAttr[field]['value']
@@ -314,6 +316,7 @@ app.factory('financeHelper',function(basicHelper){
         loadCurrentData:function(idx,inputAttr,recorder){
             for(var field in inputAttr){
                 inputAttr[field]['value']=recorder[idx][field]
+                inputAttr[field]['originalValue']=recorder[idx][field] //用来比较是不是做了修改
             }
         },
     }

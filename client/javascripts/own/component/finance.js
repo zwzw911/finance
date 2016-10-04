@@ -38,10 +38,18 @@ app.factory('financeCRUDHelper',function($http){
     }
     return {
         billType:{
-            //idx无用，只是为了统一使用参数
+            //idx无用，只是为了统一使用参数(create和update同样在modal上操作，使用同一个按钮)
             'create':function(idx,inputAttr,recorder){
-                //首先加入db
-                
+                //首先加入db（加入db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
+                let value={}
+                for(let singleInputAttr in inputAttr){
+                    if(''!==inputAttr[singleInputAttr]['value']){
+                        value[singleInputAttr]={}
+                        value[singleInputAttr]['value']=inputAttr[singleInputAttr]['value']
+                    }
+                }
+                $http.post('/billType',{values:value})
+
                 //然后加入client数据，防止多次返回
                 _angularDataOp.create(idx,inputAttr,recorder)
             },
@@ -52,8 +60,15 @@ app.factory('financeCRUDHelper',function($http){
                 _angularDataOp.delete(idx,recorder)
             },
             'update':function(idx,inputAttr,recorder){
-                //首先更新数据到db
-                
+                //首先更新数据到db（更新db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
+                //将修改过的值上传修改
+                let value={}
+                for(let singleInputAttr in inputAttr){
+                    if(inputAttr[singleInputAttr]['value']!==inputAttr[singleInputAttr]['originalValue']){
+                        value[singleInputAttr]={}
+                        value[singleInputAttr]['value']=inputAttr[singleInputAttr]['value']
+                    }
+                }
 
                 //然后更新client端数据
                 _angularDataOp.update(idx,inputAttr,recorder)

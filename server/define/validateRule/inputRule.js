@@ -31,6 +31,7 @@ var inputRule={
         salt:{
             chineseName: '盐',
             type:inputDataType.string,
+            //require=false：client无需此字段，server通过函数（必须有salt来sha密码）保证由此字段
             require: {define: false, error: {rc: 10000},mongoError:{rc:20000,msg:'盐不能为空'}},//mongoError在mongovalidator中，从Object转换成String，因为mongo的validtor只能接受String作为fail的返回信息
             minLength:{define:1,error:{rc:10002},mongoError:{rc:20002,msg:'盐至少1个字符'}},
             maxLength:{define:10,error:{rc:10004},mongoError:{rc:20004,msg:'盐的长度不能超过10个字符'}},
@@ -168,7 +169,7 @@ var inputRule={
         parentBillType:{
             chineseName:'父类别',
             type:inputDataType.string,
-            require: {define: true, error: {rc: 10046},mongoError:{rc:20046,msg:'父类别不能为空'}},
+            require: {define: false, error: {rc: 10046},mongoError:{rc:20046,msg:'父类别不能为空'}},
             format:{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'父类别的id格式不正确'}},//format == mongodb_match
         },
         cDate:{

@@ -3,15 +3,16 @@
 /**
  * Created by wzhan039 on 2015-07-08.
  */
-//var inputDefine=require('../assist/input_define').inputDefine;
-/*var uploadDefine=require('../assist/upload_define').uploadDefine;
-var ueditor_config=require('../assist/ueditor_config').ue_config;
-var input_validate=require('../error_define/input_validate').input_validate;*/
-//var micellaneous=require('../assist_function/miscellaneous').func
-var regex = require('../../../define/regex/regex').regex;
-var mongoose = require('./connection').mongoose;
 
-var mongoSetting = require('../../../config/global/defaultGlobalSetting').mongoSetting;
+var mongoose = require('mongoose');
+var fs = require('fs');
+var regex = require('../../../define/regex/regex').regex;
+var dbFinance = require('./connection').dbFinance;
+
+//使用ES6的promise
+//mongoose.Promise=Promise
+//mongoose.Promise = Promise
+var mongoSetting = require('../../../config/global/globalSettingRule').mongoSetting;
 
 var inputRule = require('../../../define/validateRule/inputRUle').inputRule;
 
@@ -19,7 +20,7 @@ var collections = ['department', 'employee', 'billType', 'bill'];
 
 var schemaOptions = {
     autoIndex: true, //if true,每次app启动，moogoose都会发送ensureIndex给每个index，可能影响性能。
-    bufferCommands: false, //如果mongodb没有启动，moogoose会缓存命令。
+    bufferCommands: true, //如果mongodb没有启动，moogoose会缓存命令。//必须
     //capped:	//本collection为capped（环形集合，超出最大数量后，新的覆盖老的。插入速度极快）
     //collection: //collection默认名字是在Model中设置的，为了自定义collection的名称，可以设置此选项
     //emitIndexErrors：	//设为true，则当mongoose发出ensureIndex，但是失败后，会在model产生一个error事件
@@ -51,6 +52,14 @@ var toObjectOptions = {
 
 /*                           department                        */
 var fieldDefine = {
+    user: {
+        name: { type: String, unique: true },
+        salt: { type: String },
+        encryptedPassword: { type: String },
+        cDate: { type: Date, default: Date.now },
+        uDate: { type: Date, default: Date.now },
+        dDate: { type: Date }
+    },
     department: { //采用和inputRule一样的名字，以便之后用for循环添加内置validator
         name: { type: String, unique: true }, //全部设成{}，即使只有type定义，以便之后添加validator
         parentDepartment: { type: mongoose.Schema.Types.ObjectId, ref: "departments" },
@@ -99,18 +108,19 @@ var ruleMatch = {
     max: 'max',
     minLength: 'minlength',
     maxLength: 'maxlength',
-    format: 'match'
+    format: 'match',
+    'enum': 'enum'
 };
 //console.log(fieldDefine['department']['parentDepartment'])
 /*                          将inputRule中的rule定义转换成mongoose内置validator                          */
 //根据flag确实是否要为field设置内建validator
 if (true === mongoSetting.schemaOptions.validateFlag) {
-    for (var singleCollectionsName in inputRule) {
+    for (var singleCollectionsName in fieldDefine) {
         //读取每个collection
-        for (var singleFiled in inputRule[singleCollectionsName]) {
+        for (var singleFiled in fieldDefine[singleCollectionsName]) {
             //读取每个collection下的字段（path）
             for (var singleItem in inputRule[singleCollectionsName][singleFiled]) {
-                //读取每个字段下的rule
+                //读取每个字段下对应在inputRule下的每个rule
                 if (ruleMatch[singleItem]) {
                     //rule是否在mongo中有对应的内建validator
                     var singleRuleValue = inputRule[singleCollectionsName][singleFiled][singleItem];
@@ -139,8 +149,12 @@ if (true === mongoSetting.schemaOptions.validateFlag) {
     }
 }
 
-console.log(fieldDefine['department']['name']);
-console.log(fieldDefine['employee']['leader']);
+// fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
+//console.log(fieldDefine['department']['name'])
+//console.log(fieldDefine['employee']['gender']['enum'])
+//console.log(JSON.stringify(fieldDefine['billType']))
+
+var userSchema = new mongoose.Schema(fieldDefine['user'], schemaOptions);
 
 var departmentSchema = new mongoose.Schema(fieldDefine['department'], schemaOptions);
 
@@ -149,12 +163,15 @@ var billTypeSchema = new mongoose.Schema(fieldDefine['billType'], schemaOptions)
 
 var billSchema = new mongoose.Schema(fieldDefine['bill'], schemaOptions);
 
-var departmentModel = mongoose.model('departments', departmentSchema);
-var employeeModel = mongoose.model('employees', employeeSchema);
-var billTypeModel = mongoose.model('billTypes', billTypeSchema);
-var billModel = mongoose.model('bills', billSchema);
+var userModel = dbFinance.model('users', userSchema);
+var departmentModel = dbFinance.model('departments', departmentSchema);
+var employeeModel = dbFinance.model('employees', employeeSchema);
+var billTypeModel = dbFinance.model('billTypes', billTypeSchema);
+var billModel = dbFinance.model('bills', billSchema);
 
+//console.log(billModel)
 module.exports = {
+    userModel: userModel,
     departmentModel: departmentModel,
     employeeModel: employeeModel,
     billTypeModel: billTypeModel,
@@ -163,399 +180,5 @@ module.exports = {
     collections: collections,
     fieldDefine: fieldDefine
 }; //
-/*
-/!*                              user                        *!/
-var userSch=new mongoose.Schema({
-        name:{type:String, unique:true},
-        password:String,
-        mobilePhone:Number,
-        thumbnail:{type:String,default:'b10e366431927231a487f08d9d1aae67f1ec18b4.png'},
-        //articles:[{type:mongoose.Schema.Types.ObjectId,ref:'articles'}],
-        cDate:{type:Date,default:Date()},
-        mDate:{type:Date,default:Date()},
-        dDate:Date
-    },
-    schemaOptions
-);
-
-userSch.set('toObject',toObjectOptions)
-
-userSch.path('name').validate(function(value){
-    if(input_validate.user.name.require.define){
-        return input_validate.user.name.type.define.test(value)
-    }else{
-        return (null===value || input_validate.user.name.type.define.test(value))
-    }
-})
-//password had been hashed
-userSch.path('password').validate(function(value){
-    if(input_validate.user.password.require.define){
-        return input_validate.user.password.encryptedPassword.define.test(value)
-    }else{
-        return (null===value || input_validate.user.password.encryptedPassword.define.test(value))
-    }
-})
-userSch.path('mobilePhone').validate(function(value){
-    if(input_validate.user.mobilePhone.require.define){
-        return input_validate.user.mobilePhone.type.define.test(value)
-    }else{
-        return (null===value || input_validate.user.mobilePhone.type.define.test(value))
-    }
-})
-userSch.path('thumbnail').validate(function(value){
-    if(input_validate.user.thumbnail.require.define){
-        return input_validate.user.thumbnail.type.define.test(value)
-    }else{
-        return (null===value || input_validate.user.thumbnail.type.define.test(value))
-    }
-})
-userSch.virtual('mDateConv').get(function(){
-    return this.mDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})
-/!*userSch.virtual('cDateConv').get(function(){
-    return this.cDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})*!/
-var userModel=mongoose.model('users',userSch)//mongoose auto convert user to users, so directly use users as collection name
-
-
-
-/!*                              key                             *!/
-var keySch=new mongoose.Schema({
-    key:{type:String,unique:true},
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-},schemaOptions);
-keySch.set('toObject',toObjectOptions);
-
-keySch.path('key').validate(function(value){
-    if(input_validate.key.key.require.define){
-        return input_validate.key.key.type.define.test(value)
-    }else{
-        return (null===value || input_validate.key.key.type.define.test(value))
-    }
-})
-var keyModel=mongoose.model('keys',keySch);
-
-/!*                              attachment                             *!/
-var attachmentSch=new mongoose.Schema({
-    hashName:{type:String,unique:true},//hashName sha1 40+4 ~ 40+5
-    name:String,//100  compatilbe with windows
-    storePath:String,// 1024 for linux(don't care windows,since server use Linux as OS)
-    size:Number,//in byte
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-},schemaOptions);
-attachmentSch.set('toObject',toObjectOptions);
-attachmentSch.path('hashName').validate(function(value){
-    if(input_validate.attachment.hashName.require.define){
-        return input_validate.attachment.hashName.type.define.test(value)
-    }else{
-        return (null===value || input_validate.attachment.hashName.type.define.test(value))
-    }
-    //return (value != null && value.length>=input_validate.attachment.hashName.minLength.define && value.length<=input_validate.attachment.hashName.maxLength.define );// 44 ~ 45,后缀为3～4个字符
-});
-attachmentSch.path('name').validate(function(value){
-    return (value != null && value.length<input_validate.attachment.name.maxLength.define &&  value.length>=input_validate.attachment.name.minLength.define);
-});
-attachmentSch.path('storePath').validate(function(value){
-    return (value != null && value.length<input_validate.attachment.storePath.maxLength.define);
-});
-attachmentSch.path('size').validate(function(value){
-    if(input_validate.attachment.size.define){
-        return ((value != null) && (value<input_validate.attachment.size.maxLength.define));
-    }else{
-        return ((value === null) || (value<input_validate.attachment.size.maxLength.define));
-    }
-});
-
-attachmentSch.virtual('cDateConv').get(function(){
-    return this.cDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})
-var attachmentModel=mongoose.model('attachments',attachmentSch);
-
-/!*                          inner_image                                 *!/
-/!*
-*   用户可能upload图片后又删除，所以需要对上传的文本和数据库进行同步
-*   因此需要单独表（而不是和attachment混在一起，否则处理麻烦）
-*   结构和attachment基本一致
-* *!/
-var innerImageSch=new mongoose.Schema({
-    hashName:{type:String,unique:true},//sha1 40+5
-    name:String,//100   compatilbe with windows
-    storePath:String,// 1024 for linux(don't care windows,since server use Linux as OS)
-    size:Number,//in byte
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-},schemaOptions);
-innerImageSch.set('toObject',toObjectOptions);
-innerImageSch.path('hashName').validate(function(value){
-    if(input_validate.innerImage.hashName.require.define){
-        return input_validate.innerImage.hashName.type.define.test(value)
-    }else{
-        return (null===value || input_validate.innerImage.hashName.type.define.test(value))
-    }
-    //return (value != null && value.length>=input_validate.innerImage.hashId.minLength.define && value.length<=input_validate.innerImage.hashId.maxLength.define);//44 ~ 45,后缀为3～4个字符
-});
-innerImageSch.path('name').validate(function(value){
-    return (value != null && value.length<input_validate.innerImage.name.maxLength.define && value.length>=input_validate.innerImage.name.minLength.define);
-});
-innerImageSch.path('storePath').validate(function(value){
-    return (value != null && value.length<input_validate.innerImage.storePath.maxLength.define);
-});
-innerImageSch.path('size').validate(function(value){
-    return ((value != null) && (value<=input_validate.innerImage.size.maxLength.define));//此处采用ueditor_config中的设置
-});
-
-innerImageSch.virtual('mDateConv').get(function(){
-    return this.mDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})
-
-var innerImageModel=mongoose.model('innerImages',innerImageSch);
-
-
-/!*                          comment                                 *!/
-/!*
- *   传统方式，无父-子关系
- * *!/
-var commentSch=new mongoose.Schema({
-    //_id:mongoose.Schema.Types.ObjectId,
-    //为了方便populate出user的内容，需要添加articleId，以便直接查找comment，然后populate
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:"articles"},
-    user:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    content:String,// 255
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-},schemaOptions);
-commentSch.set('toObject',toObjectOptions);
-commentSch.path('articleId').validate(function(value){
-    if(input_validate.comment.articleId.require.define){
-        return input_validate.comment.articleId.type.define.test(value)
-    }else{
-        return (null===value || input_validate.comment.articleId.type.define.test(value))
-    }
-    //return (value != null || input_validate.comment.articleId.type.define.test(value));
-});
-commentSch.path('user').validate(function(value){
-    //return (value != null || value.length<input_validate.comment.user.type.define.test(value));
-    if(input_validate.comment.user.require.define){
-        return input_validate.comment.user.type.define.test(value)
-    }else{
-        return (null===value || input_validate.comment.user.type.define.test(value))
-    }
-});
-commentSch.path('content').validate(function(value){
-    return (value == null || value.length<input_validate.comment.content.maxLength.define);
-});
-
-commentSch.virtual('mDateConv').get(function(){
-    return this.mDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})
-var commentModel=mongoose.model('comments',commentSch);
-
-/!*                                      article                                  *!/
-var articleSch=new mongoose.Schema({
-    //_id:objectId(),
-    hashId:{type:String,unique:true}, //hash id 40
-    title:String,
-    state:{type:String,enum:['正在编辑','编辑完成'],default:'正在编辑'},
-    author:{type:mongoose.Schema.Types.ObjectId,ref:"users"},
-    //keys:[{type:mongoose.Schema.Types.ObjectId,ref:'keys'}],
-    keys:[String],
-    innerImage:[{type:mongoose.Schema.Types.ObjectId,ref:'innerImages'}], //采用_id作为外键
-    attachment:[{type:mongoose.Schema.Types.ObjectId,ref:'attachments'}],
-    pureContent:String,
-    htmlContent:String,
-    comment:[{type:mongoose.Schema.Types.ObjectId,ref:'comments'}],
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-}, schemaOptions);
-articleSch.set('toObject',toObjectOptions);
-articleSch.path('hashId').validate(function(value){
-    if(input_validate.article.hashId.require.define){
-        return input_validate.article.hashId.type.define.test(value)
-    }else{
-        return (null===value || input_validate.article.hashId.type.define.test(value))
-    }
-    //return value!=null && input_validate.article.hashId.type.define.test(value);
-})
-articleSch.path('title').validate(function(value){
-    return value!=null && value.length>=input_validate.article.title.minLength.define && value.length<=input_validate.article.title.maxLength.define ;
-})
-articleSch.path('author').validate(function(value){
-    if(input_validate.article.author.require.define){
-        return input_validate.article.author.type.define.test(value)
-    }else{
-        return (null===value || input_validate.article.author.type.define.test(value))
-    }
-    //return value!=null && input_validate.article.author.type.define.test(value)
-})
-articleSch.path('keys').validate(function(value){
-    if( value==[] || null===value ){return true}
-    if(value.length<=input_validate.article.keys.maxSize.define){
-        for(var i=0;i<value.length;i++){
-            if(!input_validate.article.keys.type.define.test(value[i])){
-                return false
-            }
-        }
-    }
-    return true
-})
-
-articleSch.path('innerImage').validate(function(value){
-    if( value==[] || null===value ){return true}
-    if(value.length<=input_validate.article.innerImage.maxSize.define){
-        for(var i=0;i<value.length;i++){
-            if(!input_validate.article.innerImage.type.define.test(value[i])){
-                return false
-            }
-        }
-    }
-    return true
-})
-articleSch.path('attachment').validate(function(value){
-    if( value==[] || null===value ){return true}
-    if(value.length<=input_validate.article.attachment.maxSize.define){
-        for(var i=0;i<value.length;i++){
-            if(!input_validate.article.attachment.type.define.test(value[i])){
-                return false
-            }
-        }
-    }
-    return true
-})
-articleSch.path('pureContent').validate(function(value){
-    return null===value || value.length<input_validate.article.pureContent.maxLength.define
-})
-articleSch.path('htmlContent').validate(function(value){
-    return null===value || value.length<input_validate.article.htmlContent.maxLength.define;
-})
-
-articleSch.virtual('mDateConv').get(function(){
-    return this.mDate.toLocaleString()
-})
-innerImageSch.virtual('cDateConv').get(function(){
-    return this.cDate.toLocaleString()
-    //return this.mDate.toLocaleDateString()+' '+this.mDate.toLocaleTimeString()
-})
-
-var articleModel=mongoose.model('articles',articleSch);
-//var commentModel=mongoose.model('comment',commentSch);
-
-/!*                  folder                      *!/
-var folderSch=new mongoose.Schema({
-        folderName:{type:String},//255 infact, in Linux, the max lenght can be 1024, but for easy to use, just use 255
-        owner:{type:mongoose.Schema.Types.ObjectId,ref:'users'},
-        parentId:{type:mongoose.Schema.Types.ObjectId,ref:'folders'},
-        level:Number,//当前目录的层数,从1开始计算
-        cDate:Date,
-        mDate:{type:Date,default:Date()},
-        dDate:Date
-    },
-    schemaOptions
-);
-folderSch.set('toObject',toObjectOptions)
-folderSch.path('folderName').validate(function(value){
-    return (value!=null && input_validate.folder.folderName.type.define.test(value))
-})
-folderSch.path('owner').validate(function(value){
-    return (value!=null && input_validate.folder.owner.type.define.test(value))
-})
-folderSch.path('parentId').validate(function(value){
-    //对于用户的根目录,是没有parent目录的
-    return (value==null || input_validate.folder.parentId.type.define.test(value))
-})
-folderSch.path('level').validate(function(value){
-    return (value!=null && input_validate.folder.level.range.define.min<=value &&  input_validate.folder.level.range.define.max>=value)
-})
-folderSch.virtual('mDateConv').get(function(){
-    return this.mDate.toLocaleString()
-})
-/!*folderSch.virtual('cDateConv').get(function(){
-    return this.cDate.toLocaleString()
-})*!/
-var folderModel=mongoose.model('folders',folderSch);
-
-/!**********************************************************************!/
-/!**********************************************************************!/
-/!*                          relation                                    *!/
-/!**********************************************************************!/
-/!**********************************************************************!/
-
-
-/!*                      key-article                                     *!/
-//为了搜索方便
-var keyArticleSch=new mongoose.Schema({
-    articleId:{type:mongoose.Schema.Types.ObjectId,ref:'articles'},
-    keyId:{type:mongoose.Schema.Types.ObjectId,ref:'keys'}
-},schemaOptions)
-keyArticleSch.set('toObject',toObjectOptions)
-keyArticleSch.path('articleId').validate(function(value){
-    return (value!=null && input_validate.keyArticle.articleId.validateError.define.test(value))
-})
-keyArticleSch.path('keyId').validate(function(value){
-    return (value!=null && input_validate.keyArticle.keyId.validateError.define.test(value))
-})
-var keyArticleModel=mongoose.model('keyArticles',keyArticleSch);
-
-
-/!*                           article in folder                       *!/
-var articleFolderSch=new mongoose.Schema({
-        articleId:{type:mongoose.Schema.Types.ObjectId,ref:'articles'},
-        folderId:{type:mongoose.Schema.Types.ObjectId,ref:'personalArticles'},
-        cDate:Date,
-        mDate:{type:Date,default:Date()},
-        dDate:Date
-    },
-    schemaOptions
-);
-articleFolderSch.set('toObject',toObjectOptions)
-articleFolderSch.path('articleId').validate(function(value){
-    return (value!=null &&input_validate.articleFolder.articleId.type.define.test(value))
-})
-articleFolderSch.path('folderId').validate(function(value){
-    return (value!=null &&input_validate.articleFolder.folderId.type.define.test(value))
-})
-var articleFolderModel=mongoose.model('articleFolders',articleFolderSch);
-
-
-var errorSch=new mongoose.Schema({
-    errorCode:Number, //new define file
-    errorMsg:String, //new define file
-    category:String,// which page
-    subCategory:String,
-    desc:String,//more detail information
-    priority:String,
-    cDate:Date,
-    mDate:{type:Date,default:Date()},
-    dDate:Date
-},schemaOptions);
-errorSch.set('toObject',toObjectOptions);
-var errorModel=mongoose.model('errors',errorSch);
-
-
-
-
-
-exports.userModel=userModel;
-exports.articleModel=articleModel;
-exports.keyModel=keyModel;
-exports.attachmentModel=attachmentModel;
-exports.innerImageModel=innerImageModel;
-exports.errorModel=errorModel;
-exports.commentModel=commentModel;
-exports.folderModel=folderModel;
-exports.keyArticleModel=keyArticleModel;
-exports.articleFolderModel=articleFolderModel
-//exports.readArticle=readArticle;*/
 
 //# sourceMappingURL=structure-compiled.js.map

@@ -8,7 +8,7 @@
 var mongooseConnect=require('../model/dbConnection').mongoose;
 var expressSession=require('express-session');
 var sessionStore=require('connect-redis')(expressSession);
-var sessionConfig=require('../../config/global/defaultGlobalSetting').session
+var sessionConfig=require('../../config/global/globalSettingRule').session
 
 /*//maxAge:ms;  负数（-1）：临时cookie，关闭网页就删除cookie；0：立刻删除；正整数：多少毫秒后失效
 // secure:false, cookie是否只能在https上传输。false，可在http上传

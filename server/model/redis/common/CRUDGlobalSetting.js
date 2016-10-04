@@ -5,7 +5,7 @@
  * 已经移动到misc中，所以不再需要
  */
 'use strict'
-var defaultSetting=require('../../../config/global/defaultGlobalSetting').defaultSetting
+var defaultSetting=require('../../../config/global/globalSettingRule').defaultSetting
 //use redis to save get golbalSetting
 var redisClient=require('../connection/redis_connection').ioredisClient
 var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck

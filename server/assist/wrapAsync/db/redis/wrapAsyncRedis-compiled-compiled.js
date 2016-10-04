@@ -23,9 +23,9 @@ function asyncHget(key, subKey) {
         // try{
         ioredisClient.hget([key, subKey], function (err, data) {
             if (err) {
-                reject(redisError.general.hgetError);
+                reject(redisError.cmdError.hgetError);
             } else {
-                console.log(data);
+                // console.log(data)
                 rcRight.msg = data;
                 resolve(rcRight);
             }
@@ -42,7 +42,7 @@ function asyncHexists(key, subKey) {
         // reject('test')
         ioredisClient.hexists([key, subKey], function (err, data) {
             if (err) {
-                reject(redisError.general.hexistsFail);
+                reject(redisError.cmdError.existsFail);
             } else {
                 rcRight.msg = data;
                 resolve(rcRight);

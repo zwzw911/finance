@@ -8,7 +8,7 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var defaultSetting = require('../../../config/global/defaultGlobalSetting').defaultSetting;
+var defaultSetting = require('../../../config/global/globalSettingRule').defaultSetting;
 //use redis to save get golbalSetting
 var redisClient = require('../connection/redis_connection').ioredisClient;
 var dataTypeCheck = require('../../../assist/misc').func.dataTypeCheck;

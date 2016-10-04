@@ -2,6 +2,10 @@
  * Created by wzhan039 on 2016-02-14.
  */
 exports.redisError={
+    LuaError:{
+        LueExecFail:function(fileName){return {rc:50000,msg:{client:'数据库操作出错',server:`执行Lua脚本${fileName}出错`}}},
+        LueParamNotObject:function(fileName){return {rc:50000,msg:{client:'参数不正确',server:`Lua脚本${fileName}的参数必须为对象`}}}
+    },
     cmdError:{
         setError:{rc:50000,msg:{client:'保存数据出错',server:'redis set操作失败'}},
         getError:{rc:50002,msg:{client:'读取数据出错',server:'redis get操作失败'}},

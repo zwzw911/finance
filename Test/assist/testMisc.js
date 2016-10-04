@@ -444,13 +444,29 @@ var encodeHtml=function(test){
     //\s"&'<>
 }
 
+var formatRc=function(test){
+    test.expect(2)
+    let func=testModule
+
+    let rc={rc:1000,msg:{client:'client',server:'server'}}
+    func.formatRc(rc)
+    test.equal(rc.msg,'client','format client msg failed')
+
+    rc={rc:1000,msg:{client:'client',server:'server'}}
+    func.formatRc(rc,false)
+    test.equal(rc.msg,'server','format server msg failed')
+
+/*    console.log(rc)*/
+    test.done()
+}
 exports.all={
-    dataTypeCheck:dataTypeCheck,
+/*    dataTypeCheck:dataTypeCheck,
     ruleTypeCheck:ruleTypeCheck,
     generateRandomString:generateRandomString,
     parseGmFileSize:parseGmFileSize,
     convertImageFileSizeToByte:convertImageFileSizeToByte,
-    encodeHtml,
+    encodeHtml,*/
+    formatRc,
 }
 
 //console.log(testModule.generateRandomString(10,randomStringTypeEnum.complicated))
