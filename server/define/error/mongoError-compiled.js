@@ -51,37 +51,47 @@ var errorDefine = {
         },
         duplicate: function duplicate(errmsg) {
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
-            var regex = /.*error\s+index:(.*)\s+dup.+/;
-            var match = errmsg.match(regex);
-            var matchResult = match[1];
-            var tmp = matchResult.split('.');
-            var _tmp = tmp;
+            //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
+            /*            let regex=/.*error\s+index:(.*)\s+dup.+/
+                        let match=errmsg.match(regex)
+                        let matchResult=match[1]
+                        let tmp=matchResult.split('.')
+                        let [db,coll,field]=tmp*/
+            var regex = /.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/;
+            var matchResult = errmsg.match(regex);
 
-            var _tmp2 = _slicedToArray(_tmp, 3);
+            var _matchResult$1$split = matchResult[1].split(".");
 
-            var db = _tmp2[0];
-            var coll = _tmp2[1];
-            var field = _tmp2[2];
+            var _matchResult$1$split2 = _slicedToArray(_matchResult$1$split, 2);
+
+            var db = _matchResult$1$split2[0];
+            var coll = _matchResult$1$split2[1];
+
+            var field = matchResult[2].split("_")[0];
+            var dupValue = matchResult[3];
+            // console.log(`db is ${db},coll is ${coll}, field is ${field}, dup is ${dupValue}`)
             //mongoose自动将coll的名称加上s，为了和inputRule匹配，删除s
             //let trueCollName
-
             if ('s' === coll[coll.length - 1]) {
                 coll = coll.substring(0, coll.length - 1);
             }
 
-            var fieldRegex = /\$(\w+)_.*/;
-            tmp = field.match(fieldRegex);
-            field = tmp[1];
+            /*            let fieldRegex=/\$(\w+)_.*!/
+                        tmp=field.match(fieldRegex)
+                        field=tmp[1]*/
 
             //mongoose 自动将coll的名称改成全小写
             var chineseName = void 0;
             for (var singleColl in inputRule) {
+                // console.log(`for coll is ${singleColl}`)
                 if (singleColl.toLowerCase() === coll) {
+                    // console.log(`match coll is ${singleColl}`)
+
                     chineseName = inputRule[singleColl][field]['chineseName'];
                 }
             }
 
-            return { rc: 30002, msg: { client: chineseName + '的值已经存在', server: '集合' + coll + '的字段' + field + '的值重复' } };
+            return { rc: 30002, msg: { client: chineseName + '的值已经存在', server: '集合' + coll + '的字段' + field + '的值' + dupValue + '重复' } };
         }
     }
 };

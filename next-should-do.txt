@@ -11,3 +11,10 @@
 1. billtype/create页面的父类别为下拉框？过滤框？
 2. model调试
 3. lua：判断非页面请求是否超时
+
+1. 添加新的dataType  objectId===>done
+2. checkInput中，string和number都必须有maxLength属性（防止输入过大）===>done
+3. 完成checkSearchValue=========>done
+
+
+1. miscFunc.formatRc 返回修改过的结果，而不是直接改输入参数

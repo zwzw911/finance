@@ -86,6 +86,21 @@ var internalSetting={
 
 }
 
+//设置每次读取的记录数量
+var pageSetting={
+    department:{
+        limit:10,//每次最多读取10条记录
+    },
+    employee:{
+        limit:10,//每次最多读取10条记录
+    },
+    billType:{
+        limit:10,//每次最多读取10条记录
+    },
+    bill:{
+        limit:10,//每次最多读取10条记录
+    },
+}
 //可以更改的设定
 //type:int 如果有max属性，说明可以修改（只要小于max）;否则不能修改
 // path:folder;
@@ -538,5 +553,6 @@ module.exports={
 	mongoSetting,
 	internalSetting,
 	session,
+    pageSetting,
 }
 

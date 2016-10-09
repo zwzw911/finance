@@ -35,7 +35,7 @@ var common = function () {
 //对create/update方法输入的value进行检查和转换（字符串的话）
 //create:false     update:true
 var sanityInput = function () {
-    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(originalInputValue, basedOnInputValue) {
+    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(originalInputValue, inputRule, basedOnInputValue) {
         var convertedInput, checkResult, singleField;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
@@ -56,7 +56,7 @@ var sanityInput = function () {
 
                     case 5:
                         _context2.next = 7;
-                        return validate.checkInput(convertedInput.msg, inputRule.billType, basedOnInputValue);
+                        return validate.checkInput(convertedInput.msg, inputRule, basedOnInputValue);
 
                     case 7:
                         checkResult = _context2.sent;
@@ -92,11 +92,14 @@ var sanityInput = function () {
         }, _callee2, this);
     }));
 
-    return function sanityInput(_x4, _x5) {
+    return function sanityInput(_x4, _x5, _x6) {
         return _ref2.apply(this, arguments);
     };
 }();
-/*********************  billType  *******************************/
+
+/*********************  user  ******************************
+ * 操作的用户：只有创建和更新（密码）的操作，并且是在程序内部执行，而非client发起req
+ * */
 
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { return step("next", value); }, function (err) { return step("throw", err); }); } } return step("next"); }); }; }
@@ -114,7 +117,10 @@ var checkInterval = miscFunc.checkInterval;
 /*                      error               */
 var pageError = require('../../define/error/pageError');
 
-var billTypeDbOperation = require('../../model/mongo/billTypeModel');function inputDataFormatValidate(values) {
+var departmentDbOperation = require('../../model/mongo/departmentModel');
+var employeeDbOperation = require('../../model/mongo/employeeModel');
+var billTypeDbOperation = require('../../model/mongo/billTypeModel');
+var billDbOperation = require('../../model/mongo/billModel');function inputDataFormatValidate(values) {
     if (false === miscFunc.dataTypeCheck.isObject(values) && false === miscFunc.dataTypeCheck.isString(values)) {
         return pageError.common.inputValuesFormatWrong;
     }
@@ -128,28 +134,673 @@ var billTypeDbOperation = require('../../model/mongo/billTypeModel');function in
         }
     }
     return { rc: 0, msg: result };
-}var billType = {};
-
-billType['create'] = function () {
+}var user = {};
+user['create'] = function () {
     var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(req, res, next) {
-        var sanitizedInputValue, arrayResult, result;
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
             while (1) {
                 switch (_context3.prev = _context3.next) {
                     case 0:
-                        _context3.next = 2;
-                        return sanityInput(req.body.values, false);
+                    case 'end':
+                        return _context3.stop();
+                }
+            }
+        }, _callee3, this);
+    }));
+
+    return function (_x7, _x8, _x9) {
+        return _ref3.apply(this, arguments);
+    };
+}();
+
+user['update'] = function () {
+    var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+            while (1) {
+                switch (_context4.prev = _context4.next) {
+                    case 0:
+                    case 'end':
+                        return _context4.stop();
+                }
+            }
+        }, _callee4, this);
+    }));
+
+    return function (_x10, _x11, _x12) {
+        return _ref4.apply(this, arguments);
+    };
+}();
+
+/*********************  department  ******************************
+ * 部门
+ * */
+var department = {};
+department['create'] = function () {
+    var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(req, res, next) {
+        var sanitizedInputValue, arrayResult, result;
+        return regeneratorRuntime.wrap(function _callee5$(_context5) {
+            while (1) {
+                switch (_context5.prev = _context5.next) {
+                    case 0:
+                        _context5.next = 2;
+                        return sanityInput(req.body.values, inputRule.department, false);
 
                     case 2:
-                        sanitizedInputValue = _context3.sent;
+                        sanitizedInputValue = _context5.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context3.next = 6;
+                            _context5.next = 6;
                             break;
                         }
 
                         miscFunc.formatRc(sanitizedInputValue);
-                        return _context3.abrupt('return', res.json(sanitizedInputValue));
+                        return _context5.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+                        //采用insertMany，所有输入必须是数组
+                        arrayResult = [];
+                        //从{name:{value:'11'}}====>{name:'11'}
+                        //     console.log(`before sant ${sanitizedInputValue.msg}`)
+                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)
+
+                        arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
+                        _context5.next = 10;
+                        return departmentDbOperation.create(arrayResult);
+
+                    case 10:
+                        result = _context5.sent;
+
+                        miscFunc.formatRc(result);
+                        //console.log(` inserted result ${JSON.stringify(result)}`)
+
+                        return _context5.abrupt('return', res.json(result));
+
+                    case 13:
+                    case 'end':
+                        return _context5.stop();
+                }
+            }
+        }, _callee5, this);
+    }));
+
+    return function (_x13, _x14, _x15) {
+        return _ref5.apply(this, arguments);
+    };
+}();
+
+department['remove'] = function () {
+    var _ref6 = _asyncToGenerator(regeneratorRuntime.mark(function _callee6(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee6$(_context6) {
+            while (1) {
+                switch (_context6.prev = _context6.next) {
+                    case 0:
+                        _context6.next = 2;
+                        return sanityInput(req.body.values, inputRule.department, true);
+
+                    case 2:
+                        sanitizedInputValue = _context6.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context6.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context6.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+                        //console.log(`id is ${id}`)
+
+                        _context6.next = 10;
+                        return departmentDbOperation.remove(id);
+
+                    case 10:
+                        result = _context6.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context6.abrupt('return', res.json(result));
+
+                    case 13:
+                    case 'end':
+                        return _context6.stop();
+                }
+            }
+        }, _callee6, this);
+    }));
+
+    return function (_x16, _x17, _x18) {
+        return _ref6.apply(this, arguments);
+    };
+}();
+
+department['update'] = function () {
+    var _ref7 = _asyncToGenerator(regeneratorRuntime.mark(function _callee7(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee7$(_context7) {
+            while (1) {
+                switch (_context7.prev = _context7.next) {
+                    case 0:
+                        _context7.next = 2;
+                        return sanityInput(req.body.values, inputRule.department, true);
+
+                    case 2:
+                        sanitizedInputValue = _context7.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context7.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context7.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+
+                        delete convertedResult._id;
+
+                        _context7.next = 11;
+                        return departmentDbOperation.update(id, convertedResult);
+
+                    case 11:
+                        result = _context7.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context7.abrupt('return', res.json(result));
+
+                    case 14:
+                    case 'end':
+                        return _context7.stop();
+                }
+            }
+        }, _callee7, this);
+    }));
+
+    return function (_x19, _x20, _x21) {
+        return _ref7.apply(this, arguments);
+    };
+}();
+
+department['readAll'] = function () {
+    var _ref8 = _asyncToGenerator(regeneratorRuntime.mark(function _callee8(req, res, next) {
+        var result;
+        return regeneratorRuntime.wrap(function _callee8$(_context8) {
+            while (1) {
+                switch (_context8.prev = _context8.next) {
+                    case 0:
+                        _context8.next = 2;
+                        return departmentDbOperation.readAll();
+
+                    case 2:
+                        result = _context8.sent;
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(result);
+                        return _context8.abrupt('return', res.json(result));
+
+                    case 5:
+                    case 'end':
+                        return _context8.stop();
+                }
+            }
+        }, _callee8, this);
+    }));
+
+    return function (_x22, _x23, _x24) {
+        return _ref8.apply(this, arguments);
+    };
+}();
+
+department['readName'] = function () {
+    var _ref9 = _asyncToGenerator(regeneratorRuntime.mark(function _callee9(req, res, next) {
+        var recorder, constructedValue, validateResult;
+        return regeneratorRuntime.wrap(function _callee9$(_context9) {
+            while (1) {
+                switch (_context9.prev = _context9.next) {
+                    case 0:
+                        recorder = void 0;
+
+                        if (!req.params.name) {
+                            _context9.next = 13;
+                            break;
+                        }
+
+                        // console.log(`name is ${req.params.name}`)
+                        constructedValue = { name: { value: req.params.name } };
+                        _context9.next = 5;
+                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.department);
+
+                    case 5:
+                        validateResult = _context9.sent;
+
+                        if (!(validateResult['name']['rc'] > 0)) {
+                            _context9.next = 8;
+                            break;
+                        }
+
+                        return _context9.abrupt('return', res.json(validateResult['name']));
+
+                    case 8:
+                        _context9.next = 10;
+                        return departmentDbOperation.readName(req.params.name);
+
+                    case 10:
+                        recorder = _context9.sent;
+                        _context9.next = 16;
+                        break;
+
+                    case 13:
+                        _context9.next = 15;
+                        return departmentDbOperation.readName();
+
+                    case 15:
+                        recorder = _context9.sent;
+
+                    case 16:
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(recorder);
+                        return _context9.abrupt('return', res.json(recorder));
+
+                    case 18:
+                    case 'end':
+                        return _context9.stop();
+                }
+            }
+        }, _callee9, this);
+    }));
+
+    return function (_x25, _x26, _x27) {
+        return _ref9.apply(this, arguments);
+    };
+}();
+
+/*********************  employee  ******************************
+ * 员工
+ * */
+var employee = {};
+employee['create'] = function () {
+    var _ref10 = _asyncToGenerator(regeneratorRuntime.mark(function _callee10(req, res, next) {
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, doc, fkResult, result;
+
+        return regeneratorRuntime.wrap(function _callee10$(_context10) {
+            while (1) {
+                switch (_context10.prev = _context10.next) {
+                    case 0:
+                        _context10.next = 2;
+                        return sanityInput(req.body.values, inputRule.employee, false);
+
+                    case 2:
+                        sanitizedInputValue = _context10.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context10.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context10.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+                        //采用insertMany，所有输入必须是数组
+                        arrayResult = [];
+                        //从{name:{value:'11'}}====>{name:'11'}
+                        //     console.log(`before sant ${sanitizedInputValue.msg}`)
+                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)
+
+                        arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
+                        //检查外键是否存在
+                        _iteratorNormalCompletion = true;
+                        _didIteratorError = false;
+                        _iteratorError = undefined;
+                        _context10.prev = 11;
+                        _iterator = arrayResult[Symbol.iterator]();
+
+                    case 13:
+                        if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
+                            _context10.next = 30;
+                            break;
+                        }
+
+                        doc = _step.value;
+                        _context10.next = 17;
+                        return departmentDbOperation.findById(doc.department);
+
+                    case 17:
+                        fkResult = _context10.sent;
+
+                        console.log('fk result is ' + JSON.stringify(fkResult));
+
+                        if (!(null === fkResult.msg)) {
+                            _context10.next = 24;
+                            break;
+                        }
+
+                        console.log(pageError.employee.departmentNotExist);
+                        miscFunc.formatRc(pageError.employee.departmentNotExist);
+                        console.log(pageError.employee.departmentNotExist);
+                        // return res.json(miscFunc.formatRc(pageError.employee.departmentNotExist))
+                        return _context10.abrupt('return', res.json(pageError.employee.departmentNotExist));
+
+                    case 24:
+                        if (!(fkResult.msg && fkResult.msg._id)) {
+                            _context10.next = 27;
+                            break;
+                        }
+
+                        if (!(fkResult.msg._id !== doc.department)) {
+                            _context10.next = 27;
+                            break;
+                        }
+
+                        return _context10.abrupt('return', res.json(miscFunc.formatRc(pageError.employee.departmentNotExist)));
+
+                    case 27:
+                        _iteratorNormalCompletion = true;
+                        _context10.next = 13;
+                        break;
+
+                    case 30:
+                        _context10.next = 36;
+                        break;
+
+                    case 32:
+                        _context10.prev = 32;
+                        _context10.t0 = _context10['catch'](11);
+                        _didIteratorError = true;
+                        _iteratorError = _context10.t0;
+
+                    case 36:
+                        _context10.prev = 36;
+                        _context10.prev = 37;
+
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+
+                    case 39:
+                        _context10.prev = 39;
+
+                        if (!_didIteratorError) {
+                            _context10.next = 42;
+                            break;
+                        }
+
+                        throw _iteratorError;
+
+                    case 42:
+                        return _context10.finish(39);
+
+                    case 43:
+                        return _context10.finish(36);
+
+                    case 44:
+                        _context10.next = 46;
+                        return employeeDbOperation.create(arrayResult);
+
+                    case 46:
+                        result = _context10.sent;
+
+                        miscFunc.formatRc(result);
+                        //console.log(` inserted result ${JSON.stringify(result)}`)
+
+                        return _context10.abrupt('return', res.json(result));
+
+                    case 49:
+                    case 'end':
+                        return _context10.stop();
+                }
+            }
+        }, _callee10, this, [[11, 32, 36, 44], [37,, 39, 43]]);
+    }));
+
+    return function (_x28, _x29, _x30) {
+        return _ref10.apply(this, arguments);
+    };
+}();
+
+employee['remove'] = function () {
+    var _ref11 = _asyncToGenerator(regeneratorRuntime.mark(function _callee11(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee11$(_context11) {
+            while (1) {
+                switch (_context11.prev = _context11.next) {
+                    case 0:
+                        _context11.next = 2;
+                        return sanityInput(req.body.values, inputRule.employee, true);
+
+                    case 2:
+                        sanitizedInputValue = _context11.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context11.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context11.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+                        //console.log(`id is ${id}`)
+
+                        _context11.next = 10;
+                        return employeeDbOperation.remove(id);
+
+                    case 10:
+                        result = _context11.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context11.abrupt('return', res.json(result));
+
+                    case 13:
+                    case 'end':
+                        return _context11.stop();
+                }
+            }
+        }, _callee11, this);
+    }));
+
+    return function (_x31, _x32, _x33) {
+        return _ref11.apply(this, arguments);
+    };
+}();
+
+employee['update'] = function () {
+    var _ref12 = _asyncToGenerator(regeneratorRuntime.mark(function _callee12(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee12$(_context12) {
+            while (1) {
+                switch (_context12.prev = _context12.next) {
+                    case 0:
+                        _context12.next = 2;
+                        return sanityInput(req.body.values, inputRule.employee, true);
+
+                    case 2:
+                        sanitizedInputValue = _context12.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context12.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context12.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+
+                        delete convertedResult._id;
+
+                        _context12.next = 11;
+                        return employeeDbOperation.update(id, convertedResult);
+
+                    case 11:
+                        result = _context12.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context12.abrupt('return', res.json(result));
+
+                    case 14:
+                    case 'end':
+                        return _context12.stop();
+                }
+            }
+        }, _callee12, this);
+    }));
+
+    return function (_x34, _x35, _x36) {
+        return _ref12.apply(this, arguments);
+    };
+}();
+
+employee['readAll'] = function () {
+    var _ref13 = _asyncToGenerator(regeneratorRuntime.mark(function _callee13(req, res, next) {
+        var result;
+        return regeneratorRuntime.wrap(function _callee13$(_context13) {
+            while (1) {
+                switch (_context13.prev = _context13.next) {
+                    case 0:
+                        _context13.next = 2;
+                        return employeeDbOperation.readAll();
+
+                    case 2:
+                        result = _context13.sent;
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(result);
+                        return _context13.abrupt('return', res.json(result));
+
+                    case 5:
+                    case 'end':
+                        return _context13.stop();
+                }
+            }
+        }, _callee13, this);
+    }));
+
+    return function (_x37, _x38, _x39) {
+        return _ref13.apply(this, arguments);
+    };
+}();
+
+employee['readName'] = function () {
+    var _ref14 = _asyncToGenerator(regeneratorRuntime.mark(function _callee14(req, res, next) {
+        var recorder, constructedValue, validateResult;
+        return regeneratorRuntime.wrap(function _callee14$(_context14) {
+            while (1) {
+                switch (_context14.prev = _context14.next) {
+                    case 0:
+                        recorder = void 0;
+
+                        if (!req.params.name) {
+                            _context14.next = 13;
+                            break;
+                        }
+
+                        // console.log(`name is ${req.params.name}`)
+                        constructedValue = { name: { value: req.params.name } };
+                        _context14.next = 5;
+                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.employee);
+
+                    case 5:
+                        validateResult = _context14.sent;
+
+                        if (!(validateResult['name']['rc'] > 0)) {
+                            _context14.next = 8;
+                            break;
+                        }
+
+                        return _context14.abrupt('return', res.json(validateResult['name']));
+
+                    case 8:
+                        _context14.next = 10;
+                        return employeeDbOperation.readName(req.params.name);
+
+                    case 10:
+                        recorder = _context14.sent;
+                        _context14.next = 16;
+                        break;
+
+                    case 13:
+                        _context14.next = 15;
+                        return employeeDbOperation.readName();
+
+                    case 15:
+                        recorder = _context14.sent;
+
+                    case 16:
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(recorder);
+                        return _context14.abrupt('return', res.json(recorder));
+
+                    case 18:
+                    case 'end':
+                        return _context14.stop();
+                }
+            }
+        }, _callee14, this);
+    }));
+
+    return function (_x40, _x41, _x42) {
+        return _ref14.apply(this, arguments);
+    };
+}();
+
+/*********************  billType  *******************************/
+var billType = {};
+
+billType['create'] = function () {
+    var _ref15 = _asyncToGenerator(regeneratorRuntime.mark(function _callee15(req, res, next) {
+        var sanitizedInputValue, arrayResult, result;
+        return regeneratorRuntime.wrap(function _callee15$(_context15) {
+            while (1) {
+                switch (_context15.prev = _context15.next) {
+                    case 0:
+                        _context15.next = 2;
+                        return sanityInput(req.body.values, inputRule.billType, false);
+
+                    case 2:
+                        sanitizedInputValue = _context15.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context15.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context15.abrupt('return', res.json(sanitizedInputValue));
 
                     case 6:
                         //采用insertMany，所有输入必须是数组
@@ -159,35 +810,338 @@ billType['create'] = function () {
                             console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)*/
 
                         arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
-                        _context3.next = 10;
+                        _context15.next = 10;
                         return billTypeDbOperation.create(arrayResult);
 
                     case 10:
-                        result = _context3.sent;
+                        result = _context15.sent;
 
                         miscFunc.formatRc(result);
                         //console.log(` inserted result ${JSON.stringify(result)}`)
 
-                        return _context3.abrupt('return', res.json(result));
+                        return _context15.abrupt('return', res.json(result));
 
                     case 13:
                     case 'end':
-                        return _context3.stop();
+                        return _context15.stop();
                 }
             }
-        }, _callee3, this);
+        }, _callee15, this);
     }));
 
-    function create(_x6, _x7, _x8) {
-        return _ref3.apply(this, arguments);
+    function create(_x43, _x44, _x45) {
+        return _ref15.apply(this, arguments);
     }
 
     return create;
 }();
 
+billType['update'] = function () {
+    var _ref16 = _asyncToGenerator(regeneratorRuntime.mark(function _callee16(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee16$(_context16) {
+            while (1) {
+                switch (_context16.prev = _context16.next) {
+                    case 0:
+                        _context16.next = 2;
+                        return sanityInput(req.body.values, inputRule.billType, true);
+
+                    case 2:
+                        sanitizedInputValue = _context16.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context16.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context16.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+
+                        delete convertedResult._id;
+
+                        _context16.next = 11;
+                        return billTypeDbOperation.update(id, convertedResult);
+
+                    case 11:
+                        result = _context16.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context16.abrupt('return', res.json(result));
+
+                    case 14:
+                    case 'end':
+                        return _context16.stop();
+                }
+            }
+        }, _callee16, this);
+    }));
+
+    function update(_x46, _x47, _x48) {
+        return _ref16.apply(this, arguments);
+    }
+
+    return update;
+}();
+
+billType['remove'] = function () {
+    var _ref17 = _asyncToGenerator(regeneratorRuntime.mark(function _callee17(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee17$(_context17) {
+            while (1) {
+                switch (_context17.prev = _context17.next) {
+                    case 0:
+                        _context17.next = 2;
+                        return sanityInput(req.body.values, inputRule.department, true);
+
+                    case 2:
+                        sanitizedInputValue = _context17.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context17.next = 6;
+                            break;
+                        }
+
+                        miscFunc.formatRc(sanitizedInputValue);
+                        return _context17.abrupt('return', res.json(sanitizedInputValue));
+
+                    case 6:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+                        //console.log(`id is ${id}`)
+
+                        _context17.next = 10;
+                        return billTypeDbOperation.remove(id);
+
+                    case 10:
+                        result = _context17.sent;
+
+                        //console.log(`db op result is ${result}`)
+                        miscFunc.formatRc(result);
+                        return _context17.abrupt('return', res.json(result));
+
+                    case 13:
+                    case 'end':
+                        return _context17.stop();
+                }
+            }
+        }, _callee17, this);
+    }));
+
+    return function (_x49, _x50, _x51) {
+        return _ref17.apply(this, arguments);
+    };
+}();
+
+billType['readAll'] = function () {
+    var _ref18 = _asyncToGenerator(regeneratorRuntime.mark(function _callee18(req, res, next) {
+        var result;
+        return regeneratorRuntime.wrap(function _callee18$(_context18) {
+            while (1) {
+                switch (_context18.prev = _context18.next) {
+                    case 0:
+                        _context18.next = 2;
+                        return billTypeDbOperation.readAll();
+
+                    case 2:
+                        result = _context18.sent;
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(result);
+                        return _context18.abrupt('return', res.json(result));
+
+                    case 5:
+                    case 'end':
+                        return _context18.stop();
+                }
+            }
+        }, _callee18, this);
+    }));
+
+    return function (_x52, _x53, _x54) {
+        return _ref18.apply(this, arguments);
+    };
+}();
+
+billType['readName'] = function () {
+    var _ref19 = _asyncToGenerator(regeneratorRuntime.mark(function _callee19(req, res, next) {
+        var recorder, constructedValue, validateResult;
+        return regeneratorRuntime.wrap(function _callee19$(_context19) {
+            while (1) {
+                switch (_context19.prev = _context19.next) {
+                    case 0:
+                        recorder = void 0;
+
+                        if (!req.params.name) {
+                            _context19.next = 14;
+                            break;
+                        }
+
+                        console.log('name is ' + req.params.name);
+                        constructedValue = { name: { value: req.params.name } };
+                        _context19.next = 6;
+                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.billType);
+
+                    case 6:
+                        validateResult = _context19.sent;
+
+                        if (!(validateResult['name']['rc'] > 0)) {
+                            _context19.next = 9;
+                            break;
+                        }
+
+                        return _context19.abrupt('return', res.json(validateResult['name']));
+
+                    case 9:
+                        _context19.next = 11;
+                        return billTypeDbOperation.readName(req.params.name);
+
+                    case 11:
+                        recorder = _context19.sent;
+                        _context19.next = 17;
+                        break;
+
+                    case 14:
+                        _context19.next = 16;
+                        return billTypeDbOperation.readName();
+
+                    case 16:
+                        recorder = _context19.sent;
+
+                    case 17:
+
+                        //console.log(`db op result is ${JSON.stringify(result)}`)
+                        miscFunc.formatRc(recorder);
+                        return _context19.abrupt('return', res.json(recorder));
+
+                    case 19:
+                    case 'end':
+                        return _context19.stop();
+                }
+            }
+        }, _callee19, this);
+    }));
+
+    return function (_x55, _x56, _x57) {
+        return _ref19.apply(this, arguments);
+    };
+}();
+
+/*********************  bill  ******************************
+ * 部门
+ * */
+var bill = {};
+bill['create'] = function () {
+    var _ref20 = _asyncToGenerator(regeneratorRuntime.mark(function _callee20(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee20$(_context20) {
+            while (1) {
+                switch (_context20.prev = _context20.next) {
+                    case 0:
+                    case 'end':
+                        return _context20.stop();
+                }
+            }
+        }, _callee20, this);
+    }));
+
+    return function (_x58, _x59, _x60) {
+        return _ref20.apply(this, arguments);
+    };
+}();
+
+bill['remove'] = function () {
+    var _ref21 = _asyncToGenerator(regeneratorRuntime.mark(function _callee21(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee21$(_context21) {
+            while (1) {
+                switch (_context21.prev = _context21.next) {
+                    case 0:
+                    case 'end':
+                        return _context21.stop();
+                }
+            }
+        }, _callee21, this);
+    }));
+
+    return function (_x61, _x62, _x63) {
+        return _ref21.apply(this, arguments);
+    };
+}();
+
+bill['update'] = function () {
+    var _ref22 = _asyncToGenerator(regeneratorRuntime.mark(function _callee22(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee22$(_context22) {
+            while (1) {
+                switch (_context22.prev = _context22.next) {
+                    case 0:
+                    case 'end':
+                        return _context22.stop();
+                }
+            }
+        }, _callee22, this);
+    }));
+
+    return function (_x64, _x65, _x66) {
+        return _ref22.apply(this, arguments);
+    };
+}();
+
+bill['readAll'] = function () {
+    var _ref23 = _asyncToGenerator(regeneratorRuntime.mark(function _callee23(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee23$(_context23) {
+            while (1) {
+                switch (_context23.prev = _context23.next) {
+                    case 0:
+                    case 'end':
+                        return _context23.stop();
+                }
+            }
+        }, _callee23, this);
+    }));
+
+    return function (_x67, _x68, _x69) {
+        return _ref23.apply(this, arguments);
+    };
+}();
+
+bill['readName'] = function () {
+    var _ref24 = _asyncToGenerator(regeneratorRuntime.mark(function _callee24(req, res, next) {
+        return regeneratorRuntime.wrap(function _callee24$(_context24) {
+            while (1) {
+                switch (_context24.prev = _context24.next) {
+                    case 0:
+                    case 'end':
+                        return _context24.stop();
+                }
+            }
+        }, _callee24, this);
+    }));
+
+    return function (_x70, _x71, _x72) {
+        return _ref24.apply(this, arguments);
+    };
+}();
+
 module.exports = {
     common: common,
-    billType: billType
+    user: user,
+    department: department,
+    employee: employee,
+    billType: billType,
+    bill: bill
 };
 
 //# sourceMappingURL=mainRouterController-compiled.js.map

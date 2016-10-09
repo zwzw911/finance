@@ -153,7 +153,7 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 }
 
 // fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
-//console.log(fieldDefine['department']['name'])
+// console.log(fieldDefine['department']['name'])
 //console.log(fieldDefine['employee']['gender']['enum'])
 //console.log(JSON.stringify(fieldDefine['billType']))
 

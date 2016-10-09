@@ -13,9 +13,13 @@ module.exports={
         //
     },
     //60200~60300
-    department:{},
+    department:{
+
+    },
     //60300~60400
-    employee:{},
+    employee:{
+        departmentNotExist:{rc:60300,msg:{client:'所选部门不存在',server:'department id 不存在'}}
+    },
     //60400~60500
     billInfo:{},
 }

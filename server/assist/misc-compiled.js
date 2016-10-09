@@ -1303,6 +1303,8 @@ var validate = {
                     return dataTypeCheck.isArray(value);
                 case dataType.object:
                     return true;
+                case dataType.objectId:
+                    return true;
                 case dataType.file:
                     return ruleTypeCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value);
                 case dataType.folder:
@@ -1382,6 +1384,14 @@ var validate = {
                         break;
                     case dataType.number:
                         //console.log(inputRules[inputRule]['maxLength'])
+                        if (false === dataTypeCheck.isSetValue(inputRules[inputRule]['maxLength'])) {
+                            rc['rc'] = validateError.needMaxLength.rc;
+                            rc['msg'] = inputRule + "的" + validateError.needMaxLength.msg;
+                            //console.log(rc)
+                            return rc;
+                        };
+                        break;
+                    case dataType.string:
                         if (false === dataTypeCheck.isSetValue(inputRules[inputRule]['maxLength'])) {
                             rc['rc'] = validateError.needMaxLength.rc;
                             rc['msg'] = inputRule + "的" + validateError.needMaxLength.msg;
@@ -1570,14 +1580,21 @@ var validate = {
     /*********************************************/
     /*         主函数，检测input并返回结果        */
     /*********************************************/
-    //inputValue:{username:{value:xxx},password:{value:yyy}}
-    //inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
+    /*
+    * inputValue:{username:{value:xxx},password:{value:yyy}}
+    * inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
+    * basedOnInputValue: 对输入进行检查是，是根据inputValue的字段分别检查（true），还是根据inputRule的字段定义进行检查。
+    *                   一般当create时，false，根据inputRule的字段定义进行检查（所有字段都检查）
+    *                   当update是，true，只对输入的字段进行检查
+    * */
     checkInput: function checkInput(inputValue, inputItemDefine) {
+        var basedOnInputValue = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
 
         var rc = {};
         var tmpResult = void 0;
         //检查参数的更是，必需是Object，且含有key
-        console.log("input para is " + JSON.stringify(inputValue));
+        // console.log(`input para is ${JSON.stringify(inputValue)}`)
         if (false === dataTypeCheck.isSetValue(inputValue)) {
             /*            rc['rc']=validateError.valueNotDefine.rc
                         rc['msg']=`${inputV}validateError`*/
@@ -1598,26 +1615,78 @@ var validate = {
         // validate._private.sanityRule(inputItemDefine)
         //console.log(inputItemDefine)
 
-        for (var itemName in inputValue) {
-            /*console.log(itemName)
-                        console.log(inputItemDefine[itemName])*/
+        var base = void 0;
+        if (basedOnInputValue) {
+            base = inputValue;
+        } else {
+            base = inputItemDefine;
+        }
+        //console.log(`base is ${JSON.stringify(base)}`)
+        for (var itemName in base) {
+            // console.log(`check item is ${itemName}`)
+            //             console.log(`rc  is ${JSON.stringify(rc)}`)
             rc[itemName] = {};
             rc[itemName]['rc'] = 0;
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
             //var currentItemValue=inputValue[itemName]['value']
+
+            //-2 如果传入的是_id，那么通过regex直接判断（因为_id不定义在rule中）
+            if ('id' === itemName || '_id' === itemName) {
+                if (true === regex.objectId.test(inputValue[itemName]['value'])) {
+                    //console.log(`id check  ture`)
+                    //return rightResult
+                    //continue
+                } else {
+                    //console.log(`id check  false`)
+                    rc[itemName]['rc'] = miscError.validate.idWrong.rc;
+                    rc[itemName]['msg'] = miscError.validate.idWrong.msg;
+                    //return rc
+                    //console.log(`id check resul is ${JSON.stringify(rc)}`)
+                    //return miscError.idWrong
+                }
+
+                continue;
+            }
+
             //0 当前待检测的value，有没有对应的检测rule定义
             if (false === dataTypeCheck.isSetValue(inputItemDefine[itemName])) {
                 //console.log(itemName)
                 rc[itemName]['rc'] = validateError.valueRelatedRuleNotDefine.rc;
                 rc[itemName]['msg'] = "" + itemName + validateError.valueRelatedRuleNotDefine.msg;
-
+                //没有对应的rule定义，直接退出
                 return rc;
                 //return validateError.noRelatedItemDefine
             }
 
+            //rule的赋值
             var currentItemRule = inputItemDefine[itemName];
-
             var currentChineseName = inputItemDefine[itemName]['chineseName'];
+            // console.log(`current item rule is ${JSON.stringify(currentItemRule)}`)
+            //如果类型是objectId，并且require=true，直接判断（而无需后续的检测，以便加快速度）
+            if (dataType.objectId === currentItemRule['type']) {
+                // define+ require true ==>check
+                // define+ require false==>check
+                //  not define+ require true===>fail
+                //  not define+ require false==>skip
+
+
+                if (true === dataTypeCheck.isSetValue(inputValue[itemName]) && true === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
+                    if (false === regex.objectId.test(inputValue[itemName]['value'])) {
+                        rc[itemName]['rc'] = validateError.objectIdWrong.rc;
+                        rc[itemName]['msg'] = currentChineseName + "：" + validateError.objectIdWrong.msg;
+                    }
+                    // continue
+                } else {
+                    if (true === currentItemRule['require']['define']) {
+                        rc[itemName]['rc'] = inputItemDefine[itemName]['require']['error']['rc'];
+                        rc[itemName]['msg'] = validate._private.generateErrorMsg.require(currentChineseName, inputItemDefine[itemName]['require']['error']['define'], false);
+                        // continue
+                    }
+                }
+                // console.log(`enter format`)
+                continue;
+            }
+
             //先行判断输入值是否empty，然后赋值给变量；而不是多次使用isEmpty函数。如此，可以加快代码执行速度
             //let emptyFlag=(false=== dataTypeCheck.isSetValue(inputValue[itemName]) &&  false===dataTypeCheck.isSetValue(inputValue[itemName]['value']))
             var emptyFlag = false;
@@ -1671,7 +1740,7 @@ var validate = {
                 //value不为空，付给变量，以便后续操作
                 currentItemValue = inputValue[itemName]['value'];
             }
-            //console.log(`empty check is ${JSON.stringify(rc)}`)
+            // console.log(`empty check is ${JSON.stringify(rc[itemName])}`)
             //console.log(currentItemValue)
             //如果currentItemValue为空，说明没有获得default，或者require为false
             //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
@@ -1694,7 +1763,7 @@ var validate = {
             /*console.log(currentItemValue)
             console.log(currentItemRule['type'])*/
             var result = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, currentItemRule['type']);
-            //console.log(result)
+            // console.log(result)
             if (result.rc && 0 < result.rc) {
                 rc[itemName]['rc'] = result.rc;
                 rc[itemName]['msg'] = "" + itemName + result.msg;
@@ -1766,7 +1835,9 @@ var validate = {
                             }
                             break;
                         case "format":
+                            // console.log(`enter format`)
                             if (false === emptyFlag && false === ruleTypeCheck.format(currentItemValue, ruleDefine)) {
+                                // console.log(` format wrong`)
                                 rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                 rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, ruleDefine, useDefaultValueFlag);
                             }
@@ -1788,21 +1859,62 @@ var validate = {
                         default:
                     }
                 }
+
                 //检查出错误后，不在继续检测当前item的其它rule，而是直接检测下一个item
                 if (0 !== rc[itemName].rc) {
                     break;
                 }
             }
+
             //没有检测出错误，对inpputValue的value进行sanity操作
             var tmpType = inputItemDefine[itemName]['type'];
             if (tmpType === dataType.int || tmpType === dataType.float || tmpType === dataType.date) {
                 //对默认值或者inputValue进行sanity
                 inputValue[itemName]['value'] = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, tmpType);
             }
+
+            // console.log(`${itemName} check result is ${JSON.stringify(rc)}`)
         }
 
+        // console.log(`check result is ${JSON.stringify(rc)}`)
         return rc;
         //    注意，返回的结果是对象，结构和inputValue类型，不是{rc;xxx,msg:xxx}的格式
+    },
+
+
+    /*      对输入的搜索值进行检测     */
+    //value的格式仿照checkInput，即：{field:{value:'val1'}}
+    //只对字符进行搜索，那么检测是否 超出maxlength（是否为空在Model中确定）
+    //value：包含了fiele名字和filedvalue；inputRule：coll对应的inpuitRule
+    checkSearchValue: function checkSearchValue(value, inputRule) {
+        var rc = {};
+        //其实只有一个value，但是为了取key方便，使用for
+        for (var fieldName in value) {
+
+            //转换成字符，才能比较长度
+            var fieldValue = value[fieldName]['value'].toString();
+            if (!inputRule[fieldName]) {
+                rc[fieldName] = miscError.validate.valueRelatedRuleNotDefine;
+            }
+            //检测是否有maxLength定义（可以去掉，在checkRuleBaseOnRuleDefine已经检查过了）
+            if (dataType.string === inputRule[fieldName]['type'] || dataType.number === inputRule[fieldName]['type']) {
+                if (!inputRule[fieldName]['maxLength']) {
+                    rc[fieldName] = miscError.validate.needMaxLength;
+                }
+            }
+
+            var currentRule = inputRule[fieldName];
+            var chineseName = currentRule['chineseName'];
+            var maxLengthDefine = currentRule['maxLength']['define'];
+            rc[fieldName] = {};
+            rc[fieldName]['rc'] = 0;
+            //判断长度是否超出maxlength
+            if (true === ruleTypeCheck.exceedMaxLength(fieldValue, maxLengthDefine)) {
+                rc[fieldName]['rc'] = currentRule['maxLength']['error']['rc'];
+                rc[fieldName]['msg'] = validate._private.generateErrorMsg.maxLength(chineseName, maxLengthDefine, false);
+            }
+        }
+        return rc;
     }
 };
 
@@ -1987,6 +2099,10 @@ var objectIdToRealField = function objectIdToRealField(origObj, matchList) {
     return rightResult;
 };
 
+//var objectIdValidate=function(_id){
+//
+//}
+
 var encodeHtml = function encodeHtml(s) {
     if (undefined === s) {
         return "";
@@ -2065,6 +2181,8 @@ exports.func = {
     generateClientRule: generateClientRule,
     deleteNonNeededObject: deleteNonNeededObject,
     objectIdToRealField: objectIdToRealField,
+    //objectIdValidate,
+
 
     encodeHtml: encodeHtml,
     convertClientValueToServerFormat: convertClientValueToServerFormat,

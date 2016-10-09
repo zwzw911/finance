@@ -82,6 +82,17 @@ var internalSetting = {
     globalSettingBackupPath: 'h:/ss_express/ss-express/setting.txt',
     globalSettingBackupSize: 10 * 1024 };
 
+//设置每次读取的记录数量
+var pageSetting = {
+    department: {
+        limit: 10 },
+    employee: {
+        limit: 10 },
+    billType: {
+        limit: 10 },
+    bill: {
+        limit: 10 }
+};
 //可以更改的设定
 //type:int 如果有max属性，说明可以修改（只要小于max）;否则不能修改
 // path:folder;
@@ -503,7 +514,8 @@ module.exports = {
     defaultSetting: defaultSetting,
     mongoSetting: mongoSetting,
     internalSetting: internalSetting,
-    session: session
+    session: session,
+    pageSetting: pageSetting
 };
 
 //# sourceMappingURL=globalSettingRule-compiled.js.map

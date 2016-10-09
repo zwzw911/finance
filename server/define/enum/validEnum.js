@@ -41,6 +41,7 @@ var dataType={
     folder:Symbol('folder'),
     number:Symbol('number'),
     password:Symbol('string'),
+    objectId:Symbol('objectId'),//mongodb的id
     // format:Symbol('regex'),
 }
 

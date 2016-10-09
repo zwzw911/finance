@@ -191,6 +191,17 @@ var checkRuleDefine=function(test){
     }
     let func=testModule.validate._private.checkRuleBaseOnRuleDefine
 
+    let error={rc:1234,msg:'1111'}
+
+    /*      check related fields    */
+    //string,只检查maxLength
+    value.userName.maxLength={define:{},error:error}
+    result=func(value)
+    test.equal(result.rc,validateError.maxLengthDefineNotInt.rc,'maxLength define type check failed');
+    value.userName.maxLength={define:'1',error:error}
+    result=func(value)
+    test.equal(result.rc,0,'maxLength define type 1 check failed');
+
     value.userName.max={}
     /*          check all fileds(define/error/rc/msg) in rule are exist*/
     value.userName.max.error={rc:1234,msg:''}
@@ -206,17 +217,20 @@ var checkRuleDefine=function(test){
 
     value.userName.max.error={rc:1234}
     result=func(value)
-    test.equal(result.rc,validateError.msgFieldNotDefine.rc,'max error msg check failed');
+    test.equal(result.rc,0,'max error msg check failed');
 
     value.userName.max.error={msg:1234}
     result=func(value)
     test.equal(result.rc,validateError.rcFieldNotDefine.rc,'max error rc check failed');
 
 
-    /*      check all rule type is right*/
-    value.userName.max=undefined
-    let error={rc:1234,msg:'1111'}
 
+    value.userName.max=undefined
+
+
+
+
+    /*      check all rule type is right*/
     value.userName.require={define:1,error:error}
     result=func(value)
     test.equal(result.rc,validateError.requireDefineNotBoolean.rc,'require define type check failed');
@@ -224,6 +238,9 @@ var checkRuleDefine=function(test){
     result=func(value)
     test.equal(result.rc,0,'require define type 1 check failed');
 
+
+
+    value.userName.maxLength={define:100,error:error}
     value.userName.minLength={define:false,error:error}
     result=func(value)
     test.equal(result.rc,validateError.minLengthDefineNotInt.rc,'minLength define type check failed');
@@ -231,12 +248,7 @@ var checkRuleDefine=function(test){
     result=func(value)
     test.equal(result.rc,0,'minLength define type 1 check failed');
 
-    value.userName.maxLength={define:{},error:error}
-    result=func(value)
-    test.equal(result.rc,validateError.maxLengthDefineNotInt.rc,'maxLength define type check failed');
-    value.userName.maxLength={define:'1',error:error}
-    result=func(value)
-    test.equal(result.rc,0,'maxLength define type 1 check failed');
+
 
     value.userName.exactLength={define:1.1,error:error}
     result=func(value)
@@ -312,13 +324,13 @@ var checkInput=function(test){
         userName:{
             chineseName:'用户名',
             type:dataType.int,
-            default:'10',
+            default:10,
             require:{define:true,error:error},
-            minLength:{define:'2',error:error},
+            minLength:{define:2,error:error},
             maxLength:{define:4,error:error},
-            exactLength:{define:'2',error:error},
-            min:{define:'10',error:error},
-            max:{define:'9999',error:error},
+            exactLength:{define:2,error:error},
+            min:{define:10,error:error},
+            max:{define:9999,error:error},
         }
     }
 
@@ -337,7 +349,7 @@ var checkInput=function(test){
     }
     result=func(value,rule)
     test.equal(result.userName.rc,0,'value not set and return default fail')
-    //console.log(result)
+    // console.log(result)
     test.equal(value.userName.value,10,'value not set and return default 1 fail')
 
     //console.log( rule.userName)
@@ -410,9 +422,131 @@ var checkInput=function(test){
     test.done()
 }
 
+//检查_id（rule中未定义）和外键id（rule中定义）
+//测试在checkInput中添加了新的代码
+var checkInputAdditional=function(test){
+    test.expect(8)
+
+    let func=testModule.validate.checkInput
+    //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
+    let rule,value,tmpDataType,result,tmp
+    let error={rc:1234,msg:''}
+
+    rule={}
+    value={
+        _id:{value:'57f8dc65a795ace017f36be7'},
+    }
+    result=func(value,rule)
+    //console.log(result)
+    test.equal(result._id.rc,0,'correct _id check fail')
+
+    value={
+        id:{value:'57f8dc65a795ace017f36be7'},
+    }
+    result=func(value,rule)
+    //console.log(result)
+    test.equal(result.id.rc,0,'correct id check fail')
+
+    value={
+        _id:{value:'57f8dc65a795ace017f36'},
+    }
+    result=func(value,rule)
+    //console.log(result)
+    test.equal(result._id.rc,validateError.idWrong.rc,'wrong _id check fail')
+    value={
+        id:{value:'57f8dc65a795ace017f36'},
+    }
+    result=func(value,rule)
+    //console.log(result)
+    test.equal(result.id.rc,validateError.idWrong.rc,'wrong id check fail')
+
+    rule={
+        fk:{
+            chineseName:'外键',
+            type:dataType.objectId,
+            // default:'10',
+            require:{define:true,error:error},
+        },
+    }
+
+    value={
+    }
+    result=func(value,rule,false) //false:base on inputRule(check all rule)
+    console.log(result)
+    test.equal(result.fk.rc,error.rc,'undefined fk check fail')
+
+    value={
+        fk:{value:'57f8dc65a795ace017f36be7'}
+    }
+    result=func(value,rule)
+    test.equal(result.fk.rc,0,'correct fk check fail')
+
+    value={
+        fk:{value:'57f8dc65a795ace017f36b'}
+    }
+    result=func(value,rule)
+    test.equal(result.fk.rc,validateError.objectIdWrong.rc,'wrong fk check fail')
+
+    rule={
+        fk:{
+            chineseName:'外键',
+            type:dataType.objectId,
+            // default:'10',
+            require:{define:false,error:error},
+        },
+    }
+    value={
+        fk:{value:'57f8dc65a795ace017f36b'}
+    }
+    result=func(value,rule)
+    test.equal(result.fk.rc,0,'wrong fk but require false check fail')
+
+
+    test.done()
+}
+
+//独立的函数
+var checkSearchValue=function(test){
+
+    test.expect(2)
+
+    let func=testModule.validate.checkSearchValue
+    //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
+    let rule,value,tmpDataType,result,tmp
+    let requireError={rc:1234,msg:''}
+    let maxLengthError={rc:1235,msg:''}
+
+    rule={name:{
+        chineseName:'名称',
+        type:dataType.string,
+        require:{define:false,error:requireError},
+        maxLength:{define:10,error:maxLengthError}
+    }}
+
+    value={
+        name:{
+            value:'123456789'
+        }
+    }
+    result=func(value,rule)
+    console.log(result)
+    test.equal(result.name.rc,0,'correct name length check fail')
+
+    value={
+        name:{
+            value:'12345678901'
+        }
+    }
+    result=func(value,rule)
+    test.equal(result.name.rc,rule.name.maxLength.error.rc,'wrong name length check fail')
+
+
+    test.done()
+}
+
 
 exports.validate={
-/*    _private:{
+    _private:{
         checkDataTypeBaseOnTypeDefine:checkDataTypeBaseOnTypeDefine,
          checkRuleTypeBaseOnTypeDefine:{
              checkAllMandatoryFieldsExist:checkAllMandatoryFieldsExist,
@@ -420,6 +554,8 @@ exports.validate={
              checkRuleDefine:checkRuleDefine,
          },
         sanityRules:sanityRules,
-    },*/
+    },
     checkInput,
+    checkInputAdditional,
+    checkSearchValue
 }

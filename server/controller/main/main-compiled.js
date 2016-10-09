@@ -11,7 +11,13 @@ var router = express.Router();
 
 var common = require('./mainRouterController-compiled').common;
 
-var billTypeController = require('./mainRouterController-compiled').billType;
+var controller = require('./mainRouterController-compiled');
+var userController = controller.user;
+var departmentController = controller.department;
+var employeeController = controller.employee;
+var billTypeController = controller.billType;
+var billController = controller.bill;
+
 router.use(function (req, res, next) {
     /*    console.log(req.ips)
         console.log(req.ip)*/
@@ -47,8 +53,6 @@ router.use(function (req, res, next) {
 
         }
     }
-
-    //next()
 });
 
 router.get('/', function (req, res, next) {
@@ -57,12 +61,113 @@ router.get('/', function (req, res, next) {
     return res.render('main/main', { title: '配置信息', year: new Date().getFullYear() });
 });
 
-/*
-*       billType
-* */
+/*************************       employee     *************************/
+//create
+router.post('/employee', function (req, res, next) {
+    //employeeController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    employeeController.create(req, res, next).then(function (v) {
+        console.log("post result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("post fail " + JSON.stringify(e));
+    });
+});
+//read
+router.get('/employee', function (req, res, next) {
+    employeeController.readAll(req, res, next).then(function (v) {
+        console.log("read all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read all fail " + JSON.stringify(e));
+    });
+});
+//read single field
+router.get('/employee/name', function (req, res, next) {
+    console.log('get no name ');
+    employeeController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+router.get('/employee/name/:name', function (req, res, next) {
+    console.log('get name ');
+    employeeController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+//update
+router.put('/employee', function (req, res, next) {
+    employeeController.update(req, res, next).then(function (v) {
+        console.log("put result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("put fail " + JSON.stringify(e));
+    });
+});
+//delete
+router.delete('/employee', function (req, res, next) {
+    employeeController.remove(req, res, next).then(function (v) {
+        console.log("delete result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+
+/*************************       department     *************************/
+//create
+router.post('/department', function (req, res, next) {
+    //departmentController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    departmentController.create(req, res, next).then(function (v) {
+        console.log("post result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("post fail " + JSON.stringify(e));
+    });
+});
+//read
+router.get('/department', function (req, res, next) {
+    departmentController.readAll(req, res, next).then(function (v) {
+        console.log("read all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read all fail " + JSON.stringify(e));
+    });
+});
+//read single field
+router.get('/department/name', function (req, res, next) {
+    console.log('get no name ');
+    departmentController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+router.get('/department/name/:name', function (req, res, next) {
+    console.log('get name ');
+    departmentController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+//update
+router.put('/department', function (req, res, next) {
+    departmentController.update(req, res, next).then(function (v) {
+        console.log("put result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("put fail " + JSON.stringify(e));
+    });
+});
+//delete
+router.delete('/department', function (req, res, next) {
+    departmentController.remove(req, res, next).then(function (v) {
+        console.log("delete result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+
+/*************************       billType     *************************/
 //create
 router.post('/billType', function (req, res, next) {
-    //billTypeController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
     billTypeController.create(req, res, next).then(function (v) {
         console.log("post result is " + JSON.stringify(v));
     }, function (e) {
@@ -70,13 +175,99 @@ router.post('/billType', function (req, res, next) {
     });
 });
 //read
-router.get('/billType', function (req, res, next) {});
+router.get('/billType', function (req, res, next) {
+    billTypeController.readAll(req, res, next).then(function (v) {
+        console.log("read all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read all fail " + JSON.stringify(e));
+    });
+});
 //read single field
-router.get('/billType/name', function (req, res, next) {});
+router.get('/billType/name', function (req, res, next) {
+    console.log('get no name ');
+    billTypeController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+router.get('/billType/name/:name', function (req, res, next) {
+    console.log('get name ');
+    billTypeController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
 //update
-router.put('/billType', function (req, res, next) {});
+router.put('/billType', function (req, res, next) {
+    billTypeController.update(req, res, next).then(function (v) {
+        console.log("put result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("put fail " + JSON.stringify(e));
+    });
+});
 //delete
-router.put('/billType', function (req, res, next) {});
+router.delete('/billType', function (req, res, next) {
+    billTypeController.remove(req, res, next).then(function (v) {
+        console.log("delete result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+
+/*************************       bill     *************************/
+//create
+router.post('/bill', function (req, res, next) {
+    //billController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    billController.create(req, res, next).then(function (v) {
+        console.log("post result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("post fail " + JSON.stringify(e));
+    });
+});
+//read
+router.get('/bill', function (req, res, next) {
+    billController.readAll(req, res, next).then(function (v) {
+        console.log("read all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read all fail " + JSON.stringify(e));
+    });
+});
+//read single field
+router.get('/bill/name', function (req, res, next) {
+    console.log('get no name ');
+    billController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+router.get('/bill/name/:name', function (req, res, next) {
+    console.log('get name ');
+    billController.readName(req, res, next).then(function (v) {
+        console.log("read anme all result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("read name all fail " + JSON.stringify(e));
+    });
+});
+//update
+router.put('/bill', function (req, res, next) {
+    billController.update(req, res, next).then(function (v) {
+        console.log("put result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("put fail " + JSON.stringify(e));
+    });
+});
+//delete
+router.delete('/bill', function (req, res, next) {
+    billController.remove(req, res, next).then(function (v) {
+        console.log("delete result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+
 module.exports = router;
 
 //# sourceMappingURL=main-compiled.js.map

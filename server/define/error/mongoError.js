@@ -47,30 +47,40 @@ var errorDefine={
         },
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
-            let regex=/.*error\s+index:(.*)\s+dup.+/
+            //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
+/*            let regex=/.*error\s+index:(.*)\s+dup.+/
             let match=errmsg.match(regex)
             let matchResult=match[1]
             let tmp=matchResult.split('.')
-            let [db,coll,field]=tmp
+            let [db,coll,field]=tmp*/
+            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
+            let matchResult=errmsg.match(regex)
+            let [db,coll]=matchResult[1].split(".")
+            let field=matchResult[2].split("_")[0]
+            let dupValue=matchResult[3]
+            // console.log(`db is ${db},coll is ${coll}, field is ${field}, dup is ${dupValue}`)
             //mongoose自动将coll的名称加上s，为了和inputRule匹配，删除s
             //let trueCollName
             if('s'===coll[coll.length-1]){
                 coll=coll.substring(0,coll.length-1)
             }
 
-            let fieldRegex=/\$(\w+)_.*/
+/*            let fieldRegex=/\$(\w+)_.*!/
             tmp=field.match(fieldRegex)
-            field=tmp[1]
+            field=tmp[1]*/
 
             //mongoose 自动将coll的名称改成全小写
             let chineseName
             for(let singleColl in inputRule){
+                // console.log(`for coll is ${singleColl}`)
                 if(singleColl.toLowerCase()===coll){
+                    // console.log(`match coll is ${singleColl}`)
+
                     chineseName=inputRule[singleColl][field]['chineseName']
                 }
             }
 
-            return {rc:30002,msg:{client:`${chineseName}的值已经存在`,server:`集合${coll}的字段${field}的值重复`}}
+            return {rc:30002,msg:{client:`${chineseName}的值已经存在`,server:`集合${coll}的字段${field}的值${dupValue}重复`}}
         }
     }
 }
