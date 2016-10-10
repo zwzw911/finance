@@ -1,0 +1,8 @@
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X POST -d "values"={\"department\":{\"value\":\"57fa2a70dfbe40341583607c\"},\"name\":{\"value\":\"wzhan039\"}} http://127.0.0.1:3000/employee
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X DELETE -d "values"={\"_id\":{\"value\":\"57fb810dc3a255f011b59aa7\"}} http://127.0.0.1:3000/employee
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X PUT -d "values"={\"_id\":{\"value\":\"57fb80264b71557016248fc8\"},\"name\":{\"value\":\"wzhan040\"}} http://127.0.0.1:3000/employee
+
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X POST -d "values"={\"title\":{\"value\":\"sprin\"},\"billType\":{\"value\":\"57f8dc65a795ace017f36be7\"},\"reimburser\":{\"value\":\"57fb80264b71557016248fc8\"}} http://127.0.0.1:3000/bill

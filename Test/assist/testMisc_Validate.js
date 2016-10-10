@@ -148,7 +148,7 @@ var checkRelatedField=function(test){
             require:{define:false,error:{rc:1234,msg:'1234'}}
         }
     }
-    test.expect(5);
+    test.expect(7);
 
     value.userName.type=dataType.int
     result=func(value)
@@ -174,6 +174,21 @@ var checkRelatedField=function(test){
     value.userName.max=undefined
     result=func(value)
     test.equal(result.rc,validateError.ruleDefineNotDefine.rc,'related field maxLength 1 check failed');
+
+
+    let rule={
+        'userid':{
+            chineseName:'用户',
+            type:dataType.objectId,
+            require:{define:true,error:{rc:1234,msg:'1234'}}
+        }
+    }
+    result=func(rule)
+    test.equal(result.rc,validateError.needFormat.rc,'related field format not exist check failed');
+
+    rule['userid']['format']={define:regex.objectId,error:{rc:1234,msg:'1234'}}
+    result=func(rule)
+    test.equal(result.rc,0,'related field format exist check failed');
 
     test.done()
 }
@@ -299,7 +314,7 @@ var sanityRules=function(test){
     test.equal(result.rc,0,'rule check fail')
 
     func(value)
-    console.log(value)
+    //console.log(value)
     test.equal(value.userName.default,1,'default value convert to int failed')
     test.equal(value.userName.minLength.define,2,'minLength value convert to int failed')
     test.equal(value.userName.maxLength.define,2,'maxLength value convert to int failed')
@@ -452,13 +467,13 @@ var checkInputAdditional=function(test){
     }
     result=func(value,rule)
     //console.log(result)
-    test.equal(result._id.rc,validateError.idWrong.rc,'wrong _id check fail')
+    test.equal(result._id.rc,validateError.objectIdWrong.rc,'wrong _id check fail')
     value={
         id:{value:'57f8dc65a795ace017f36'},
     }
     result=func(value,rule)
     //console.log(result)
-    test.equal(result.id.rc,validateError.idWrong.rc,'wrong id check fail')
+    test.equal(result.id.rc,validateError.objectIdWrong.rc,'wrong id check fail')
 
     rule={
         fk:{
@@ -466,13 +481,13 @@ var checkInputAdditional=function(test){
             type:dataType.objectId,
             // default:'10',
             require:{define:true,error:error},
+            format:{define:regex.objectId,error:error}
         },
     }
 
-    value={
-    }
+    value={other:'1'}
     result=func(value,rule,false) //false:base on inputRule(check all rule)
-    console.log(result)
+    //console.log(result)
     test.equal(result.fk.rc,error.rc,'undefined fk check fail')
 
     value={
@@ -482,10 +497,11 @@ var checkInputAdditional=function(test){
     test.equal(result.fk.rc,0,'correct fk check fail')
 
     value={
-        fk:{value:'57f8dc65a795ace017f36b'}
+        fk:{value:'57f8dc65'}
     }
     result=func(value,rule)
-    test.equal(result.fk.rc,validateError.objectIdWrong.rc,'wrong fk check fail')
+    //有对应rule，则rcquwrule中的定义
+    test.equal(result.fk.rc,rule.fk.format.error.rc,'wrong fk check fail')
 
     rule={
         fk:{
@@ -493,13 +509,15 @@ var checkInputAdditional=function(test){
             type:dataType.objectId,
             // default:'10',
             require:{define:false,error:error},
+            format:{define:regex.objectId,error:error}
         },
     }
     value={
         fk:{value:'57f8dc65a795ace017f36b'}
     }
     result=func(value,rule)
-    test.equal(result.fk.rc,0,'wrong fk but require false check fail')
+    //console.log(`wrong but not require ${JSON.stringify(result)}`)
+    test.equal(result.fk.rc,rule.fk.format.error.rc,'wrong fk but require false check fail')
 
 
     test.done()
@@ -529,7 +547,7 @@ var checkSearchValue=function(test){
         }
     }
     result=func(value,rule)
-    console.log(result)
+    //console.log(result)
     test.equal(result.name.rc,0,'correct name length check fail')
 
     value={

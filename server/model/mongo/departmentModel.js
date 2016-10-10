@@ -109,7 +109,16 @@ function findById(id){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
+            // console.log(`original type is  ${typeof result}`)
+            // let convert=result.toJSON()
+            // console.log(`after toJSON type is  ${typeof convert}`)
+            // delete result['_id']
+            // console.log(`after delete is ${convert['_id']}`)
+            // console.log(`after delete type is ${typeof result['_id']}`)
+            // result['_id']=convert
+            // console.log(`type of   ${typeof result['_id']}`)
             resolve({rc:0,msg:result})
+
         })
     })
 }

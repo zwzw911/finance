@@ -67,7 +67,7 @@ function remove(id){
 
 function readAll(){
     return new Promise(function(resolve,reject){
-        let condition={}
+        /*let condition={}
         let selectField=null
         let option={}
         option.limit=pageSetting.employee.limit
@@ -77,10 +77,42 @@ function readAll(){
                 resolve( mongooseErrorHandler(err))
             }
             //console.log(`success result is ${result}`)
+            var opt={
+                path:'department',//需要populate的字段
+                select:'name',//populate后，需要显示的字段
+                match:{},//populate后，过滤字段
+                options:{},//{sort:{name:-1}}
+            }
+            result[0].populate(opt,function(popErr,popResult){
+                if(popErr){
+                    //console.log(`db err is ${err}`)
+                    resolve( mongooseErrorHandler(popErr))
+                }
+                resolve({rc:0,msg:popResult})
+            })
+
+        })*/
+        let condition={}
+        let selectField=null
+        let option={}
+
+        var opt={
+            path:'department',//需要populate的字段
+            select:'name',//populate后，需要显示的字段
+            match:{},//populate后，过滤字段(不符合这显示null)。一般不用
+            options:{},//{sort:{name:-1}}
+        }
+        option.limit=pageSetting.employee.limit
+        employeeModel.find(condition,selectField,option).populate(opt).exec(function (err,result) {
+            if(err){
+                console.log(`db err is ${err}`)
+                resolve( mongooseErrorHandler(err))
+            }
             resolve({rc:0,msg:result})
         })
     })
 }
+
 
 function readName(nameToBeSearched){
     return new Promise(function(resolve,reject){

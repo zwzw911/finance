@@ -60,31 +60,33 @@ var sanityInput = function () {
 
                     case 7:
                         checkResult = _context2.sent;
+
+                        console.log('check input  result is ' + JSON.stringify(checkResult));
                         _context2.t0 = regeneratorRuntime.keys(checkResult);
 
-                    case 9:
+                    case 10:
                         if ((_context2.t1 = _context2.t0()).done) {
-                            _context2.next = 15;
+                            _context2.next = 16;
                             break;
                         }
 
                         singleField = _context2.t1.value;
 
                         if (!(checkResult[singleField].rc > 0)) {
-                            _context2.next = 13;
+                            _context2.next = 14;
                             break;
                         }
 
                         return _context2.abrupt('return', checkResult[singleField]);
 
-                    case 13:
-                        _context2.next = 9;
+                    case 14:
+                        _context2.next = 10;
                         break;
 
-                    case 15:
+                    case 16:
                         return _context2.abrupt('return', convertedInput);
 
-                    case 16:
+                    case 17:
                     case 'end':
                         return _context2.stop();
                 }
@@ -209,13 +211,9 @@ department['create'] = function () {
 
                     case 10:
                         result = _context5.sent;
+                        return _context5.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        miscFunc.formatRc(result);
-                        //console.log(` inserted result ${JSON.stringify(result)}`)
-
-                        return _context5.abrupt('return', res.json(result));
-
-                    case 13:
+                    case 12:
                     case 'end':
                         return _context5.stop();
                 }
@@ -242,14 +240,13 @@ department['remove'] = function () {
                         sanitizedInputValue = _context6.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context6.next = 6;
+                            _context6.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context6.abrupt('return', res.json(sanitizedInputValue));
+                        return _context6.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -259,17 +256,14 @@ department['remove'] = function () {
                         id = convertedResult._id;
                         //console.log(`id is ${id}`)
 
-                        _context6.next = 10;
+                        _context6.next = 9;
                         return departmentDbOperation.remove(id);
 
-                    case 10:
+                    case 9:
                         result = _context6.sent;
+                        return _context6.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context6.abrupt('return', res.json(result));
-
-                    case 13:
+                    case 11:
                     case 'end':
                         return _context6.stop();
                 }
@@ -296,14 +290,13 @@ department['update'] = function () {
                         sanitizedInputValue = _context7.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context7.next = 6;
+                            _context7.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context7.abrupt('return', res.json(sanitizedInputValue));
+                        return _context7.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -314,17 +307,14 @@ department['update'] = function () {
 
                         delete convertedResult._id;
 
-                        _context7.next = 11;
+                        _context7.next = 10;
                         return departmentDbOperation.update(id, convertedResult);
 
-                    case 11:
+                    case 10:
                         result = _context7.sent;
+                        return _context7.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context7.abrupt('return', res.json(result));
-
-                    case 14:
+                    case 12:
                     case 'end':
                         return _context7.stop();
                 }
@@ -349,12 +339,9 @@ department['readAll'] = function () {
 
                     case 2:
                         result = _context8.sent;
+                        return _context8.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(result);
-                        return _context8.abrupt('return', res.json(result));
-
-                    case 5:
+                    case 4:
                     case 'end':
                         return _context8.stop();
                 }
@@ -413,12 +400,9 @@ department['readName'] = function () {
                         recorder = _context9.sent;
 
                     case 16:
+                        return _context9.abrupt('return', res.json(miscFunc.formatRc(recorder)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(recorder);
-                        return _context9.abrupt('return', res.json(recorder));
-
-                    case 18:
+                    case 17:
                     case 'end':
                         return _context9.stop();
                 }
@@ -449,13 +433,14 @@ employee['create'] = function () {
                     case 2:
                         sanitizedInputValue = _context10.sent;
 
+                        console.log('1st san ' + JSON.stringify(sanitizedInputValue));
+
                         if (!(sanitizedInputValue.rc > 0)) {
                             _context10.next = 6;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context10.abrupt('return', res.json(sanitizedInputValue));
+                        return _context10.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
                     case 6:
                         //采用insertMany，所有输入必须是数组
@@ -474,7 +459,7 @@ employee['create'] = function () {
 
                     case 13:
                         if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-                            _context10.next = 30;
+                            _context10.next = 26;
                             break;
                         }
 
@@ -485,89 +470,79 @@ employee['create'] = function () {
                     case 17:
                         fkResult = _context10.sent;
 
-                        console.log('fk result is ' + JSON.stringify(fkResult));
-
                         if (!(null === fkResult.msg)) {
-                            _context10.next = 24;
-                            break;
-                        }
-
-                        console.log(pageError.employee.departmentNotExist);
-                        miscFunc.formatRc(pageError.employee.departmentNotExist);
-                        console.log(pageError.employee.departmentNotExist);
-                        // return res.json(miscFunc.formatRc(pageError.employee.departmentNotExist))
-                        return _context10.abrupt('return', res.json(pageError.employee.departmentNotExist));
-
-                    case 24:
-                        if (!(fkResult.msg && fkResult.msg._id)) {
-                            _context10.next = 27;
-                            break;
-                        }
-
-                        if (!(fkResult.msg._id !== doc.department)) {
-                            _context10.next = 27;
+                            _context10.next = 20;
                             break;
                         }
 
                         return _context10.abrupt('return', res.json(miscFunc.formatRc(pageError.employee.departmentNotExist)));
 
-                    case 27:
+                    case 20:
+                        if (!(fkResult.msg && fkResult.msg._id)) {
+                            _context10.next = 23;
+                            break;
+                        }
+
+                        if (!(fkResult.msg._id.toString() !== doc.department.toString())) {
+                            _context10.next = 23;
+                            break;
+                        }
+
+                        return _context10.abrupt('return', res.json(pageError.employee.departmentNotExist));
+
+                    case 23:
                         _iteratorNormalCompletion = true;
                         _context10.next = 13;
                         break;
 
-                    case 30:
-                        _context10.next = 36;
+                    case 26:
+                        _context10.next = 32;
                         break;
 
-                    case 32:
-                        _context10.prev = 32;
+                    case 28:
+                        _context10.prev = 28;
                         _context10.t0 = _context10['catch'](11);
                         _didIteratorError = true;
                         _iteratorError = _context10.t0;
 
-                    case 36:
-                        _context10.prev = 36;
-                        _context10.prev = 37;
+                    case 32:
+                        _context10.prev = 32;
+                        _context10.prev = 33;
 
                         if (!_iteratorNormalCompletion && _iterator.return) {
                             _iterator.return();
                         }
 
-                    case 39:
-                        _context10.prev = 39;
+                    case 35:
+                        _context10.prev = 35;
 
                         if (!_didIteratorError) {
-                            _context10.next = 42;
+                            _context10.next = 38;
                             break;
                         }
 
                         throw _iteratorError;
 
-                    case 42:
-                        return _context10.finish(39);
+                    case 38:
+                        return _context10.finish(35);
 
-                    case 43:
-                        return _context10.finish(36);
+                    case 39:
+                        return _context10.finish(32);
 
-                    case 44:
-                        _context10.next = 46;
+                    case 40:
+                        _context10.next = 42;
                         return employeeDbOperation.create(arrayResult);
 
-                    case 46:
+                    case 42:
                         result = _context10.sent;
+                        return _context10.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        miscFunc.formatRc(result);
-                        //console.log(` inserted result ${JSON.stringify(result)}`)
-
-                        return _context10.abrupt('return', res.json(result));
-
-                    case 49:
+                    case 44:
                     case 'end':
                         return _context10.stop();
                 }
             }
-        }, _callee10, this, [[11, 32, 36, 44], [37,, 39, 43]]);
+        }, _callee10, this, [[11, 28, 32, 40], [33,, 35, 39]]);
     }));
 
     return function (_x28, _x29, _x30) {
@@ -589,14 +564,13 @@ employee['remove'] = function () {
                         sanitizedInputValue = _context11.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context11.next = 6;
+                            _context11.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context11.abrupt('return', res.json(sanitizedInputValue));
+                        return _context11.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -606,17 +580,14 @@ employee['remove'] = function () {
                         id = convertedResult._id;
                         //console.log(`id is ${id}`)
 
-                        _context11.next = 10;
+                        _context11.next = 9;
                         return employeeDbOperation.remove(id);
 
-                    case 10:
+                    case 9:
                         result = _context11.sent;
+                        return _context11.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context11.abrupt('return', res.json(result));
-
-                    case 13:
+                    case 11:
                     case 'end':
                         return _context11.stop();
                 }
@@ -643,14 +614,13 @@ employee['update'] = function () {
                         sanitizedInputValue = _context12.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context12.next = 6;
+                            _context12.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context12.abrupt('return', res.json(sanitizedInputValue));
+                        return _context12.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -661,17 +631,14 @@ employee['update'] = function () {
 
                         delete convertedResult._id;
 
-                        _context12.next = 11;
+                        _context12.next = 10;
                         return employeeDbOperation.update(id, convertedResult);
 
-                    case 11:
+                    case 10:
                         result = _context12.sent;
+                        return _context12.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context12.abrupt('return', res.json(result));
-
-                    case 14:
+                    case 12:
                     case 'end':
                         return _context12.stop();
                 }
@@ -696,12 +663,9 @@ employee['readAll'] = function () {
 
                     case 2:
                         result = _context13.sent;
+                        return _context13.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(result);
-                        return _context13.abrupt('return', res.json(result));
-
-                    case 5:
+                    case 4:
                     case 'end':
                         return _context13.stop();
                 }
@@ -760,12 +724,9 @@ employee['readName'] = function () {
                         recorder = _context14.sent;
 
                     case 16:
+                        return _context14.abrupt('return', res.json(miscFunc.formatRc(recorder)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(recorder);
-                        return _context14.abrupt('return', res.json(recorder));
-
-                    case 18:
+                    case 17:
                     case 'end':
                         return _context14.stop();
                 }
@@ -795,14 +756,13 @@ billType['create'] = function () {
                         sanitizedInputValue = _context15.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context15.next = 6;
+                            _context15.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context15.abrupt('return', res.json(sanitizedInputValue));
+                        return _context15.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
                         //采用insertMany，所有输入必须是数组
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
@@ -810,18 +770,14 @@ billType['create'] = function () {
                             console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)*/
 
                         arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
-                        _context15.next = 10;
+                        _context15.next = 9;
                         return billTypeDbOperation.create(arrayResult);
 
-                    case 10:
+                    case 9:
                         result = _context15.sent;
+                        return _context15.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        miscFunc.formatRc(result);
-                        //console.log(` inserted result ${JSON.stringify(result)}`)
-
-                        return _context15.abrupt('return', res.json(result));
-
-                    case 13:
+                    case 11:
                     case 'end':
                         return _context15.stop();
                 }
@@ -850,14 +806,13 @@ billType['update'] = function () {
                         sanitizedInputValue = _context16.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context16.next = 6;
+                            _context16.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context16.abrupt('return', res.json(sanitizedInputValue));
+                        return _context16.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -868,17 +823,14 @@ billType['update'] = function () {
 
                         delete convertedResult._id;
 
-                        _context16.next = 11;
+                        _context16.next = 10;
                         return billTypeDbOperation.update(id, convertedResult);
 
-                    case 11:
+                    case 10:
                         result = _context16.sent;
+                        return _context16.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context16.abrupt('return', res.json(result));
-
-                    case 14:
+                    case 12:
                     case 'end':
                         return _context16.stop();
                 }
@@ -907,14 +859,13 @@ billType['remove'] = function () {
                         sanitizedInputValue = _context17.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context17.next = 6;
+                            _context17.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context17.abrupt('return', res.json(sanitizedInputValue));
+                        return _context17.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
 
                         //2. 将client输入转换成server端的格式
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
@@ -924,17 +875,14 @@ billType['remove'] = function () {
                         id = convertedResult._id;
                         //console.log(`id is ${id}`)
 
-                        _context17.next = 10;
+                        _context17.next = 9;
                         return billTypeDbOperation.remove(id);
 
-                    case 10:
+                    case 9:
                         result = _context17.sent;
+                        return _context17.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${result}`)
-                        miscFunc.formatRc(result);
-                        return _context17.abrupt('return', res.json(result));
-
-                    case 13:
+                    case 11:
                     case 'end':
                         return _context17.stop();
                 }
@@ -959,12 +907,9 @@ billType['readAll'] = function () {
 
                     case 2:
                         result = _context18.sent;
+                        return _context18.abrupt('return', res.json(miscFunc.formatRc(result)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(result);
-                        return _context18.abrupt('return', res.json(result));
-
-                    case 5:
+                    case 4:
                     case 'end':
                         return _context18.stop();
                 }
@@ -1023,12 +968,9 @@ billType['readName'] = function () {
                         recorder = _context19.sent;
 
                     case 17:
+                        return _context19.abrupt('return', res.json(miscFunc.formatRc(recorder)));
 
-                        //console.log(`db op result is ${JSON.stringify(result)}`)
-                        miscFunc.formatRc(recorder);
-                        return _context19.abrupt('return', res.json(recorder));
-
-                    case 19:
+                    case 18:
                     case 'end':
                         return _context19.stop();
                 }
@@ -1047,15 +989,128 @@ billType['readName'] = function () {
 var bill = {};
 bill['create'] = function () {
     var _ref20 = _asyncToGenerator(regeneratorRuntime.mark(function _callee20(req, res, next) {
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, doc, fkResult, result;
+
         return regeneratorRuntime.wrap(function _callee20$(_context20) {
             while (1) {
                 switch (_context20.prev = _context20.next) {
                     case 0:
+                        _context20.next = 2;
+                        return sanityInput(req.body.values, inputRule.bill, false);
+
+                    case 2:
+                        sanitizedInputValue = _context20.sent;
+
+                        console.log('1st san ' + JSON.stringify(sanitizedInputValue));
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context20.next = 6;
+                            break;
+                        }
+
+                        return _context20.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+
+                    case 6:
+                        //采用insertMany，所有输入必须是数组
+                        arrayResult = [];
+                        //从{name:{value:'11'}}====>{name:'11'}
+                        //     console.log(`before sant ${sanitizedInputValue.msg}`)
+                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)
+
+                        arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
+                        //检查外键是否存在
+                        _iteratorNormalCompletion2 = true;
+                        _didIteratorError2 = false;
+                        _iteratorError2 = undefined;
+                        _context20.prev = 11;
+                        _iterator2 = arrayResult[Symbol.iterator]();
+
+                    case 13:
+                        if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+                            _context20.next = 26;
+                            break;
+                        }
+
+                        doc = _step2.value;
+                        _context20.next = 17;
+                        return departmentDbOperation.findById(doc.department);
+
+                    case 17:
+                        fkResult = _context20.sent;
+
+                        if (!(null === fkResult.msg)) {
+                            _context20.next = 20;
+                            break;
+                        }
+
+                        return _context20.abrupt('return', res.json(miscFunc.formatRc(pageError.employee.departmentNotExist)));
+
+                    case 20:
+                        if (!(fkResult.msg && fkResult.msg._id)) {
+                            _context20.next = 23;
+                            break;
+                        }
+
+                        if (!(fkResult.msg._id.toString() !== doc.department.toString())) {
+                            _context20.next = 23;
+                            break;
+                        }
+
+                        return _context20.abrupt('return', res.json(pageError.employee.departmentNotExist));
+
+                    case 23:
+                        _iteratorNormalCompletion2 = true;
+                        _context20.next = 13;
+                        break;
+
+                    case 26:
+                        _context20.next = 32;
+                        break;
+
+                    case 28:
+                        _context20.prev = 28;
+                        _context20.t0 = _context20['catch'](11);
+                        _didIteratorError2 = true;
+                        _iteratorError2 = _context20.t0;
+
+                    case 32:
+                        _context20.prev = 32;
+                        _context20.prev = 33;
+
+                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                            _iterator2.return();
+                        }
+
+                    case 35:
+                        _context20.prev = 35;
+
+                        if (!_didIteratorError2) {
+                            _context20.next = 38;
+                            break;
+                        }
+
+                        throw _iteratorError2;
+
+                    case 38:
+                        return _context20.finish(35);
+
+                    case 39:
+                        return _context20.finish(32);
+
+                    case 40:
+                        _context20.next = 42;
+                        return employeeDbOperation.create(arrayResult);
+
+                    case 42:
+                        result = _context20.sent;
+                        return _context20.abrupt('return', res.json(miscFunc.formatRc(result)));
+
+                    case 44:
                     case 'end':
                         return _context20.stop();
                 }
             }
-        }, _callee20, this);
+        }, _callee20, this, [[11, 28, 32, 40], [33,, 35, 39]]);
     }));
 
     return function (_x58, _x59, _x60) {

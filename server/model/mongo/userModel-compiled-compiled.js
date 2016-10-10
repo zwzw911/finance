@@ -3,19 +3,18 @@
  */
 'use strict';
 
-var employeeModel = require('./common/structure-compiled').employeeModel;
-// var departmentModel=require('./common/structure-compiled').departmentModel
+var userModel = require('./common/structure-compiled').userModel;
 var mongooseErrorHandler = require('../../define/error/mongoError').mongooseErrorHandler;
 
 var pageSetting = require('../../config/global/globalSettingRule').pageSetting;
 
 function create(values) {
     //不能直接返回promise，而是通过callback捕获可能错误，并转换成可读格式
-    //return employeeModel.insertMany(values)
+    //return userModel.insertMany(values)
     return new Promise(function (resolve, reject) {
-        //如果要插入外键，首先要检查外键是否存在并且可以操作
-        // console.log(`values is ${JSON.stringify(values)}`)
-        employeeModel.insertMany(values, function (err, result) {
+        //console.log(`inserted values ${values}`)
+
+        userModel.insertMany(values, function (err, result) {
             if (err) {
                 //console.log(JSON.stringify(err))
                 //能返回自定义错误，所以用resolve而不是reject
@@ -35,7 +34,7 @@ function update(id, values) {
         'sort': '_id' };
     values['uDate'] = Date.now();
     return new Promise(function (resolve, reject) {
-        employeeModel.findByIdAndUpdate(id, values, updateOptions, function (err, result) {
+        userModel.findByIdAndUpdate(id, values, updateOptions, function (err, result) {
             if (err) {
                 //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));
@@ -50,7 +49,7 @@ function update(id, values) {
 //根据Id删除文档
 function remove(id) {
     return new Promise(function (resolve, reject) {
-        employeeModel.findByIdAndRemove(id, function (err, result) {
+        userModel.findByIdAndRemove(id, function (err, result) {
             if (err) {
                 //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));
@@ -64,45 +63,16 @@ function remove(id) {
 
 function readAll() {
     return new Promise(function (resolve, reject) {
-        /*let condition={}
-        let selectField=null
-        let option={}
-        option.limit=pageSetting.employee.limit
-        employeeModel.find(condition,selectField,option,function(err,result){
-            if(err){
-                //console.log(`db err is ${err}`)
-                resolve( mongooseErrorHandler(err))
-            }
-            //console.log(`success result is ${result}`)
-            var opt={
-                path:'department',//需要populate的字段
-                select:'name',//populate后，需要显示的字段
-                match:{},//populate后，过滤字段
-                options:{},//{sort:{name:-1}}
-            }
-            result[0].populate(opt,function(popErr,popResult){
-                if(popErr){
-                    //console.log(`db err is ${err}`)
-                    resolve( mongooseErrorHandler(popErr))
-                }
-                resolve({rc:0,msg:popResult})
-            })
-          })*/
         var condition = {};
         var selectField = null;
         var option = {};
-
-        var opt = {
-            path: 'department', //需要populate的字段
-            select: 'name', //populate后，需要显示的字段
-            match: {}, //populate后，过滤字段(不符合这显示null)。一般不用
-            options: {} };
-        option.limit = pageSetting.employee.limit;
-        employeeModel.find(condition, selectField, option).populate(opt).exec(function (err, result) {
+        option.limit = pageSetting.billType.limit;
+        userModel.find(condition, selectField, option, function (err, result) {
             if (err) {
-                console.log('db err is ' + err);
+                //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));
             }
+            //console.log(`success result is ${result}`)
             resolve({ rc: 0, msg: result });
         });
     });
@@ -116,8 +86,8 @@ function readName(nameToBeSearched) {
         }
         var selectField = 'name';
         var option = {};
-        option.limit = pageSetting.employee.limit;
-        employeeModel.find(condition, selectField, option, function (err, result) {
+        option.limit = pageSetting.billType.limit;
+        userModel.find(condition, selectField, option, function (err, result) {
             if (err) {
                 //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));
@@ -128,25 +98,14 @@ function readName(nameToBeSearched) {
     });
 }
 
-//作为外键时，是否存在
-function findById(id) {
-    return new Promise(function (resolve, reject) {
-        employeeModel.findById(id, '-cDate -uDate -dDate', function (err, result) {
-            if (err) {
-                //console.log(`db err is ${err}`)
-                resolve(mongooseErrorHandler(err));
-            }
-            resolve({ rc: 0, msg: result });
-        });
-    });
-}
 module.exports = {
     create: create,
     update: update,
     remove: remove,
     readAll: readAll,
-    readName: readName,
-    findById: findById
+    readName: readName
 };
 
-//# sourceMappingURL=employeeModel-compiled.js.map
+//# sourceMappingURL=userModel-compiled.js.map
+
+//# sourceMappingURL=userModel-compiled-compiled.js.map

@@ -75,7 +75,7 @@ var inputRule = {
         },
         parentDepartment: {
             chineseName: '上级部门',
-            type: inputDataType.objeectId,
+            type: inputDataType.objectId,
             require: { define: false, error: { rc: 10006 }, mongoError: { rc: 20006, msg: '上级部门不能为空' } },
             format: { define: regex.objectId, error: { rc: 10008 }, mongoError: { rc: 20008, msg: '上级部门的id格式不正确' } } }
     },
@@ -92,7 +92,7 @@ var inputRule = {
         },
         leader: {
             chineseName: '上级主管',
-            type: inputDataType.objeectId,
+            type: inputDataType.objectId,
             require: { define: false, error: { rc: 10024 }, mongoError: { rc: 20024, msg: '员工姓名不能为空' } },
             format: { define: regex.objectId, error: { rc: 10026 }, mongoError: { rc: 20026, msg: '所属部门的id格式不正确' } }
         },

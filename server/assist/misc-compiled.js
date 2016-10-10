@@ -1399,6 +1399,15 @@ var validate = {
                             return rc;
                         };
                         break;
+                    //ObjectId必须有format，用来出错时返回错误
+                    case dataType.objectId:
+                        if (false === dataTypeCheck.isSetValue(inputRules[inputRule]['format'])) {
+                            rc['rc'] = validateError.needFormat.rc;
+                            rc['msg'] = inputRule + "的" + validateError.needFormat.msg;
+                            //console.log(rc)
+                            return rc;
+                        };
+                        break;
                     default:
                         break;
                 }
@@ -1594,7 +1603,7 @@ var validate = {
         var rc = {};
         var tmpResult = void 0;
         //检查参数的更是，必需是Object，且含有key
-        // console.log(`input para is ${JSON.stringify(inputValue)}`)
+        //console.log(`input para is ${JSON.stringify(inputValue)}`)
         if (false === dataTypeCheck.isSetValue(inputValue)) {
             /*            rc['rc']=validateError.valueNotDefine.rc
                         rc['msg']=`${inputV}validateError`*/
@@ -1623,30 +1632,37 @@ var validate = {
         }
         //console.log(`base is ${JSON.stringify(base)}`)
         for (var itemName in base) {
-            // console.log(`check item is ${itemName}`)
-            //             console.log(`rc  is ${JSON.stringify(rc)}`)
+
             rc[itemName] = {};
             rc[itemName]['rc'] = 0;
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
             //var currentItemValue=inputValue[itemName]['value']
 
+            //console.log(`item name is ${itemName}`)
             //-2 如果传入的是_id，那么通过regex直接判断（因为_id不定义在rule中）
             if ('id' === itemName || '_id' === itemName) {
-                if (true === regex.objectId.test(inputValue[itemName]['value'])) {
-                    //console.log(`id check  ture`)
-                    //return rightResult
-                    //continue
-                } else {
-                    //console.log(`id check  false`)
-                    rc[itemName]['rc'] = miscError.validate.idWrong.rc;
-                    rc[itemName]['msg'] = miscError.validate.idWrong.msg;
-                    //return rc
-                    //console.log(`id check resul is ${JSON.stringify(rc)}`)
-                    //return miscError.idWrong
+                if (false === dataTypeCheck.isSetValue(inputValue[itemName]) || false === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
+                    rc[itemName]['rc'] = miscError.validate.objectIdEmpty.rc;
+                    rc[itemName]['msg'] = miscError.validate.objectIdEmpty.msg;
+                    continue;
                 }
-
+                if (false === regex.objectId.test(inputValue[itemName]['value'])) {
+                    rc[itemName]['rc'] = miscError.validate.objectIdWrong.rc;
+                    rc[itemName]['msg'] = miscError.validate.objectIdWrong.msg;
+                }
                 continue;
             }
+            /*            //如果传入的值的类型是objectId（即有对应的rule定义），那么根据rule中的format进行检测
+                        if(dataType.objectId===inputItemDefine[itemName]['type']){
+                            if(false===inputItemDefine[itemName]['format']['define'].test(inputValue[itemName]['value'])) {
+                                console.log(`item name is ${itemName}`)
+                                console.log(`rule is ${inputItemDefine[itemName]}`)
+                                rc[itemName]['rc']=inputItemDefine[itemName]['format']['error']['rc']
+                                rc[itemName]['msg']=validate._private.generateErrorMsg.format(inputItemDefine[itemName]['chineseName'],inputItemDefine[itemName]['format'],false)
+                            }
+                            //object检查完，直接下一个value的检测
+                            continue
+                        }*/
 
             //0 当前待检测的value，有没有对应的检测rule定义
             if (false === dataTypeCheck.isSetValue(inputItemDefine[itemName])) {
@@ -1661,19 +1677,19 @@ var validate = {
             //rule的赋值
             var currentItemRule = inputItemDefine[itemName];
             var currentChineseName = inputItemDefine[itemName]['chineseName'];
-            // console.log(`current item rule is ${JSON.stringify(currentItemRule)}`)
-            //如果类型是objectId，并且require=true，直接判断（而无需后续的检测，以便加快速度）
+
+            //如果类型是objectId(有对应inputRule定义)，并且require=true，直接判断（而无需后续的检测，以便加快速度）
             if (dataType.objectId === currentItemRule['type']) {
                 // define+ require true ==>check
                 // define+ require false==>check
                 //  not define+ require true===>fail
                 //  not define+ require false==>skip
-
-
                 if (true === dataTypeCheck.isSetValue(inputValue[itemName]) && true === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
-                    if (false === regex.objectId.test(inputValue[itemName]['value'])) {
-                        rc[itemName]['rc'] = validateError.objectIdWrong.rc;
-                        rc[itemName]['msg'] = currentChineseName + "：" + validateError.objectIdWrong.msg;
+                    if (false === currentItemRule['format']['define'].test(inputValue[itemName]['value'])) {
+                        /*                       rc[itemName]['rc']=validateError.objectIdWrong.rc
+                                               rc[itemName]['msg']=`${currentChineseName}：${validateError.objectIdWrong.msg}`*/
+                        rc[itemName]['rc'] = inputItemDefine[itemName]['format']['error']['rc'];
+                        rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, inputItemDefine[itemName]['format']['error']['define'], false);
                     }
                     // continue
                 } else {
@@ -1683,7 +1699,6 @@ var validate = {
                         // continue
                     }
                 }
-                // console.log(`enter format`)
                 continue;
             }
 
@@ -1740,7 +1755,7 @@ var validate = {
                 //value不为空，付给变量，以便后续操作
                 currentItemValue = inputValue[itemName]['value'];
             }
-            // console.log(`empty check is ${JSON.stringify(rc[itemName])}`)
+            //console.log(`empty check is ${JSON.stringify(rc)}`)
             //console.log(currentItemValue)
             //如果currentItemValue为空，说明没有获得default，或者require为false
             //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
@@ -1763,7 +1778,7 @@ var validate = {
             /*console.log(currentItemValue)
             console.log(currentItemRule['type'])*/
             var result = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, currentItemRule['type']);
-            // console.log(result)
+            //console.log(result)
             if (result.rc && 0 < result.rc) {
                 rc[itemName]['rc'] = result.rc;
                 rc[itemName]['msg'] = "" + itemName + result.msg;
@@ -1835,9 +1850,7 @@ var validate = {
                             }
                             break;
                         case "format":
-                            // console.log(`enter format`)
                             if (false === emptyFlag && false === ruleTypeCheck.format(currentItemValue, ruleDefine)) {
-                                // console.log(` format wrong`)
                                 rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
                                 rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, ruleDefine, useDefaultValueFlag);
                             }
@@ -1859,24 +1872,20 @@ var validate = {
                         default:
                     }
                 }
-
                 //检查出错误后，不在继续检测当前item的其它rule，而是直接检测下一个item
                 if (0 !== rc[itemName].rc) {
                     break;
                 }
             }
-
+            //console.log(`rc is ${rc}`)
             //没有检测出错误，对inpputValue的value进行sanity操作
             var tmpType = inputItemDefine[itemName]['type'];
             if (tmpType === dataType.int || tmpType === dataType.float || tmpType === dataType.date) {
                 //对默认值或者inputValue进行sanity
                 inputValue[itemName]['value'] = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, tmpType);
             }
-
-            // console.log(`${itemName} check result is ${JSON.stringify(rc)}`)
         }
 
-        // console.log(`check result is ${JSON.stringify(rc)}`)
         return rc;
         //    注意，返回的结果是对象，结构和inputValue类型，不是{rc;xxx,msg:xxx}的格式
     },
@@ -2148,14 +2157,27 @@ var convertClientValueToServerFormat = function convertClientValueToServerFormat
 var formatRc = function formatRc(rc) {
     var clientFlag = arguments.length <= 1 || arguments[1] === undefined ? true : arguments[1];
 
+    // console.log(`original rc is ${JSON.stringify(rc)}`)
     if (rc.msg && (rc.msg.client || rc.msg.server)) {
+        var result = {};
+        result['rc'] = rc['rc'];
         if (clientFlag) {
-            rc.msg = rc.msg.client;
+            result['msg'] = rc.msg.client;
         } else {
-            rc.msg = rc.msg.server;
+            result['msg'] = rc.msg.server;
         }
+        return result;
     }
+    //其他格式的rc（正确结果，或者已经是{rc:xxx,msg:'yyy'}），直接返回
+    return rc;
+    /*    //已经是{rc:xxx,msg:'yyy'}的格式，直接返回输入值
+        if(rc.msg && undefined===rc.msg.client &&  undefined===rc.msg.server){
+            return rc
+        }
+    
+        return miscError.validate.rcFormatWrong*/
 };
+
 exports.func = {
     dataTypeCheck: dataTypeCheck,
     ruleTypeCheck: ruleTypeCheck,

@@ -31,11 +31,14 @@ var assistError = {
             chineseNameNotString: { rc: 68804, msg: 'chineseName字段必须是字符串' },
             chineseNameEmpty: { rc: 68806, msg: 'chineseName字段不能为空' },
 
-            typeWrong: { rc: 69808, msg: '类型不正确' },
+            typeWrong: { rc: 69807, msg: '类型不正确' },
 
+            objectIdEmpty: { rc: 69808, msg: 'objectId不能为空' },
+            objectIdWrong: { rc: 69809, msg: 'objectId的格式不正确' },
             needMin: { rc: 69810, msg: 'type为int时，必需包含Min属性' },
             needMax: { rc: 69812, msg: 'type为int时，必需包含Max属性' },
-            needMaxLength: { rc: 69814, msg: 'type为number时，必需包含maxLength属性' },
+            needMaxLength: { rc: 69814, msg: 'type为string或者number时，必需包含maxLength属性' },
+            needFormat: { rc: 69815, msg: 'type为objectId是，必须包含format属性' },
 
             ruleDefineNotRight: { rc: 69816, msg: 'rule的定义不正确' },
             maxLengthDefineNotInt: { rc: 69818, msg: 'maxLength的定义不是整数' },
@@ -62,7 +65,7 @@ var assistError = {
             valueNotDefine: { rc: 69860, msg: '待检测的输入值未定义' },
             valueNotDefineWithRequireTrue: { rc: 69862, msg: '待检测的输入值未定义，而rule中require为true' },
             valueEmpty: { rc: 69864, msg: '待检测的输入值不能为空' },
-            valueRelatedRuleNotDefine: { rc: 68868, msg: '带检测的输入值没有对应的检测规则' },
+            valueRelatedRuleNotDefine: { rc: 68868, msg: '待检测的输入值没有对应的检测规则' },
             //rule chekc fail
             //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
             /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},
@@ -74,7 +77,9 @@ var assistError = {
              equalToCheckFail:{rc:68856,msg:{client:'两个输入值不相等'}},*/
 
             //mongo的id没有在rule中定义，需要在misc中单独定义一个函数进行判别，如果格式不正确，返回如下错误
-            idWrong: { rc: 68870, msg: 'id格式不正确' }
+            //idWrong:{rc:68870,msg:'id格式不正确'},
+
+            rcFormatWrong: { rc: 68872, msg: '错误代码格式不正确' }
         },
         checkInterval: {
             sessionIdWrong: { rc: 69900, msg: { client: '请求格式不正确', server: 'session格式不正确' } },

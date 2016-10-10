@@ -17,4 +17,7 @@
 3. 完成checkSearchValue=========>done
 
 
-1. miscFunc.formatRc 返回修改过的结果，而不是直接改输入参数
+1. miscFunc.formatRc 返回修改过的结果，而不是直接改输入参数======>done
+
+
+1. 多个外键，同时进行检测，任何一个失败，create失败

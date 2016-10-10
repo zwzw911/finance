@@ -11,7 +11,7 @@ function create(values){
     //不能直接返回promise，而是通过callback捕获可能错误，并转换成可读格式
     //return billModel.insertMany(values)
     return new Promise(function(resolve,reject){
-        //console.log(`inserted values ${values}`)
+        console.log(`inserted values ${values}`)
 
         billModel.insertMany(values,function(err,result){
             if(err){

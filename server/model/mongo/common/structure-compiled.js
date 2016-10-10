@@ -31,13 +31,13 @@ var schemaOptions = {
     safe: true, //设为true，如果出错，返回error到callback。设为{j:1,w:2,wtimeout:5000}，除了error返回callback，还能保证写操作被提交到日志和至少2个rep中，并且写操作超过5秒就超时
     Strict: true, //默认true，如果要保存的数据中，字段没有在schema中定义，数据将无法保存。也可以设置成throw，如此便抛出错误，而不是仅仅drop数据。
     //shardKey:{f1:1,f2:1}		//为collection设置shardKey（每个schema不同）
-    //toJSON,		//类似toObject，除了还可以使用JSON.stringify(doc)
-    //toObject,
+    toJSON: toObjectOptions, //类似toObject，除了还可以使用JSON.stringify(doc)
+    //toObject:toObjectOptions,
     validateBeforeSave: mongoSetting.schemaOptions.validateBeforeSaveFlag };
 //convert mongodb data to objet, so that nodejs can manipulate directly
 var toObjectOptions = {
     getters: true, //apply all getters (path and virtual getters)
-    virtuals: true, //apply virtual getters (can override getters option)
+    virtuals: true, //apply virtual getters (can override getters option). virtual apply to document by default, to apply to toObject, should set to true
     minimize: true, // remove empty objects (defaults to true)
     depopulate: false, //如果有外键，直接使用外键而不是外键对应的记录(defaults to false)
     versionKey: false, //whether to include the version key (defaults to true)        //not include version key in result
