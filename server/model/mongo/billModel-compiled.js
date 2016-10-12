@@ -20,7 +20,7 @@ function create(values) {
                 //能返回自定义错误，所以用resolve而不是reject
                 resolve(mongooseErrorHandler(err));
             }
-            resolve(result);
+            resolve({ rc: 0, msg: result });
         });
     });
 }
@@ -61,18 +61,39 @@ function remove(id) {
     });
 }
 
+//只做测试用
+function removeAll() {
+    return new Promise(function (resolve, reject) {
+        billModel.remove({}, function (err, result) {
+            if (err) {
+                console.log('bill removeAll err is ' + err);
+                resolve(mongooseErrorHandler(err));
+            }
+            //console.log(`success result is ${result}`)
+            //remove成功，返回的是原始记录，需要转换成可辨认格式
+            resolve({ rc: 0 });
+        });
+    });
+}
+
 function readAll() {
     return new Promise(function (resolve, reject) {
         var condition = {};
         var selectField = null;
         var option = {};
         option.limit = pageSetting.billType.limit;
-        billModel.find(condition, selectField, option, function (err, result) {
+
+        var opt = {
+            path: 'billType  reimburser', //需要populate的字段
+            select: 'name', //populate后，需要显示的字段
+            match: {}, //populate后，过滤字段(不符合这显示null)。一般不用
+            options: {} };
+        option.limit = pageSetting.bill.limit;
+        billModel.find(condition, selectField, option).populate(opt).exec(function (err, result) {
             if (err) {
-                //console.log(`db err is ${err}`)
+                console.log('db err is ' + err);
                 resolve(mongooseErrorHandler(err));
             }
-            //console.log(`success result is ${result}`)
             resolve({ rc: 0, msg: result });
         });
     });
@@ -114,6 +135,7 @@ module.exports = {
     create: create,
     update: update,
     remove: remove,
+    removeAll: removeAll,
     readAll: readAll,
     readName: readName,
     findById: findById

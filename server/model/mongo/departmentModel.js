@@ -22,7 +22,7 @@ function create(values){
                 //能返回自定义错误，所以用resolve而不是reject
                 resolve( mongooseErrorHandler(err))
             }
-            resolve(result)
+            resolve({rc:0,msg:result})
         })
     })
 }
@@ -53,6 +53,21 @@ function update(id,values){
 function remove(id){
     return new Promise(function(resolve,reject){
         departmentModel.findByIdAndRemove(id,function(err,result){
+            if(err){
+                //console.log(`db err is ${err}`)
+                resolve( mongooseErrorHandler(err))
+            }
+            //console.log(`success result is ${result}`)
+            //remove成功，返回的是原始记录，需要转换成可辨认格式
+            resolve({rc:0})
+        })
+    })
+}
+
+//只做测试用
+function removeAll(){
+    return new Promise(function(resolve,reject){
+        departmentModel.remove({},function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
@@ -106,9 +121,10 @@ function findById(id){
     return new Promise(function(resolve,reject){
         departmentModel.findById(id,'-cDate -uDate -dDate',function(err,result){
             if(err){
-                //console.log(`db err is ${err}`)
+                console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
+            console.log(`department find by Id ${result}`)
             // console.log(`original type is  ${typeof result}`)
             // let convert=result.toJSON()
             // console.log(`after toJSON type is  ${typeof convert}`)
@@ -126,6 +142,7 @@ module.exports={
     create,
     update,
     remove,
+    removeAll,
     readAll,
     readName,
     findById,

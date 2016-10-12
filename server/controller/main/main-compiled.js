@@ -7,11 +7,13 @@ require("babel-polyfill");
 require("babel-core/register");
 
 var express = require('express');
+var app = express();
 var router = express.Router();
 
 var common = require('./mainRouterController-compiled').common;
 
 var controller = require('./mainRouterController-compiled');
+var debugController = controller.debug;
 var userController = controller.user;
 var departmentController = controller.department;
 var employeeController = controller.employee;
@@ -22,35 +24,47 @@ router.use(function (req, res, next) {
     /*    console.log(req.ips)
         console.log(req.ip)*/
     console.log('router use');
-    //console.log('%s %s %s', req.method, req.url, req.path);
-    //判断请求的是页面还是静态资源（css/js）
-    if (req.path) {
-        var tmp = req.path.split('.');
-        var suffix = tmp[tmp.length - 1];
-        //console.log(suffix)
-        switch (suffix) {
-            case 'css':
-                //不对静态资源的请求进行检测
-                next();
-                break;
-            case 'js':
-                //不对静态资源的请求进行检测
-                next();
-                break;
-            case 'map':
-                //不对静态资源的请求进行检测
-                next();
-                break;
-            default:
-                common(req, res, next).then(function (v) {
-                    if (0 !== v['rc']) {
-                        return res.render('helper/reqReject', { title: '拒绝请求', content: v['msg'], year: new Date().getFullYear() });
-                    }
-                    next();
-                }).catch(function (e) {
-                    console.log("router error is " + e);
-                });
+    if ("development" === app.get('env')) {
+        console.log('dev, not check interval');
+        next();
+    }
 
+    if ("production" === app.get('env')) {
+        console.log(express().get('env'));
+        //console.log('%s %s %s', req.method, req.url, req.path);
+        //判断请求的是页面还是静态资源（css/js）
+        if (req.path) {
+            var tmp = req.path.split('.');
+            var suffix = tmp[tmp.length - 1];
+            //console.log(suffix)
+            switch (suffix) {
+                case 'css':
+                    //不对静态资源的请求进行检测
+                    next();
+                    break;
+                case 'js':
+                    //不对静态资源的请求进行检测
+                    next();
+                    break;
+                case 'map':
+                    //不对静态资源的请求进行检测
+                    next();
+                    break;
+                default:
+                    common(req, res, next).then(function (v) {
+                        if (0 !== v['rc']) {
+                            return res.render('helper/reqReject', {
+                                title: '拒绝请求',
+                                content: v['msg'],
+                                year: new Date().getFullYear()
+                            });
+                        }
+                        next();
+                    }).catch(function (e) {
+                        console.log("router error is " + e);
+                    });
+
+            }
         }
     }
 });
@@ -61,6 +75,15 @@ router.get('/', function (req, res, next) {
     return res.render('main/main', { title: '配置信息', year: new Date().getFullYear() });
 });
 
+router.delete("/", function (req, res, next) {
+    if ('development' === app.get('env')) {
+        debugController['removeAll'](req, res, next).then(function (v) {
+            console.log("remove all result is " + JSON.stringify(v));
+        }, function (e) {
+            return console.log("remove all fail " + JSON.stringify(e));
+        });
+    }
+});
 /*************************       employee     *************************/
 //create
 router.post('/employee', function (req, res, next) {

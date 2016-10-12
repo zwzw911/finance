@@ -177,7 +177,7 @@ var dataTypeCheck=function(test){
 }
 
 var ruleTypeCheck=function(test){
-    let func=testModule.ruleTypeCheck
+    let func=testModule.validateInputValue._private.ruleTypeCheck
     test.expect(40)
 
     let value,result,tmp

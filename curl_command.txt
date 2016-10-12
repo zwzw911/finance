@@ -3,6 +3,19 @@ curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/
 curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X DELETE -d "values"={\"_id\":{\"value\":\"57fb810dc3a255f011b59aa7\"}} http://127.0.0.1:3000/employee
 
 curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X PUT -d "values"={\"_id\":{\"value\":\"57fb80264b71557016248fc8\"},\"name\":{\"value\":\"wzhan040\"}} http://127.0.0.1:3000/employee
+C:\Users\Ada>curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X PUT -d "values"={\"_id\":{\"value\":\"57fcdf499fa29ab41572e90d\"},\"department\":{\"value\":\"57fa2a7cdfbe40341583607d\"}} http://127.0.0.1:3000/employee
 
 
 curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X POST -d "values"={\"title\":{\"value\":\"sprin\"},\"billType\":{\"value\":\"57f8dc65a795ace017f36be7\"},\"reimburser\":{\"value\":\"57fb80264b71557016248fc8\"}} http://127.0.0.1:3000/bill
+
+ASB
+depart:57f9d59d188da01c29fa8ad9   mit
+employee:57fc474069f65aa42e5f91d9	wzhan039
+billtye:57f35fd98ec986400b09d406	ac
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X POST -d "values"={\"amount\":{\"value\":\"10\"},\"title\":{\"value\":\"sprin\"},\"billType\":{\"value\":\"57f35fd98ec986400b09d406\"},\"reimburser\":{\"value\":\"57fc474069f65aa42e5f91d9\"}} http://127.0.0.1:3000/bill
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X DELETE -d "values"={\"_id\":{\"value\":\"57fce139cfff18f4106464b5\"}} http://127.0.0.1:3000/bill
+
+
+curl -l -H "'Content-type': 'application/json,'charset':'utf-8','Accept': 'text/plain'" -X PUT -d "values"={\"_id\":{\"value\":\"57fce4e7b43e94400d024d36\"},\"title\":{\"value\":\"sprin\"},\"billType\":{\"value\":\"57f8ea32bab5ac7015184906\"},\"reimburser\":{\"value\":\"57fcdf499fa29ab41572e90d\"}} http://127.0.0.1:3000/bill

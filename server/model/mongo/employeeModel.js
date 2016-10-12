@@ -22,7 +22,7 @@ function  create(values){
                 //能返回自定义错误，所以用resolve而不是reject
                 resolve( mongooseErrorHandler(err))
             }
-            resolve(result)
+            resolve({rc:0,msg:result})
         })
 
     })
@@ -54,6 +54,21 @@ function update(id,values){
 function remove(id){
     return new Promise(function(resolve,reject){
         employeeModel.findByIdAndRemove(id,function(err,result){
+            if(err){
+                //console.log(`db err is ${err}`)
+                resolve( mongooseErrorHandler(err))
+            }
+            //console.log(`success result is ${result}`)
+            //remove成功，返回的是原始记录，需要转换成可辨认格式
+            resolve({rc:0})
+        })
+    })
+}
+
+//只做测试用
+function removeAll(){
+    return new Promise(function(resolve,reject){
+        employeeModel.remove({},function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
@@ -142,6 +157,7 @@ function findById(id){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
+            console.log(`employee bind by id is ${result}`)
             resolve({rc:0,msg:result})
         })
     })
@@ -150,6 +166,7 @@ module.exports={
     create,
     update,
     remove,
+    removeAll,
     readAll,
     readName,
     findById

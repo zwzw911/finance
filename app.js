@@ -19,7 +19,7 @@ for(let singleKey in appSetting){
   //console.log(`${singleKey}:${appSetting[singleKey]}`)
   app.set(singleKey,appSetting[singleKey])
 }
-//app.set('env','development')
+app.set('env','development')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'server/views'));

@@ -9,21 +9,22 @@ var assistError = {
                 removeFile:{rc:68002,msg:{client:'无法删除过期的captcha文件'}},*/
         /*        notExist:{rc:68004,msg:{client:'验证码不存在',server:'验证码不存在'}},
                 notEqual:{rc:68006,msg:{client:'验证码不正确',server:'验证码不正确'}},*/
-        genCaptchaDataUrlFail: { rc: 68008, msg: { client: '验证码生成失败', server: '验证码无法转换成DataURL' } }
-    },
-    gmImage: {
-        cantParseGmFileSize: { rc: 69900, msg: { client: '无法读取图片文件的大小', server: '无法解析GM处理的图片文件的数值和单位' } },
-        cantParseGmFileSizeNum: { rc: 69902, msg: { client: '无法读取图片文件的大小', server: '无法解析GM处理的图片文件的数值' } },
-        exceedMaxSize: { rc: 69904, msg: { client: '图片文件过大', server: '图片文件的大小超出预定义的范围' } },
-        invalidSizeUnit: { rc: 69906, msg: { client: '图片文件大小的单位不正确', server: '图片文件大小的单位必须是Ki/Mi/Gi' } },
-        fileSizeEmpty: { rc: 69908, msg: { client: '图片的大小为空', server: '图片的大小为空' } },
-        invalidFileSizeInByte: { rc: 69909, msg: { client: '无法读取图片文件的大小', server: '图片文件的大小转换成byte后，不正确' } }
+        genCaptchaDataUrlFail: { rc: 69000, msg: { client: '验证码生成失败', server: '验证码无法转换成DataURL' } }
     },
     crypt: {
-        genSaltFail: { rc: 69500, msg: { client: '生成随机数失败', server: '调用crpt.randomBytes命令失败' } }
+        genSaltFail: { rc: 69100, msg: { client: '生成随机数失败', server: '调用crpt.randomBytes命令失败' } }
     },
+    gmImage: {
+        cantParseGmFileSize: { rc: 69600, msg: { client: '无法读取图片文件的大小', server: '无法解析GM处理的图片文件的数值和单位' } },
+        cantParseGmFileSizeNum: { rc: 69602, msg: { client: '无法读取图片文件的大小', server: '无法解析GM处理的图片文件的数值' } },
+        exceedMaxSize: { rc: 69604, msg: { client: '图片文件过大', server: '图片文件的大小超出预定义的范围' } },
+        invalidSizeUnit: { rc: 69606, msg: { client: '图片文件大小的单位不正确', server: '图片文件大小的单位必须是Ki/Mi/Gi' } },
+        fileSizeEmpty: { rc: 69608, msg: { client: '图片的大小为空', server: '图片的大小为空' } },
+        invalidFileSizeInByte: { rc: 69609, msg: { client: '无法读取图片文件的大小', server: '图片文件的大小转换成byte后，不正确' } }
+    },
+
     misc: {
-        validate: {
+        validateInputRule: {
             //以下是检查rule，所以错误只需在server端现实，因此只要msg:'error'的格式，而不要client/server
             unknownDataType: { rc: 69800, msg: '数据类型未定义' },
 
@@ -60,12 +61,9 @@ var assistError = {
                 return { rc: 69840, msg: coll + '的字段' + field + '中的rule ' + rule + '的define值不正确' };
             },
 
-            //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
-            /*              checkInput              */
-            valueNotDefine: { rc: 69860, msg: '待检测的输入值未定义' },
-            valueNotDefineWithRequireTrue: { rc: 69862, msg: '待检测的输入值未定义，而rule中require为true' },
-            valueEmpty: { rc: 69864, msg: '待检测的输入值不能为空' },
-            valueRelatedRuleNotDefine: { rc: 68868, msg: '待检测的输入值没有对应的检测规则' },
+            rcFormatWrong: { rc: 69842, msg: '错误代码格式不正确' }
+        },
+        validateInputValue: {
             //rule chekc fail
             //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
             /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},
@@ -78,8 +76,12 @@ var assistError = {
 
             //mongo的id没有在rule中定义，需要在misc中单独定义一个函数进行判别，如果格式不正确，返回如下错误
             //idWrong:{rc:68870,msg:'id格式不正确'},
-
-            rcFormatWrong: { rc: 68872, msg: '错误代码格式不正确' }
+            //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
+            /*              checkInput              */
+            valueNotDefine: { rc: 69700, msg: '待检测的输入值未定义' },
+            valueNotDefineWithRequireTrue: { rc: 69702, msg: '待检测的输入值未定义，而rule中require为true' },
+            valueEmpty: { rc: 69704, msg: '待检测的输入值不能为空' },
+            valueRelatedRuleNotDefine: { rc: 68706, msg: '待检测的输入值没有对应的检测规则' }
         },
         checkInterval: {
             sessionIdWrong: { rc: 69900, msg: { client: '请求格式不正确', server: 'session格式不正确' } },

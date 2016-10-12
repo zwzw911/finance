@@ -31,7 +31,9 @@ var redisError=require('../../../define/error/redisError').redisError*/
 
 /*              for input valid         */
 //var regex=require('../define/regex/regex').regex.regex
-var validateError=require('../define/error/nodeError').nodeError.assistError.misc.validate
+var validateInputRuleError=require('../define/error/nodeError').nodeError.assistError.misc.validateInputRule
+
+var validateInputValueError=require('../define/error/nodeError').nodeError.assistError.misc.validateInputValue
 
 /*var dataTypeCheck=require('../assist/misc').func.dataTypeCheck
 var ruleTypeCheck=require('../assist/misc').func.ruleTypeCheck*/
@@ -217,17 +219,9 @@ var checkIntervalMid=function(req,res,next){
     })
 }*/
 
-function sleep(numberMillis) {
-    var now = new Date();
-    var exitTime = now.getTime() + numberMillis;
-    while (true) {
-        now = new Date();
-        if (now.getTime() > exitTime)
-            return;
-    }
-}
 
 /*
+* 除了checkInputValue使用，其他地方也可能使用，所以单独作为一个函数
 * 数值123.0复制后，实际变成123，影响程序处理方式
 * */
 var dataTypeCheck= {
@@ -357,347 +351,7 @@ var dataTypeCheck= {
 }
 
 
-//无法确保带检测的值的类型（在rule定义的文件中，type可以是字符或者数值，甚至是array），所以需要函数对输入进行检测，排除不支持的类型
-var ruleTypeCheck= {
-    exceedMaxLength(value, maxLength) {
-        //length属性只能在数字/字符/数组上执行
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
-            return false
-        }
-        //数字需要转换成字符才能执行length
-        if(false!==dataTypeCheck.isFloat(value) || false!==dataTypeCheck.isInt(value)){
-            return value.toString().length > maxLength
-        }
-        return value.length > maxLength
-    },
 
-    exceedMinLength(value, minLength) {
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
-            return false
-        }
-        //数字需要转换成字符才能执行length
-        if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
-            return value.toString().length < minLength
-        }
-        return value.length < minLength
-    },
-
-    exactLength(value, exactLength) {
-        if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
-            return false
-        }
-        //数字需要转换成字符才能执行length
-        if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
-            return value.toString().length === exactLength
-        }
-        return value.length === exactLength
-    },
-
-    //广义比较，包括null和undefined的比较
-    equalTo(value, equalToValue) {
-        //return (false===dataTypeCheck.isEmpty(value) && value===equalToValue)
-        if(value instanceof Date && equalToValue instanceof Date){
-            return value.toLocaleString()===equalToValue.toLocaleString()
-        }
-        return value === equalToValue
-    },
-
-    format(value, format) {
-        return format.test(value)
-    },
-
-    enum(value,define){
-        return -1!==define.indexOf(value)
-    },
-    //以下函数只能支持数值，必须由调用者确保参数的类型
-    exceedMax(value, definedValue) {
-        return parseFloat(value) > parseFloat(definedValue)
-    },
-    exceedMin(value, definedValue) {
-        return parseFloat(value) < parseFloat(definedValue)
-    },
-
-    isFileFolderExist(value) {
-        return fs.existsSync(value)
-    },
-}
-
-var CRUDGlobalSetting={
-
-/*    _constructNull(){
-        let result={}
-        for(let item in defaultSetting){
-            result[item]={}
-            for (let subItem in defaultSetting[item]){
-                result[item][subItem]={}
-                result[item][subItem]['value']=null
-            }
-        }
-        return result
-    },*/
-
-    setDefault(){
-        //let emptyValue=this._constructNull()
-        //预先构建结构
-        let result={}
-        for(let item in defaultSetting){
-            result[item]={}
-            for (let subItem in defaultSetting[item]){
-                result[item][subItem]={}
-                result[item][subItem]['value']=null
-            }
-        }
-
-        for (let item in defaultSetting){
-            //for(let subItem in defaultSetting[item]){
-            let checkResult=validate.checkInput(result[item],defaultSetting[item])
-
-            for (let subItem in checkResult){
-                if(checkResult[subItem]['rc']>0){
-                    // console.log(checkResult)
-                    return checkResult
-                }
-            }
-
-            //}
-        }
-
-        for(let item in defaultSetting){
-//console.log(item)
-            for (let subItem in defaultSetting[item]){
-//console.log(subItem)
-                //Is object but not an array, then change value to string
-                //for array, change to string automatically
-                let val=defaultSetting[item][subItem]['default']
-//console.log(`val:${val}`)
-                if(typeof val =='object' && !dataTypeCheck.isArray(val)){
-                    val=JSON.stringify(val)
-                    //console.log(val.toString())
-                }
-                //redisClient.select(1,function(err){
-                ioredisClient.hset([item,subItem,val])
-                //})
-            }
-        }
-        //})
-
-    },
-
-
-
-//直接返回subItem的值
-/*    getSingleSetting(item,subItem,cb){
-        //redisClient.on('ready',function(){
-        ioredisClient.hexists(item,subItem,function(err,exist){
-//console.log(exist)
-            if(1===exist){
-                ioredisClient.hget(item,subItem,function(err,result){
-                    if(err){return cb(null,redisError.general.getError)}
-                    //redis value are string, check if object(JSON)
-
-                    if(0===result.indexOf('{') && result[ result.length-1]=='}'){
-
-                        result=JSON.parse(result)
-                        //console.log(result)
-                    }
-                    //array
-                    else if(-1!==result.indexOf(',')){
-                        result=Array.from(result.split(','))
-                    }
-
-                    return cb(null,{rc:0,msg:result})
-                })
-            }else{
-                return cb(null,redisError.general.keyNotExist)
-            }
-        })
-        //})
-    },*/
-    async getSingleSetting(key,subKey){
-        //redisClient.on('ready',function(){
-        // return await redisWrapAsync.asyncHget('search','maxKeyNum')
-        let exist=await redisWrapAsync.asyncHexists(key,subKey)
-        if(exist.rc>0){
-            return exist
-        }
-        if(1===exist.msg){
-            let result=await redisWrapAsync.asyncHget(key,subKey)
-            let value=result.msg
-            
-            if(0===value.indexOf('{') && value[ value.length-1]=='}'){
-
-                value=JSON.parse(value)
-                //console.log(result)
-            }
-            //array
-            else if(-1!==value.indexOf(',')){
-                value=Array.from(value.split(','))
-                // console.log(value)
-            }
-            rightResult.msg=value
-
-            return rightResult
-        }else{
-            return redisError.other.notExist(key,subKey)
-        }
-        /*ioredisClient.hexists(key,subKey,function(err,exist){
-//console.log(exist)
-            if(1===exist){
-                ioredisClient.hget(key,subKey,function(err,result){
-                    if(err){return cb(null,redisError.general.getError)}
-                    //redis value are string, check if object(JSON)
-
-                    if(0===result.indexOf('{') && result[ result.length-1]=='}'){
-
-                        result=JSON.parse(result)
-                        //console.log(result)
-                    }
-                    //array
-                    else if(-1!==result.indexOf(',')){
-                        result=Array.from(result.split(','))
-                    }
-
-                    return cb(null,{rc:0,msg:result})
-                })
-            }else{
-                return cb(null,redisError.general.keyNotExist)
-            }
-        })*/
-        //})
-    },
-//获得数据项下所有子项的数据,并构成{item:{subItem1:value1,subItem2;value2}}的格式
-    async getItemSetting(item){
-        var wholeResult={};
-        wholeResult[item]={}
-        //计算item总数，以便确定合适可以返回全部（因为每读一次，都是异步）
-/*        var totalSubItemNum=0;
-        //获得数据项下所有子项的数量
-        if(undefined!==defaultSetting[item]){
-            wholeResult[item]={}
-            totalSubItemNum+=Object.keys(defaultSetting[item]).length
-            /!*        for (let subItem in  defaultSetting[item]){
-             totalSubItemNum++
-             }*!/
-        }else{
-            return cb(null,{rc:0,msg:wholeResult})
-        }*/
-//console.log(new Date().getTime())
-        //redisClient.on('ready',function(){
-//console.log(new Date().getTime())
-        for (let subItem in  defaultSetting[item]){
-            let result=await this.getSingleSetting(item,subItem)
-            if(result.rc && result.rc>0){
-                return result
-            }
-            // console.log(result)
-            wholeResult[item][subItem]=result.msg
-/*            this.getSingleSetting(item,subItem,function(err,result){
-//console.log(result)
-                if(result.rc && result.rc>0){
-                    return cb(null,result)
-                }
-                wholeResult[item][subItem]=result.msg
-                totalSubItemNum--
-                if(0===totalSubItemNum){
-                    cb(null,{rc:0,msg:wholeResult})
-                }
-                //console.log(wholeResult)
-            })*/
-        }
-        rightResult.msg=wholeResult
-        return rightResult
-        //})
-    },
-/*    getAllSetting(cb){
-        var wholeResult={};
-        //计算item总数，以便确定合适可以返回全部（因为每读一次，都是异步）
-        var totalSubItemNum=0;
-        for(let item in defaultSetting){
-            totalSubItemNum+=Object.keys(defaultSetting[item]).length
-        }
-        for(let item of Object.keys(defaultSetting)){
-            if(undefined===wholeResult[item]){
-                wholeResult[item]={}
-            }
-            for (let subItem of  Object.keys(defaultSetting[item])){
-                this.getSingleSetting(item,subItem,function(err,result){
-                    if(result.rc && result.rc>0){
-                        return cb(null,result)
-                    }
-                    wholeResult[item][subItem]=result.msg
-                    totalSubItemNum--
-                    if(0===totalSubItemNum){
-                        cb(null,{rc:0,msg:wholeResult})
-                    }
-                    //console.log(wholeResult)
-                })
-            }
-        }
-    },*/
-    async getAllSetting(){
-        var wholeResult={};
-        //计算item总数，以便确定合适可以返回全部（因为每读一次，都是异步）
-        // var totalSubItemNum=0;
-/*        for(let item in defaultSetting){
-            totalSubItemNum+=Object.keys(defaultSetting[item]).length
-        }*/
-        for(let item in defaultSetting){
-            if(undefined===wholeResult[item]){
-                wholeResult[item]={}
-            }
-            for (let subItem of  Object.keys(defaultSetting[item])){
-                console.log(`${item} ${subItem}`)
-                let result=await this.getSingleSetting(item,subItem)
-
-                // console.log(result)
-                // this.getSingleSetting(item,subItem,function(err,result){
-                if(result.rc && result.rc>0){
-                    // return cb(null,result)
-                    return result
-                }
-                wholeResult[item][subItem]=result.msg
-                    // totalSubItemNum--
-                    // if(0===totalSubItemNum){
-                    //     cb(null,{rc:0,msg:wholeResult})
-                    // }
-                    //console.log(wholeResult)
-                // })
-            }
-        }
-        // console.log(wholeResult)
-        return wholeResult
-    },
-
-    setSingleSetting(item,subItem,newValue){
-        //redisClient.on('ready',function(){
-        if(typeof newValue =='object' && !dataTypeCheck.isArray(newValue)){
-            newValue=JSON.stringify(newValue)
-        }
-        //console.log(item+subItem+newValue)
-        ioredisClient.hset([item,subItem,newValue])
-        //})
-    },
-//setAllSetting不能代替setDefault，因为setAllSetting读取的是{item1:{subItem1:{value:val1}}（和普通的input结构一致）,而setDefault读取的是{item1:{subItem1:{default:val1,type:'int',max:'',client:{}}}}
-    setAllSetting(newValueObj){
-
-        //读取固定键
-        //console.log(newValueObj)
-        for (let item in newValueObj) {
-            for (let subItem in  newValueObj[item]) {
-                let newValue=newValueObj[item][subItem];
-                /*                if (!newValueObj[item][subItem]) {
-                 newValue = newValueObj[item][subItem]
-                 }*/
-                //判断是否对象
-                if (typeof newValue == 'object' && !dataTypeCheck.isArray(newValue)) {
-                    newValue = JSON.stringify(newValue)
-                }
-                this.setSingleSetting(item, subItem, newValue)
-            }
-        }
-        //})
-    }
-}
 
 
 //len:产生字符串的长度
@@ -1018,303 +672,181 @@ exports.CRUDGlobalSetting={
     setAllSetting:setAllSetting
 };*/
 
-
-
-
 /**
- * Created by wzhan039 on 2016-02-25.
- * 把前端传入的input的检查工作全部放在一个文件进行处理
- * 2部分：input的定义（require,minLength,maxLength,exactLength,format,equalTo），format只在server处理
- * 新增定义：min，max，file，folder：min/max：整数大小；file/folder：文件/文件夹是否存在
- *         对应的函数处理
+ * 对Rule定义进行检测，确保定义是正确
  */
-/*          rulw        */
+/*          rule        */
 /*1. 至少定义3个字段：chineseName/type/require
-* 2
-* */
-/*          value
-* 1. 如贵value=notSet，那么require=true && default isSet，value=default
-* 2. 如果value=notSet，那么require=true && default notSet，返回错误
-* 3. 如果value=notSet，那么require=false,返回rc=0
-* */
-var validate={
-    _private:{
-        generateErrorMsg:{
-            //itemDefine无用，只是为了格式统一
-            require(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                return `${chineseName}${defaultMsg}不能为空`
-            },
-            maxLength(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                return  `${chineseName}${defaultMsg}所包含的字符数不能超过${itemDefine}个`
-            },
-            minLength(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                return  `${chineseName}${defaultMsg}包含的字符数不能少于${itemDefine}个`
-            },
-            exactLength(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                return  `${chineseName}${defaultMsg}包含的字符数不等于${itemDefine}个`
-            },
-            max(chineseName,itemDefine,useDefaultValueFlag,unit){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                unit= (undefined===unit || null===unit) ? '':unit
-                return  `${chineseName}${defaultMsg}的值不能大于${itemDefine}${unit}`
-            },
-            min(chineseName,itemDefine,useDefaultValueFlag,unit){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                unit= (undefined===unit || null===unit) ? '':unit
-                return  `${chineseName}${defaultMsg}的值不能小于${itemDefine}${unit}`
-            },
-            equalTo(chineseName,equalToChineseName){
-                return `${chineseName}和${equalToChineseName}不相等`
-            },
-            format(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                switch(itemDefine){
-                    case regex.strictPassword:
-                        return `${chineseName}${defaultMsg}的格式不正确，必须由6至20个字母数字和特殊符号组成`
-                    //break;
-                    case regex.loosePassword:
-                        return `${chineseName}${defaultMsg}的格式不正确，必须由2至20个字母数字组成`
-                    //break;
-                    case regex.userName:
-                        return `${chineseName}${defaultMsg}的格式不正确，必须由2至20个字符组成`
-                    case regex.mobilePhone:
-                        return `${chineseName}${defaultMsg}的格式不正确，必须由11至13个数字组成`
-                    case regex.originalThumbnail:
-                        return `${chineseName}${defaultMsg}的格式不正确，文件名由2到20个字符组成`
-                    //hashedThumbnail不用单独列出，是内部检查，使用default错误消息即可
-                    default:
-                        return `${chineseName}${defaultMsg}的格式不正确`
-                }
-            },
-            //itemDefine无用，只是为了格式统一
-            enum(chineseName,itemDefine,useDefaultValueFlag){
-                if(undefined===useDefaultValueFlag || null===useDefaultValueFlag){
-                    useDefaultValueFlag=false
-                }
-                let defaultMsg= useDefaultValueFlag ? '的默认值':'';
-                return  `${chineseName}${defaultMsg}不正确`
-            }
-        },
-        //检测数据类型
-        //require,maxLength,minLength,exactLength,min,max,format,format
-        //返回值：true/false/unknownDataType
-        checkDataTypeBaseOnTypeDefine(value,type){
-            switch (type){
-                case dataType.int:
-                    return dataTypeCheck.isInt(value)   //返回false或者int
-                case dataType.float:
-                    return dataTypeCheck.isFloat(value)   //返回false或者int
-                case dataType.string:
-                    return dataTypeCheck.isString(value)
-                case dataType.date:
-                    return dataTypeCheck.isDate(value)
-                case dataType.array:
-                    return dataTypeCheck.isArray(value)
-                case dataType.object:
-                    return true
-                case dataType.objectId:
-                    return true
-                case dataType.file:
-                    return (ruleTypeCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
-                case dataType.folder:
-                    return (ruleTypeCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
-                case dataType.number:
-                    return dataTypeCheck.isNumber(value)
-                default:
-                    return validateError.unknownDataType
-            }
-        },
-        //对rule定义进行检查
-        //返回值
-        checkRuleBaseOnRuleDefine(inputRules){
+ * 2
+ * */
+var validateInputRule={
+
+        /*
+        * 对单个字段的所有rule定义进行检查
+        * singleFieldName:如果必须字段错误，为返回值提供错误field的名称（其他错误，可以使用chineseName）；singleFieldInputRules：field的rule定义
+        * 返回：{rc:0}或者{rc:xxxx,msg:'field的rule定义错误'}
+        * */
+        checkSingleFieldRuleDefine(singleFieldName,singleFieldInputRules){
             let rc={}
-            for(let inputRule in inputRules){
-                //1 检查必须的field
-                let mandatoryFields=['chineseName','type','require']
-                for(let mandatoryField of mandatoryFields){
-                    //console.log(inputRules[inputRule][mandatoryField])
-                    if(false===dataTypeCheck.isSetValue(inputRules[inputRule][mandatoryField])){
-                        //console.log()
-                        rc['rc']=validateError.mandatoryFiledNotExist.rc
-                        rc['msg']=`${inputRule}的字段${mandatoryField}${validateError.mandatoryFiledNotExist.msg}`
+            // for(let inputRule in inputRules){
+            //1 检查必须的field
+            let mandatoryFields=['chineseName','type','require']
+            for(let mandatoryField of mandatoryFields){
+                //console.log(inputRules[inputRule][mandatoryField])
+                if(false===dataTypeCheck.isSetValue(singleFieldInputRules[mandatoryField])){
+                    //console.log()
+                    rc['rc']=validateInputRuleError.mandatoryFiledNotExist.rc
+                    rc['msg']=`${singleFieldName}的规则${mandatoryField}${validateInputRuleError.mandatoryFiledNotExist.msg}`
+                    return rc
+                }
+            }
+            //2 检查chineseName是否为字符，是否空，type是否在指定范围内（require由后面的rule check统一处理）
+            if(false===dataTypeCheck.isString(singleFieldInputRules['chineseName'])){
+                rc['rc']=validateInputRuleError.chineseNameNotString.rc
+                rc['msg']=`${singleFieldName}的${validateInputRuleError.chineseNameNotString.msg}`
+                return rc
+            }
+            if(dataTypeCheck.isEmpty(singleFieldInputRules['chineseName'])){
+                rc['rc']=validateInputRuleError.chineseNameEmpty.rc
+                rc['msg']=`${singleFieldName}的${validateInputRuleError.chineseNameEmpty.msg}`
+                return rc
+            }
+
+                //singleFieldName可以用chineseName代替，如此，更容易查看错误
+            let chineseName=singleFieldInputRules['chineseName']
+            //3 某些类型必须有关联rule
+            //console.log(inputRules[inputRule]['type'])
+            switch (singleFieldInputRules['type']){
+
+                case dataType.int:
+                    if(false===dataTypeCheck.isSetValue(singleFieldInputRules['min'])){
+                        rc['rc']=validateInputRuleError.needMin.rc
+                        rc['msg']=`${chineseName}的${validateInputRuleError.needMin.msg}`
+                        return rc
+
+                    }
+                    if( false===dataTypeCheck.isSetValue(singleFieldInputRules['max'])){
+                        rc['rc']=validateInputRuleError.needMax.rc
+                        rc['msg']=`${chineseName}的${validateInputRuleError.needMax.msg}`
+                        return rc
+                    }
+                    break;
+                case dataType.number:
+                    //console.log(inputRules[inputRule]['maxLength'])
+                    if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
+                        rc['rc']=validateInputRuleError.needMaxLength.rc
+                        rc['msg']=`${chineseName}的${validateInputRuleError.needMaxLength.msg}`
+                        //console.log(rc)
+                        return rc
+                    };
+                    break
+                case dataType.string:
+                    if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
+                        rc['rc']=validateInputRuleError.needMaxLength.rc
+                        rc['msg']=`${chineseName}的${validateInputRuleError.needMaxLength.msg}`
+                        //console.log(rc)
+                        return rc
+                    };
+                    break
+                //ObjectId必须有format，用来出错时返回错误
+                case dataType.objectId:
+                    if(false===dataTypeCheck.isSetValue(singleFieldInputRules['format'])){
+                        rc['rc']=validateInputRuleError.needFormat.rc
+                        rc['msg']=`${chineseName}的${validateInputRuleError.needFormat.msg}`
+                        //console.log(rc)
+                        return rc
+                    };
+                    break
+                default:
+                    break;
+            }
+
+            //4 检测单个rule的格式是否正确，是否有define，是否有error，且格式为error:{rc:xxx,msg:'yyy'}
+            for (let singleRule in singleFieldInputRules) {
+                //检查rule中必须的字段是否存在（rule定义是否正确）
+                if (true === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule])) {
+                    if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['define'])) {
+                        rc['rc'] = validateInputRuleError.ruleDefineNotDefine.rc
+                        rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.ruleDefineNotDefine.msg}`
+                        return rc
+                    }
+                    if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['error'])) {
+                        rc['rc'] = validateInputRuleError.errorFieldNotDefine.rc
+                        rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.errorFieldNotDefine.msg}`
+                        return rc
+                    }
+                    if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['error']['rc'])) {
+                        rc['rc'] = validateInputRuleError.rcFieldNotDefine.rc
+                        rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.rcFieldNotDefine.msg}`
                         return rc
                     }
                 }
-                //1.5 检查chineseName是否为字符，是否空，type是否在指定范围内（require由后面的rule check统一处理）
-                if(false===dataTypeCheck.isString(inputRules[inputRule]['chineseName'])){
-                    rc['rc']=validateError.chineseNameNotString.rc
-                    rc['msg']=`${inputRule}的${validateError.chineseNameNotString.msg}`
-                    return rc
-                }
-                if(dataTypeCheck.isEmpty(inputRules[inputRule]['chineseName'])){
-                    rc['rc']=validateError.chineseNameEmpty.rc
-                    rc['msg']=`${inputRule}的${validateError.chineseNameEmpty.msg}`
-                    return rc
-                }
-                //2 某些类型必须有关联rule
-                //console.log(inputRules[inputRule]['type'])
-                switch (inputRules[inputRule]['type']){
+            }
 
-                    case dataType.int:
-
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule]['min'])){
-                                rc['rc']=validateError.needMin.rc
-                                rc['msg']=`${inputRule}的${validateError.needMin.msg}`
-                                return rc
-
-                        }
-                        if( false===dataTypeCheck.isSetValue(inputRules[inputRule]['max'])){
-                            rc['rc']=validateError.needMax.rc
-                            rc['msg']=`${inputRule}的${validateError.needMax.msg}`
+            //4 检测rule define是否正确(采用严格模式，mix/max/minLength/maxLength/exactLenght为数字，format为regex，enum为数组？，date为data)
+            for (let singleRule in singleFieldInputRules){
+                let singleRuleDefine=singleFieldInputRules[singleRule]['define']
+                switch (singleRule){
+                    //bollean
+                    case 'require':
+                        if(false!==singleRuleDefine && true!==singleRuleDefine){
+                            rc['rc']=validateInputRuleError.requireDefineNotBoolean.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.requireDefineNotBoolean.msg}`
                             return rc
                         }
                         break;
-                    case dataType.number:
-                        //console.log(inputRules[inputRule]['maxLength'])
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule]['maxLength'])){
-                            rc['rc']=validateError.needMaxLength.rc
-                            rc['msg']=`${inputRule}的${validateError.needMaxLength.msg}`
-                            //console.log(rc)
+                    case 'minLength':
+                        if(false===dataTypeCheck.isInt(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.minLengthDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.minLengthDefineNotInt.msg}`
                             return rc
-                        };
-                        break
-                    case dataType.string:
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule]['maxLength'])){
-                            rc['rc']=validateError.needMaxLength.rc
-                            rc['msg']=`${inputRule}的${validateError.needMaxLength.msg}`
-                            //console.log(rc)
+                        }
+                        break;
+                    case 'maxLength':
+                        if(false===dataTypeCheck.isInt(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.maxLengthDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.maxLengthDefineNotInt.msg}`
                             return rc
-                        };
-                        break
-                    //ObjectId必须有format，用来出错时返回错误
-                    case dataType.objectId:
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule]['format'])){
-                            rc['rc']=validateError.needFormat.rc
-                            rc['msg']=`${inputRule}的${validateError.needFormat.msg}`
-                            //console.log(rc)
+                        }
+                        break;
+                    case 'exactLength':
+                        if(false===dataTypeCheck.isInt(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.exactLengthDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.exactLengthDefineNotInt.msg}`
                             return rc
-                        };
-                        break
+                        }
+                        break;
+                    case 'min':
+                        if(false===dataTypeCheck.isInt(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.minDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.minDefineNotInt.msg}`
+                            return rc
+                        }
+                        break;
+                    case 'max':
+                        if(false===dataTypeCheck.isInt(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.maxDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.maxDefineNotInt.msg}`
+                            return rc
+                        }
+                        break;
+                    case 'format':
+                        break;
+                    case 'equalTo':
+                        break;
+                    case 'enum':
+                        if(false===dataTypeCheck.isArray(singleRuleDefine)){
+                            rc['rc']=validateInputRuleError.maxDefineNotInt.rc
+                            rc['msg']=`${chineseName}的${validateInputRuleError.enumDefineNotArray.msg}`
+                            return rc
+                        }
+                        break;
                     default:
                         break;
                 }
-                //3 rule字段的定义是否合格
-                /*        let rules=['require','maxLength','minLength','exactLength','min','max','format','equalTo']
-                 let rulesLength=rules.length*/
-                //不用forEach，因为其参数为function，遇到错误，return，只是退出forEach的function，而不是整个function
-                //for (let i=0;i<rulesLength;i++){
-                for (let singleRule in ruleType){
-                    //检查rule中必须的字段是否存在（rule定义是否正确）
-                    if(true===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule])){
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['define'])){
-                            rc['rc']=validateError.ruleDefineNotDefine.rc
-                            rc['msg']=`${inputRule}的${singleRule}的${validateError.ruleDefineNotDefine.msg}`
-                            return rc
-                        }
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error'])){
-                            rc['rc']=validateError.errorFieldNotDefine.rc
-                            rc['msg']=`${inputRule}的${singleRule}的${validateError.errorFieldNotDefine.msg}`
-                            return rc
-                        }
-                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error']['rc'])){
-                            rc['rc']=validateError.rcFieldNotDefine.rc
-                            rc['msg']=`${inputRule}的${singleRule}的${validateError.rcFieldNotDefine.msg}`
-                            return rc
-                        }
-                        //rule的error['msg']由函数generateErrorMsg实时产生，所以无需检测
-/*                        if(false===dataTypeCheck.isSetValue(inputRules[inputRule][singleRule]['error']['msg'])){
-                            rc['rc']=validateError.msgFieldNotDefine.rc
-                            rc['msg']=`${inputRule}的${singleRule}的${validateError.msgFieldNotDefine.msg}`
-                            return rc
-                        }*/
-
-                        //检测rule define是否正确
-                        let singleRuleDefine=inputRules[inputRule][singleRule]['define']
-                        switch (singleRule){
-                            case 'require':
-                                if(false!==singleRuleDefine && true!==singleRuleDefine){
-                                    rc['rc']=validateError.requireDefineNotBoolean.rc
-                                    rc['msg']=`${inputRule}的${validateError.requireDefineNotBoolean.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'minLength':
-                                if(false===dataTypeCheck.isInt(singleRuleDefine)){
-                                    rc['rc']=validateError.minLengthDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.minLengthDefineNotInt.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'maxLength':
-                                if(false===dataTypeCheck.isInt(singleRuleDefine)){
-                                    rc['rc']=validateError.maxLengthDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.maxLengthDefineNotInt.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'exactLength':
-                                if(false===dataTypeCheck.isInt(singleRuleDefine)){
-                                    rc['rc']=validateError.exactLengthDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.exactLengthDefineNotInt.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'min':
-                                if(false===dataTypeCheck.isInt(singleRuleDefine)){
-                                    rc['rc']=validateError.minDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.minDefineNotInt.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'max':
-                                if(false===dataTypeCheck.isInt(singleRuleDefine)){
-                                    rc['rc']=validateError.maxDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.maxDefineNotInt.msg}`
-                                    return rc
-                                }
-                                break;
-                            case 'format':
-                                break;
-                            case 'equalTo':
-                                break;
-                            case 'enum':
-                                if(false===dataTypeCheck.isArray(singleRuleDefine)){
-                                    rc['rc']=validateError.maxDefineNotInt.rc
-                                    rc['msg']=`${inputRule}的${validateError.enumDefineNotArray.msg}`
-                                    return rc
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
             }
+
+            // }
 
             return rightResult
 
@@ -1335,9 +867,9 @@ var validate={
                             if('default'===singleRuleName){
                                 if(dataType.string===allRules[singleCollName][singleFiledName]['type'] ){
                                     if(false===validate._private.checkDataTypeBaseOnTypeDefine(singleRule,allRules[singleCollName][singleFiledName]['type'])){
-/*                                        console.log(singleRule)
-                                        console.log(allRules[singleCollName][singleFiledName]['type'])
-                                        console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
+                                        /*                                        console.log(singleRule)
+                                         console.log(allRules[singleCollName][singleFiledName]['type'])
+                                         console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
                                         return validateError.ruleDefineWrong(singleCollName,singleFiledName,singleRuleName)
                                     }
                                 }
@@ -1345,9 +877,9 @@ var validate={
                                 if(dataType.int===allRules[singleCollName][singleFiledName]['type'] || dataType.float===allRules[singleCollName][singleFiledName]['type']  || dataType.number===allRules[singleCollName][singleFiledName]['type'] ){
                                     if(singleRule!==allRules[singleCollName][singleFiledName]['type'] ){
                                         if(false===validate._private.checkDataTypeBaseOnTypeDefine(singleRule,allRules[singleCollName][singleFiledName]['type'])){
-/*                                            console.log(singleRule)
-                                            console.log(allRules[singleCollName][singleFiledName]['type'])
-                                            console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
+                                            /*                                            console.log(singleRule)
+                                             console.log(allRules[singleCollName][singleFiledName]['type'])
+                                             console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
                                             return validateError.ruleDefineWrong(singleCollName,singleFiledName,singleRuleName)
                                         }
                                     }
@@ -1362,42 +894,235 @@ var validate={
 
                         }
 
- /*                       switch (singleFiled){
-                            case 'chineseName': //无需sanity
-                                break
-                            case 'default': //根据type进行sanity
-                                rules[singleRule][singleFiled]=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled],rules[singleRule]['type'])
-                                break;
-                            case 'type':  //无需sanity
-                                break;
-                            case 'require':  //无需sanity，checkRuleBaseOnRuleDefine已经判断过
-                                break
-                            case 'minLength':
-                                //console.log(rules[singleRule][singleFiled])
-                                rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                                break;
-                            case 'maxLength':
-                                rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                                break;
-                            case 'exactLength':
-                                rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                                break;
-                            case 'min':
-                                rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                                break;
-                            case 'max':
-                                rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                                break;
-                            case 'format':  //无需sanity
-                                break;
-                            case 'equalTo': //无需sanity
-                                break;
-                        }*/
+                        /*                       switch (singleFiled){
+                         case 'chineseName': //无需sanity
+                         break
+                         case 'default': //根据type进行sanity
+                         rules[singleRule][singleFiled]=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled],rules[singleRule]['type'])
+                         break;
+                         case 'type':  //无需sanity
+                         break;
+                         case 'require':  //无需sanity，checkRuleBaseOnRuleDefine已经判断过
+                         break
+                         case 'minLength':
+                         //console.log(rules[singleRule][singleFiled])
+                         rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                         break;
+                         case 'maxLength':
+                         rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                         break;
+                         case 'exactLength':
+                         rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                         break;
+                         case 'min':
+                         rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                         break;
+                         case 'max':
+                         rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
+                         break;
+                         case 'format':  //无需sanity
+                         break;
+                         case 'equalTo': //无需sanity
+                         break;
+                         }*/
                     }
-                }                
+                }
             }
             return rightResult
-        }
+        },
+
+}
+
+
+/**
+ * Created by wzhan039 on 2016-02-25.
+ * 把前端传入的input的检查工作全部放在一个文件进行处理
+ * 2部分：input的定义（require,minLength,maxLength,exactLength,format,equalTo），format只在server处理
+ * 新增定义：min，max，file，folder：min/max：整数大小；file/folder：文件/文件夹是否存在
+ *         对应的函数处理
+ */
+
+
+/*          value
+* 1. 如贵value=notSet，那么require=true && default isSet，value=default
+* 2. 如果value=notSet，那么require=true && default notSet，返回错误
+* 3. 如果value=notSet，那么require=false,返回rc=0
+* */
+var validateInputValue={
+    _private: {
+        generateErrorMsg: {
+            //itemDefine无用，只是为了格式统一
+            require(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return `${chineseName}${defaultMsg}不能为空`
+            },
+            maxLength(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return `${chineseName}${defaultMsg}所包含的字符数不能超过${itemDefine}个`
+            },
+            minLength(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return `${chineseName}${defaultMsg}包含的字符数不能少于${itemDefine}个`
+            },
+            exactLength(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return `${chineseName}${defaultMsg}包含的字符数不等于${itemDefine}个`
+            },
+            max(chineseName, itemDefine, useDefaultValueFlag, unit){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                unit = (undefined === unit || null === unit) ? '' : unit
+                return `${chineseName}${defaultMsg}的值不能大于${itemDefine}${unit}`
+            },
+            min(chineseName, itemDefine, useDefaultValueFlag, unit){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                unit = (undefined === unit || null === unit) ? '' : unit
+                return `${chineseName}${defaultMsg}的值不能小于${itemDefine}${unit}`
+            },
+            equalTo(chineseName, equalToChineseName){
+                return `${chineseName}和${equalToChineseName}不相等`
+            },
+            format(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                switch (itemDefine) {
+                    case regex.strictPassword:
+                        return `${chineseName}${defaultMsg}的格式不正确，必须由6至20个字母数字和特殊符号组成`
+                    //break;
+                    case regex.loosePassword:
+                        return `${chineseName}${defaultMsg}的格式不正确，必须由2至20个字母数字组成`
+                    //break;
+                    case regex.userName:
+                        return `${chineseName}${defaultMsg}的格式不正确，必须由2至20个字符组成`
+                    case regex.mobilePhone:
+                        return `${chineseName}${defaultMsg}的格式不正确，必须由11至13个数字组成`
+                    case regex.originalThumbnail:
+                        return `${chineseName}${defaultMsg}的格式不正确，文件名由2到20个字符组成`
+                    //hashedThumbnail不用单独列出，是内部检查，使用default错误消息即可
+                    default:
+                        return `${chineseName}${defaultMsg}的格式不正确`
+                }
+            },
+            //itemDefine无用，只是为了格式统一
+            enum(chineseName, itemDefine, useDefaultValueFlag){
+                if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+                    useDefaultValueFlag = false
+                }
+                let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
+                return `${chineseName}${defaultMsg}不正确`
+            }
+        },//无法确保带检测的值的类型（在rule定义的文件中，type可以是字符或者数值，甚至是array），所以需要函数对输入进行检测，排除不支持的类型
+        ruleTypeCheck:{
+            exceedMaxLength(value, maxLength) {
+                //length属性只能在数字/字符/数组上执行
+                if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
+                    return false
+                }
+                //数字需要转换成字符才能执行length
+                if(false!==dataTypeCheck.isFloat(value) || false!==dataTypeCheck.isInt(value)){
+                    return value.toString().length > maxLength
+                }
+                return value.length > maxLength
+            },
+
+            exceedMinLength(value, minLength) {
+                if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
+                    return false
+                }
+                //数字需要转换成字符才能执行length
+                if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
+                    return value.toString().length < minLength
+                }
+                return value.length < minLength
+            },
+
+            exactLength(value, exactLength) {
+                if(false===dataTypeCheck.isArray(value) && false===dataTypeCheck.isInt(value) && false===dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)){
+                    return false
+                }
+                //数字需要转换成字符才能执行length
+                if(dataTypeCheck.isFloat(value) || dataTypeCheck.isInt(value)){
+                    return value.toString().length === exactLength
+                }
+                return value.length === exactLength
+            },
+
+            //广义比较，包括null和undefined的比较
+            equalTo(value, equalToValue) {
+                //return (false===dataTypeCheck.isEmpty(value) && value===equalToValue)
+                if(value instanceof Date && equalToValue instanceof Date){
+                    return value.toLocaleString()===equalToValue.toLocaleString()
+                }
+                return value === equalToValue
+            },
+
+            format(value, format) {
+                return format.test(value)
+            },
+
+            enum(value,define){
+                return -1!==define.indexOf(value)
+            },
+            //以下函数只能支持数值，必须由调用者确保参数的类型
+            exceedMax(value, definedValue) {
+                return parseFloat(value) > parseFloat(definedValue)
+            },
+            exceedMin(value, definedValue) {
+                return parseFloat(value) < parseFloat(definedValue)
+            },
+
+            isFileFolderExist(value) {
+                return fs.existsSync(value)
+            },
+        },
+        //检测数据类型
+        //require,maxLength,minLength,exactLength,min,max,format,format
+        //返回值：true/false/unknownDataType
+        checkDataTypeBaseOnTypeDefine(value, type){
+            switch (type) {
+                case dataType.int:
+                    return dataTypeCheck.isInt(value)   //返回false或者int
+                case dataType.float:
+                    return dataTypeCheck.isFloat(value)   //返回false或者int
+                case dataType.string:
+                    return dataTypeCheck.isString(value)
+                case dataType.date:
+                    return dataTypeCheck.isDate(value)
+                case dataType.array:
+                    return dataTypeCheck.isArray(value)
+                case dataType.object:
+                    return true
+                case dataType.objectId:
+                    return true
+                case dataType.file:
+                    return (validateInputValue._private.ruleTypeCheck.isFileFolderExist(value) && dataTypeCheck.isFile(value));
+                case dataType.folder:
+                    return (validateInputValue._private.ruleTypeCheck.isFileFolderExist(value) && dataTypeCheck.isFolder(value))
+                case dataType.number:
+                    return dataTypeCheck.isNumber(value)
+                default:
+                    return validateError.unknownDataType
+            }
+        },
     },
     /*********************************************/
     /*         主函数，检测input并返回结果        */
@@ -1413,7 +1138,7 @@ var validate={
 
         let rc={}
         let tmpResult
-        //检查参数的更是，必需是Object，且含有key
+        //检查参数的格式，必需是Object，且含有key
         //console.log(`input para is ${JSON.stringify(inputValue)}`)
         if(false===dataTypeCheck.isSetValue(inputValue)){
 /*            rc['rc']=validateError.valueNotDefine.rc
@@ -1559,7 +1284,7 @@ var validate={
                     }else{
 //console.log('default not defined')
                         rc[itemName]['rc']=validateError.valueNotDefineWithRequireTrue.rc
-                        rc[itemName]['msg']=`${itemName}${validateError.valueNotDefineWithRequireTrue.msg}`
+                        rc[itemName]['msg']=`${currentItemRule['chineseName']}:${validateError.valueNotDefineWithRequireTrue.msg}`
                         //return validateError.valueNotDefineWithRequireTrue
                         continue
                     }
@@ -1577,7 +1302,7 @@ var validate={
             //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
             if(currentItemRule['maxLength'] && currentItemRule['maxLength']['define']){
                 let maxLengthDefine=currentItemRule['maxLength']['define']
-                if(false===emptyFlag && true===ruleTypeCheck.exceedMaxLength(currentItemValue,maxLengthDefine)){
+                if(false===emptyFlag && true===validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue,maxLengthDefine)){
                     rc[itemName]['rc']=currentItemRule['maxLength']['error']['rc']
                     rc[itemName]['msg']=validate._private.generateErrorMsg.maxLength(currentChineseName,maxLengthDefine,useDefaultValueFlag)
                     continue
@@ -1624,7 +1349,7 @@ console.log(currentItemRule['type'])*/
                                 /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
                                  return validateError.minLengthDefineNotInt
                                  }*/
-                                if(true===ruleTypeCheck.exceedMinLength(currentItemValue,ruleDefine)){
+                                if(true===validateInputValue._private.ruleTypeCheck.exceedMinLength(currentItemValue,ruleDefine)){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                     rc[itemName]['msg']=validate._private.generateErrorMsg.minLength(currentChineseName,ruleDefine,useDefaultValueFlag)
                                 }
@@ -1635,7 +1360,7 @@ console.log(currentItemRule['type'])*/
                                 /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
                                  return validateError.maxLengthDefineNotInt
                                  }*/
-                                if(true===ruleTypeCheck.exceedMaxLength(currentItemValue,ruleDefine)){
+                                if(true===validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue,ruleDefine)){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                     rc[itemName]['msg']=validate._private.generateErrorMsg.maxLength(currentChineseName,ruleDefine,useDefaultValueFlag)
                                 }
@@ -1643,7 +1368,7 @@ console.log(currentItemRule['type'])*/
                             break;
                         case "exactLength":
                             if(false===emptyFlag){
-                                if(false===ruleTypeCheck.exactLength(currentItemValue,ruleDefine)){
+                                if(false===validateInputValue._private.ruleTypeCheck.exactLength(currentItemValue,ruleDefine)){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                     rc[itemName]['msg']=validate._private.generateErrorMsg.exactLength(currentChineseName,ruleDefine,useDefaultValueFlag)
                                 }
@@ -1651,7 +1376,7 @@ console.log(currentItemRule['type'])*/
                             break;
                         case 'max':
                             if(false===emptyFlag){
-                                if(true===ruleTypeCheck.exceedMax(currentItemValue,ruleDefine)){
+                                if(true===validateInputValue._private.ruleTypeCheck.exceedMax(currentItemValue,ruleDefine)){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                     rc[itemName]['msg']=validate._private.generateErrorMsg.max(currentChineseName,ruleDefine,useDefaultValueFlag,inputItemDefine[itemName]['unit'])
                                 }
@@ -1659,14 +1384,14 @@ console.log(currentItemRule['type'])*/
                             break;
                         case 'min':
                             if(false===emptyFlag){
-                                if(true===ruleTypeCheck.exceedMin(currentItemValue,ruleDefine)){
+                                if(true===validateInputValue._private.ruleTypeCheck.exceedMin(currentItemValue,ruleDefine)){
                                     rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                     rc[itemName]['msg']=validate._private.generateErrorMsg.min(currentChineseName,ruleDefine,useDefaultValueFlag,inputItemDefine[itemName]['unit'])
                                 }
                             }
                             break;
                         case "format":
-                            if(false===emptyFlag && false===ruleTypeCheck.format(currentItemValue,ruleDefine)){
+                            if(false===emptyFlag && false===validateInputValue._private.ruleTypeCheck.format(currentItemValue,ruleDefine)){
                                 rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                 rc[itemName]['msg']=validate._private.generateErrorMsg.format(currentChineseName,ruleDefine,useDefaultValueFlag)
                             }
@@ -1680,7 +1405,7 @@ console.log(currentItemRule['type'])*/
                             }
                             break;
                         case 'enum':
-                            if(false===ruleTypeCheck.enum(currentItemValue,ruleDefine)){
+                            if(false===validateInputValue._private.ruleTypeCheck.enum(currentItemValue,ruleDefine)){
                                 rc[itemName]['rc']=inputItemDefine[itemName][singleItemRuleName]['error']['rc']
                                 rc[itemName]['msg']=validate._private.generateErrorMsg.format(currentChineseName,ruleDefine,useDefaultValueFlag)
                             }
@@ -1733,7 +1458,7 @@ console.log(currentItemRule['type'])*/
             rc[fieldName]={}
             rc[fieldName]['rc']=0
             //判断长度是否超出maxlength
-            if(true===ruleTypeCheck.exceedMaxLength(fieldValue,maxLengthDefine)){
+            if(true===validateInputValue._private.ruleTypeCheck.exceedMaxLength(fieldValue,maxLengthDefine)){
                 rc[fieldName]['rc']=currentRule['maxLength']['error']['rc']
                 rc[fieldName]['msg']=validate._private.generateErrorMsg.maxLength(chineseName,maxLengthDefine,false)
             }
@@ -1987,8 +1712,8 @@ var  formatRc=function(rc,clientFlag=true){
 
 exports.func={
     dataTypeCheck,
-    ruleTypeCheck,
-    CRUDGlobalSetting,
+    // ruleTypeCheck, //移动到validateInputRule中
+    // CRUDGlobalSetting, //全局设置直接通过require方式（反正都是存储在内存中）
     generateRandomString,
     leftMSInDay,
     leftSecondInDay,
@@ -2005,7 +1730,8 @@ exports.func={
     getPemFile,
     //objectIndexOf:objectIndexOf,
     //extractKey:extractKey,
-    validate,
+    validateInputRule,
+    validateInputValue,
     generateClientInputAttr,
     generateClientRule,
     deleteNonNeededObject,

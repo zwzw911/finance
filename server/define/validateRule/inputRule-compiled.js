@@ -10,6 +10,7 @@ var regex = require('../regex/regex').regex;
 var inputDataType = require('../enum/validEnum').enum.dataType;
 /*********************************************/
 /* input定义，理论上应该定义单独文件中       */
+/*              人工根据dbschema定义         */
 /*********************************************/
 //在server端，定义和属性放在一起（属性没几个）
 //chineseName和type为必需。 type:输入数据的类型，string、int、date、boolean。array，object，默认是string

@@ -180,7 +180,7 @@ var dataTypeCheck = function dataTypeCheck(test) {
 };
 
 var ruleTypeCheck = function ruleTypeCheck(test) {
-    var func = testModule.ruleTypeCheck;
+    var func = testModule.validateInputValue._private.ruleTypeCheck;
     test.expect(40);
 
     var value = void 0,

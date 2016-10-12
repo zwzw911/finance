@@ -20,4 +20,7 @@
 1. miscFunc.formatRc 返回修改过的结果，而不是直接改输入参数======>done
 
 
-1. 多个外键，同时进行检测，任何一个失败，create失败
+1. 多个外键，同时进行检测，任何一个失败，create失败=========》
+
+1。 学习postman（取得返回值供下一个case使用）/newman/jenkis
+2. misc.checinput，所有返回值格式要统一{field:{rc:xxx,msg:yyy}}，以便后台处理？？？===========》不改checkInput，而改调用函数，对不同的返回值做不同的处理
