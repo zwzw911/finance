@@ -41,19 +41,23 @@ var assistError={
             needFormat:{rc:69815,msg:'type为objectId是，必须包含format属性'},
 
             ruleDefineNotRight:{rc:69816,msg:'rule的定义不正确'},
-            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
+/*            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
             minLengthDefineNotInt:{rc:69820,msg:'minLength的定义不是整数'},
-            exactLengthDefineNotInt:{rc:69822,msg:'min的定义不是整数'},
+            exactLengthDefineNotInt:{rc:69822,msg:'exactLengt的定义不是整数'},*/
+            lengthDefineNotInt:{rc:69818,msg:'minLength的定义不是整数'},
+            lengthDefineMustLargeThanZero:{rc:69823,msg:'length的定义必须大于0'},
             maxDefineNotInt:{rc:69824,msg:'max的定义不是整数'},
             minDefineNotInt:{rc:69826,msg:'min的定义不是整数'},
             requireDefineNotBoolean:{rc:69828,msg:'require的定义不是布尔值'},
             enumDefineNotArray:{rc:69829,msg:'enum的定义不是数组'},
+            enumDefineLengthMustLargerThanZero:{rc:69830,msg:'enum的定义数组不能为空'},
 
-            ruleDefineNotDefine:{rc:69830,msg:'define字段没有定义'},
+            ruleDefineNotDefine:{rc:69831,msg:'define字段没有定义'},
             errorFieldNotDefine:{rc:69832,msg:'error字段不存在'},
             rcFieldNotDefine:{rc:698234,msg:'rc字段不存在'},
             msgFieldNotDefine:{rc:69836,msg:'msg字段不存在'},
 
+            defaultNotDefine:{rc:69837,msg:'default字段不存在'},
             //以下只需返回给server，因此只要msg:'error'的格式，而不要client/server
             /*              sanity rule             */
             ruleDefineWrong:function(coll,field,rule){return {rc:69840,msg:`${coll}的字段${field}中的rule ${rule}的define值不正确`}},

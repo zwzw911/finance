@@ -340,6 +340,26 @@ var rightResult = { rc: 0, msg: null };var dataTypeCheck = {
         //return false
     },
 
+    //严格模式，数值
+    isStrictInt: function isStrictInt(value) {
+        if ('number' !== typeof value) {
+            return false;
+        }
+        if (value !== parseInt(value)) {
+            return false;
+        }
+        return true;
+    },
+    isStrictFloat: function isStrictFloat(value) {
+        if ('number' !== typeof value) {
+            return false;
+        }
+        if (value !== parseFloat(value)) {
+            return false;
+        }
+        return true;
+    },
+
     //整数，但是超出int所能表示的范围（无法处理，大数会变成科学计数法，从而无法用regex判断）。所以只能处理string类型
     isNumber: function isNumber(value) {
         if ('string' !== typeof value) {
@@ -720,10 +740,10 @@ var validateInputRule = {
 
     /*
     * 对单个字段的所有rule定义进行检查
-    * singleFieldName:如果必须字段错误，为返回值提供错误field的名称（其他错误，可以使用chineseName）；singleFieldInputRules：field的rule定义
+    * coll/singleFieldName:如果字段错误，为返回值提供错误coll/field的名称（其他错误，可以使用chineseName）；singleFieldInputRules：field的rule定义
     * 返回：{rc:0}或者{rc:xxxx,msg:'field的rule定义错误'}
     * */
-    checkSingleFieldRuleDefine: function checkSingleFieldRuleDefine(singleFieldName, singleFieldInputRules) {
+    checkSingleFieldRuleDefine: function checkSingleFieldRuleDefine(coll, singleFieldName, singleFieldInputRules) {
         var rc = {};
         // for(let inputRule in inputRules){
         //1 检查必须的field
@@ -789,6 +809,19 @@ var validateInputRule = {
                     return rc;
                 }
                 break;
+            //和int处理方式一样
+            case dataType.float:
+                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['min'])) {
+                    rc['rc'] = validateInputRuleError.needMin.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.needMin.msg;
+                    return rc;
+                }
+                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['max'])) {
+                    rc['rc'] = validateInputRuleError.needMax.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.needMax.msg;
+                    return rc;
+                }
+                break;
             case dataType.number:
                 //console.log(inputRules[inputRule]['maxLength'])
                 if (false === dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])) {
@@ -799,12 +832,14 @@ var validateInputRule = {
                 };
                 break;
             case dataType.string:
-                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])) {
-                    rc['rc'] = validateInputRuleError.needMaxLength.rc;
-                    rc['msg'] = chineseName + "的" + validateInputRuleError.needMaxLength.msg;
-                    //console.log(rc)
-                    return rc;
+                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['format'])) {
+                    if (false === dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])) {
+                        rc['rc'] = validateInputRuleError.needMaxLength.rc;
+                        rc['msg'] = chineseName + "的" + validateInputRuleError.needMaxLength.msg;
+                        return rc;
+                    };
                 };
+
                 break;
             //ObjectId必须有format，用来出错时返回错误
             case dataType.objectId:
@@ -820,7 +855,12 @@ var validateInputRule = {
         }
 
         //4 检测单个rule的格式是否正确，是否有define，是否有error，且格式为error:{rc:xxx,msg:'yyy'}
+        //需要排除chineseName/type/default
         for (var singleRule in singleFieldInputRules) {
+            var excludeRuleName = ['chineseName', 'type', 'default'];
+            if (-1 < excludeRuleName.indexOf(singleRule)) {
+                continue;
+            }
             //检查rule中必须的字段是否存在（rule定义是否正确）
             if (true === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule])) {
                 if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['define'])) {
@@ -841,150 +881,123 @@ var validateInputRule = {
             }
         }
 
-        //4 检测rule define是否正确(采用严格模式，mix/max/minLength/maxLength/exactLenght为数字，format为regex，enum为数组？，date为data)
+        //5 检测rule define是否正确(采用严格模式，mix/max/minLength/maxLength/exactLenght为数字，format为regex，enum为数组？，date为data)
         for (var _singleRule in singleFieldInputRules) {
+            // let currentRule=singleFieldInputRules[singleRule]
+            //字段chineseName/default/type是没有define的，所以singleRuleDefine为undefined，需要skip，防止js报错:undefined
+
+            if ('chineseName' === _singleRule || 'type' === _singleRule || 'default' === _singleRule) {
+                continue;
+            }
+
             var singleRuleDefine = singleFieldInputRules[_singleRule]['define'];
-            switch (_singleRule) {
-                //bollean
-                case 'require':
-                    if (false !== singleRuleDefine && true !== singleRuleDefine) {
-                        rc['rc'] = validateInputRuleError.requireDefineNotBoolean.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.requireDefineNotBoolean.msg;
+            if (ruleType.require === _singleRule) {
+                if (false !== singleRuleDefine && true !== singleRuleDefine) {
+                    rc['rc'] = validateInputRuleError.requireDefineNotBoolean.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.requireDefineNotBoolean.msg;
+                    return rc;
+                } else {
+                    continue;
+                }
+            }
+
+            //对数字进行检查，必须是数字而不是字符
+            if (ruleType.minLength === _singleRule || ruleType.maxLength === _singleRule || ruleType.exactLength === _singleRule || ruleType.min === _singleRule || ruleType.max === _singleRule) {
+                //首先检查是不是为int
+                var result = dataTypeCheck.isStrictInt(singleRuleDefine);
+                if (false === result) {
+                    rc['rc'] = validateInputRuleError.lengthDefineNotInt.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.lengthDefineNotInt.msg;
+                    return rc;
+                }
+                //如果是min/max/exactLength，还要检查值是否小于0
+                if (ruleType.minLength === _singleRule || ruleType.maxLength === _singleRule || ruleType.exactLength === _singleRule) {
+                    if (singleRuleDefine <= 0) {
+                        rc['rc'] = validateInputRuleError.lengthDefineMustLargeThanZero.rc;
+                        rc['msg'] = chineseName + "的规则" + _singleRule + "的" + validateInputRuleError.lengthDefineMustLargeThanZero.msg;
                         return rc;
                     }
-                    break;
-                case 'minLength':
-                    if (false === dataTypeCheck.isInt(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.minLengthDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.minLengthDefineNotInt.msg;
-                        return rc;
+                }
+                // currentRule['define']=result
+                continue;
+                //}
+            }
+
+            if (ruleType.format === _singleRule) {
+
+                continue;
+            }
+
+            if (ruleType.equalTo === _singleRule) {
+
+                continue;
+            }
+
+            if (ruleType.enum === _singleRule) {
+                if (false === dataTypeCheck.isArray(singleRuleDefine)) {
+                    rc['rc'] = validateInputRuleError.enumDefineNotArray.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.enumDefineNotArray.msg;
+                    return rc;
+                }
+                //数组lenght是否大于1
+                if (singleRuleDefine.length < 1) {
+                    rc['rc'] = validateInputRuleError.enumDefineLengthMustLargerThanZero.rc;
+                    rc['msg'] = chineseName + "的" + validateInputRuleError.enumDefineLengthMustLargerThanZero.msg;
+                    return rc;
+                }
+                continue;
+            }
+        }
+
+        //6 default单独处理（只检查类型是否正确，而不检查是否在范围内，范围检查由checkInputValue执行）
+        //6.1 default是否为空
+        /*            if(false===dataTypeCheck.isSetValue(singleFieldInputRules['default'])){
+                        rc['rc'] = validateInputRuleError.defaultNotDefine.rc
+                        rc['msg'] = `${chineseName}的default的${validateInputRuleError.defaultNotDefine.msg}`
+                        return rc
+                    }*/
+
+        //6.1 不为空，检查dataType
+        if (dataTypeCheck.isSetValue(singleFieldInputRules['default'])) {
+            var singleFiledDataType = singleFieldInputRules['type'];
+            var checkResult = void 0;
+            /*            console.log(`default value is ${singleFieldInputRules['default']}`)
+             console.log(`is set value is ${dataTypeCheck.isSetValue(singleFieldInputRules['default'])}`)*/
+            switch (singleFiledDataType) {
+                case dataType.string:
+                    if (false === dataTypeCheck.isString(singleFieldInputRules['default'])) {
+                        return validateInputRuleError.ruleDefineWrong(coll, singleFieldName, 'default');
                     }
                     break;
-                case 'maxLength':
-                    if (false === dataTypeCheck.isInt(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.maxLengthDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.maxLengthDefineNotInt.msg;
-                        return rc;
+                case dataType.int:
+                    checkResult = dataTypeCheck.isStrictInt(singleFieldInputRules['default']);
+                    if (false === checkResult) {
+                        return validateInputRuleError.ruleDefineWrong(coll, singleFieldName, 'default');
+                    }
+
+                    break;
+                case dataType.float:
+                    checkResult = dataTypeCheck.isStrictFloat(singleFieldInputRules['default']);
+                    if (false === checkResult) {
+                        return validateInputRuleError.ruleDefineWrong(coll, singleFieldName, 'default');
+                    } else {
+                        singleFieldInputRules['default'] = checkResult;
                     }
                     break;
-                case 'exactLength':
-                    if (false === dataTypeCheck.isInt(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.exactLengthDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.exactLengthDefineNotInt.msg;
-                        return rc;
+                case dataType.number:
+                    checkResult = dataTypeCheck.isNumber(singleFieldInputRules['default']);
+                    if (false === checkResult) {
+                        return validateInputRuleError.ruleDefineWrong(coll, singleFieldName, 'default');
+                    } else {
+                        singleFieldInputRules['default'] = checkResult;
                     }
                     break;
-                case 'min':
-                    if (false === dataTypeCheck.isInt(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.minDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.minDefineNotInt.msg;
-                        return rc;
-                    }
-                    break;
-                case 'max':
-                    if (false === dataTypeCheck.isInt(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.maxDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.maxDefineNotInt.msg;
-                        return rc;
-                    }
-                    break;
-                case 'format':
-                    break;
-                case 'equalTo':
-                    break;
-                case 'enum':
-                    if (false === dataTypeCheck.isArray(singleRuleDefine)) {
-                        rc['rc'] = validateInputRuleError.maxDefineNotInt.rc;
-                        rc['msg'] = chineseName + "的" + validateInputRuleError.enumDefineNotArray.msg;
-                        return rc;
-                    }
-                    break;
+                //其他默认通过
                 default:
                     break;
             }
         }
 
-        // }
-
-        return rightResult;
-    },
-
-    //必须在checkRuleBaseOnRuleDefine通过之后执行（保证不会返回false，而是返回sanity的值）
-    //对rule的define转换成正确的类型，便于后续操作(无需执行类型转换)
-    //在maintain中运行，作为rule check的一部分，而不是在每次check input的时候进行，不然太耗cpu
-    //对每个rule的define进行检查，是否合格（例如，1.1x可能会被转换成1.1使用，要找出这样的错误）
-    sanityRule: function sanityRule(allRules) {
-        var mandatoryFields = ['default', 'minLength', 'maxLength', 'exactLength', 'min', 'max'];
-        for (var singleCollName in allRules) {
-            for (var singleFiledName in allRules[singleCollName]) {
-                for (var singleRuleName in allRules[singleCollName][singleFiledName]) {
-                    // console.log(`${singleCollName} ${singleFiledName} ${singleRuleName}`)
-                    if (-1 !== mandatoryFields.indexOf(singleRuleName)) {
-
-                        var singleRule = allRules[singleCollName][singleFiledName][singleRuleName];
-                        if ('default' === singleRuleName) {
-                            if (dataType.string === allRules[singleCollName][singleFiledName]['type']) {
-                                if (false === validate._private.checkDataTypeBaseOnTypeDefine(singleRule, allRules[singleCollName][singleFiledName]['type'])) {
-                                    /*                                        console.log(singleRule)
-                                     console.log(allRules[singleCollName][singleFiledName]['type'])
-                                     console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
-                                    return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
-                                }
-                            }
-                            //对于数值，如果是字符形式，也算通过
-                            if (dataType.int === allRules[singleCollName][singleFiledName]['type'] || dataType.float === allRules[singleCollName][singleFiledName]['type'] || dataType.number === allRules[singleCollName][singleFiledName]['type']) {
-                                if (singleRule !== allRules[singleCollName][singleFiledName]['type']) {
-                                    if (false === validate._private.checkDataTypeBaseOnTypeDefine(singleRule, allRules[singleCollName][singleFiledName]['type'])) {
-                                        /*                                            console.log(singleRule)
-                                         console.log(allRules[singleCollName][singleFiledName]['type'])
-                                         console.log(validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'],allRules[singleCollName][singleFiledName]['type']))*/
-                                        return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
-                                    }
-                                }
-                            }
-                        }
-                        if ('minLength' === singleRuleName || 'maxLength' === singleRuleName || 'exactLength' === singleRuleName || 'min' === singleRuleName || 'max' === singleRuleName) {
-                            if (singleRule['define'] !== validate._private.checkDataTypeBaseOnTypeDefine(singleRule['define'], dataType.int)) {
-
-                                return validateError.ruleDefineWrong(singleCollName, singleFiledName, singleRuleName);
-                            }
-                        }
-                    }
-
-                    /*                       switch (singleFiled){
-                     case 'chineseName': //无需sanity
-                     break
-                     case 'default': //根据type进行sanity
-                     rules[singleRule][singleFiled]=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled],rules[singleRule]['type'])
-                     break;
-                     case 'type':  //无需sanity
-                     break;
-                     case 'require':  //无需sanity，checkRuleBaseOnRuleDefine已经判断过
-                     break
-                     case 'minLength':
-                     //console.log(rules[singleRule][singleFiled])
-                     rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                     break;
-                     case 'maxLength':
-                     rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                     break;
-                     case 'exactLength':
-                     rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                     break;
-                     case 'min':
-                     rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                     break;
-                     case 'max':
-                     rules[singleRule][singleFiled]['define']=validate._private.checkDataTypeBaseOnTypeDefine(rules[singleRule][singleFiled]['define'],dataType.int)
-                     break;
-                     case 'format':  //无需sanity
-                     break;
-                     case 'equalTo': //无需sanity
-                     break;
-                     }*/
-                }
-            }
-        }
         return rightResult;
     }
 };
