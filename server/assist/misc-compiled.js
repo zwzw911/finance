@@ -791,9 +791,24 @@ var validateInputRule = {
             return rc;
         }
 
+        //3 检查dataTpe是否validate
+        var unknownDataType = true;
+        for (var key in dataType) {
+            if (dataType[key] === singleFieldInputRules['type']) {
+                unknownDataType = false;
+                break;
+            }
+            continue;
+        }
+        if (true === unknownDataType) {
+            rc['rc'] = validateInputRuleError.unknownDataType.rc;
+            rc['msg'] = singleFieldName + "的type的" + validateInputRuleError.unknownDataType.msg;
+            return rc;
+        }
+
         //singleFieldName可以用chineseName代替，如此，更容易查看错误
         var chineseName = singleFieldInputRules['chineseName'];
-        //3 某些类型必须有关联rule
+        //4 某些类型必须有关联rule
         //console.log(inputRules[inputRule]['type'])
         switch (singleFieldInputRules['type']) {
 
@@ -832,7 +847,8 @@ var validateInputRule = {
                 };
                 break;
             case dataType.string:
-                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['format'])) {
+                //string: 如果即没有format，也没有enum，则必须有maxLenght
+                if (false === dataTypeCheck.isSetValue(singleFieldInputRules['format']) && false === dataTypeCheck.isSetValue(singleFieldInputRules['enum'])) {
                     if (false === dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])) {
                         rc['rc'] = validateInputRuleError.needMaxLength.rc;
                         rc['msg'] = chineseName + "的" + validateInputRuleError.needMaxLength.msg;
@@ -854,7 +870,7 @@ var validateInputRule = {
                 break;
         }
 
-        //4 检测单个rule的格式是否正确，是否有define，是否有error，且格式为error:{rc:xxx,msg:'yyy'}
+        //5 检测单个rule的格式是否正确，是否有define，是否有error，且格式为error:{rc:xxx,msg:'yyy'}
         //需要排除chineseName/type/default
         for (var singleRule in singleFieldInputRules) {
             var excludeRuleName = ['chineseName', 'type', 'default'];
@@ -881,7 +897,7 @@ var validateInputRule = {
             }
         }
 
-        //5 检测rule define是否正确(采用严格模式，mix/max/minLength/maxLength/exactLenght为数字，format为regex，enum为数组？，date为data)
+        //6 检测rule define是否正确(采用严格模式，mix/max/minLength/maxLength/exactLenght为数字，format为regex，enum为数组？，date为data)
         for (var _singleRule in singleFieldInputRules) {
             // let currentRule=singleFieldInputRules[singleRule]
             //字段chineseName/default/type是没有define的，所以singleRuleDefine为undefined，需要skip，防止js报错:undefined
@@ -949,15 +965,8 @@ var validateInputRule = {
             }
         }
 
-        //6 default单独处理（只检查类型是否正确，而不检查是否在范围内，范围检查由checkInputValue执行）
-        //6.1 default是否为空
-        /*            if(false===dataTypeCheck.isSetValue(singleFieldInputRules['default'])){
-                        rc['rc'] = validateInputRuleError.defaultNotDefine.rc
-                        rc['msg'] = `${chineseName}的default的${validateInputRuleError.defaultNotDefine.msg}`
-                        return rc
-                    }*/
-
-        //6.1 不为空，检查dataType
+        //7 default单独处理（只检查类型是否正确，而不检查是否在范围内，范围检查由checkInputValue执行）
+        //7.1 不为空，检查dataType
         if (dataTypeCheck.isSetValue(singleFieldInputRules['default'])) {
             var singleFiledDataType = singleFieldInputRules['type'];
             var checkResult = void 0;
@@ -1098,21 +1107,28 @@ var validateInputValue = {
                 var defaultMsg = useDefaultValueFlag ? '的默认值' : '';
                 return "" + chineseName + defaultMsg + "不正确";
             }
-        }, //无法确保带检测的值的类型（在rule定义的文件中，type可以是字符或者数值，甚至是array），所以需要函数对输入进行检测，排除不支持的类型
+        },
+        //无法确保带检测的值的类型（在rule定义的文件中，type可以是字符或者数值，甚至是array），所以需要函数对输入进行检测，排除不支持的类型
         ruleTypeCheck: {
             exceedMaxLength: function exceedMaxLength(value, maxLength) {
+                // console.log( `exceed enter`)
                 //length属性只能在数字/字符/数组上执行
-                if (false === dataTypeCheck.isArray(value) && false === dataTypeCheck.isInt(value) && false === dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)) {
+                //其实只有number和string才有maxLength（在rule中定义）
+                if (false === dataTypeCheck.isArray(value) && false === dataTypeCheck.isInt(value) && false === dataTypeCheck.isFloat(value) && false === dataTypeCheck.isString(value)) {
+                    // console.log( `exceed:type wrong`)
                     return false;
                 }
                 //数字需要转换成字符才能执行length
+                //isFloat和isInt返回false或者数字，所以必须使用false!==的格式判断
                 if (false !== dataTypeCheck.isFloat(value) || false !== dataTypeCheck.isInt(value)) {
+                    // console.log( `exceed:type number`)
                     return value.toString().length > maxLength;
                 }
+                // console.log(`exceed function. value is ${value},define is ${maxLength}`)
                 return value.length > maxLength;
             },
             exceedMinLength: function exceedMinLength(value, minLength) {
-                if (false === dataTypeCheck.isArray(value) && false === dataTypeCheck.isInt(value) && false === dataTypeCheck.isFloat(value) && dataTypeCheck.isString(value)) {
+                if (false === dataTypeCheck.isArray(value) && false === dataTypeCheck.isInt(value) && false === dataTypeCheck.isFloat(value) && false === dataTypeCheck.isString(value)) {
                     return false;
                 }
                 //数字需要转换成字符才能执行length
@@ -1165,7 +1181,7 @@ var validateInputValue = {
         checkDataTypeBaseOnTypeDefine: function checkDataTypeBaseOnTypeDefine(value, type) {
             switch (type) {
                 case dataType.int:
-                    return dataTypeCheck.isInt(value); //返回false或者int
+                    return dataTypeCheck.isInt(value); //返回false或者int(使用宽松模式，因为输入的都是字符)
                 case dataType.float:
                     return dataTypeCheck.isFloat(value); //返回false或者int
                 case dataType.string:
@@ -1185,7 +1201,7 @@ var validateInputValue = {
                 case dataType.number:
                     return dataTypeCheck.isNumber(value);
                 default:
-                    return validateError.unknownDataType;
+                    return validateInputValueError.unknownDataType;
             }
         }
     },
@@ -1193,95 +1209,73 @@ var validateInputValue = {
     /*         主函数，检测input并返回结果        */
     /*********************************************/
     /*
-    * inputValue:{username:{value:xxx},password:{value:yyy}}
-    * inputItemDefine： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
+    * inputValue:{username:{value:xxx},password:{value:yyy}} 由调用函数保证输入参数的格式正确
+    * collRules： ruleDefine(以coll为单位)adminLogin。每个页面有不同的定义
     * basedOnInputValue: 对输入进行检查是，是根据inputValue的字段分别检查（true），还是根据inputRule的字段定义进行检查。
     *                   一般当create时，false，根据inputRule的字段定义进行检查（所有字段都检查）
     *                   当update是，true，只对输入的字段进行检查
+    * 返回值有2种：一种是common：{rc:xxx,msg:yyy}，另外一种是对全部输入的field都进行检查，返回{field1:{rc:xxx,msg,yyy},field2:{rc:zzz,msg:aaa}}
     * */
-    checkInput: function checkInput(inputValue, inputItemDefine) {
+    checkInput: function checkInput(inputValue, collRules) {
         var basedOnInputValue = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
 
         var rc = {};
         var tmpResult = void 0;
-        //检查参数的格式，必需是Object，且含有key
-        //console.log(`input para is ${JSON.stringify(inputValue)}`)
+        //1 检查参数的格式，必需是Object，且含有key
+        //general error，直接返回{rc:xxxx,msg:yyy}格式的错误
         if (false === dataTypeCheck.isSetValue(inputValue)) {
-            /*            rc['rc']=validateError.valueNotDefine.rc
-                        rc['msg']=`${inputV}validateError`*/
-            //console.log('start check1')
-            return validateError.valueNotDefine;
+            return validateInputValueError.valueNotDefine;
         }
         if (dataTypeCheck.isEmpty(inputValue)) {
-            //console.log('start check2')
-            return validateError.valueEmpty;
+            return validateInputValueError.valueEmpty;
         }
-        //检查rule是否合格（不用每次都执行，而是预先做好一次即可）
-        /*        tmpResult=validate._private.checkRuleBaseOnRuleDefine(inputItemDefine)
-                if(0<tmpResult.rc){
-                    return tmpResult
-                }*/
-        //将rule中的define转换成合适的类型（之后进行判断的时候就不用再次转换）
-        //直接在maintain中完成，省得每次checkInput都调用，浪费CPU
-        // validate._private.sanityRule(inputItemDefine)
-        //console.log(inputItemDefine)
 
+        //2 inputValue中所有field，是否为rule中定义的（阻止传入额外字段）
+        for (var singleFieldName in inputValue) {
+            //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
+            if (singleFieldName !== '_id' && singleFieldName !== 'id') {
+                if (undefined === collRules[singleFieldName]) {
+                    rc[singleFieldName] = validateInputValueError.valueRelatedRuleNotDefine;
+                    return rc;
+                }
+            }
+        }
+
+        //3 确定检查的基准（要验证的field：按照input进行，还是按照rule进行）
         var base = void 0;
         if (basedOnInputValue) {
             base = inputValue;
         } else {
-            base = inputItemDefine;
+            base = collRules;
         }
-        //console.log(`base is ${JSON.stringify(base)}`)
-        for (var itemName in base) {
 
+        for (var itemName in base) {
             rc[itemName] = {};
             rc[itemName]['rc'] = 0;
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
             //var currentItemValue=inputValue[itemName]['value']
 
             //console.log(`item name is ${itemName}`)
-            //-2 如果传入的是_id，那么通过regex直接判断（因为_id不定义在rule中）
+            //3.1 如果传入的是_id，那么通过regex直接判断（因为_id不定义在rule中，而是通过server端程序生成的）
             if ('id' === itemName || '_id' === itemName) {
                 if (false === dataTypeCheck.isSetValue(inputValue[itemName]) || false === dataTypeCheck.isSetValue(inputValue[itemName]['value'])) {
-                    rc[itemName]['rc'] = miscError.validate.objectIdEmpty.rc;
-                    rc[itemName]['msg'] = miscError.validate.objectIdEmpty.msg;
+                    rc[itemName]['rc'] = validateInputValueError.objectIdEmpty.rc;
+                    rc[itemName]['msg'] = validateInputValueError.objectIdEmpty.msg;
                     continue;
                 }
                 if (false === regex.objectId.test(inputValue[itemName]['value'])) {
-                    rc[itemName]['rc'] = miscError.validate.objectIdWrong.rc;
-                    rc[itemName]['msg'] = miscError.validate.objectIdWrong.msg;
+                    rc[itemName]['rc'] = validateInputValueError.objectIdWrong.rc;
+                    rc[itemName]['msg'] = validateInputValueError.objectIdWrong.msg;
                 }
                 continue;
             }
-            /*            //如果传入的值的类型是objectId（即有对应的rule定义），那么根据rule中的format进行检测
-                        if(dataType.objectId===inputItemDefine[itemName]['type']){
-                            if(false===inputItemDefine[itemName]['format']['define'].test(inputValue[itemName]['value'])) {
-                                console.log(`item name is ${itemName}`)
-                                console.log(`rule is ${inputItemDefine[itemName]}`)
-                                rc[itemName]['rc']=inputItemDefine[itemName]['format']['error']['rc']
-                                rc[itemName]['msg']=validate._private.generateErrorMsg.format(inputItemDefine[itemName]['chineseName'],inputItemDefine[itemName]['format'],false)
-                            }
-                            //object检查完，直接下一个value的检测
-                            continue
-                        }*/
-
-            //0 当前待检测的value，有没有对应的检测rule定义
-            if (false === dataTypeCheck.isSetValue(inputItemDefine[itemName])) {
-                //console.log(itemName)
-                rc[itemName]['rc'] = validateError.valueRelatedRuleNotDefine.rc;
-                rc[itemName]['msg'] = "" + itemName + validateError.valueRelatedRuleNotDefine.msg;
-                //没有对应的rule定义，直接退出
-                return rc;
-                //return validateError.noRelatedItemDefine
-            }
 
             //rule的赋值
-            var currentItemRule = inputItemDefine[itemName];
-            var currentChineseName = inputItemDefine[itemName]['chineseName'];
+            var currentItemRule = collRules[itemName];
+            var currentChineseName = collRules[itemName]['chineseName'];
 
-            //如果类型是objectId(有对应inputRule定义)，并且require=true，直接判断（而无需后续的检测，以便加快速度）
+            //3.2 如果类型是objectId(有对应inputRule定义，主要是外键)，并且require=true，直接判断（而无需后续的检测，以便加快速度）
             if (dataType.objectId === currentItemRule['type']) {
                 // define+ require true ==>check
                 // define+ require false==>check
@@ -1291,21 +1285,23 @@ var validateInputValue = {
                     if (false === currentItemRule['format']['define'].test(inputValue[itemName]['value'])) {
                         /*                       rc[itemName]['rc']=validateError.objectIdWrong.rc
                                                rc[itemName]['msg']=`${currentChineseName}：${validateError.objectIdWrong.msg}`*/
-                        rc[itemName]['rc'] = inputItemDefine[itemName]['format']['error']['rc'];
-                        rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, inputItemDefine[itemName]['format']['error']['define'], false);
+                        rc[itemName]['rc'] = collRules[itemName]['format']['error']['rc'];
+                        rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.format(currentChineseName, collRules[itemName]['format']['error']['define'], false);
                     }
                     // continue
                 } else {
+                    // console.log(`field ${itemName} not define in value`)
                     if (true === currentItemRule['require']['define']) {
-                        rc[itemName]['rc'] = inputItemDefine[itemName]['require']['error']['rc'];
-                        rc[itemName]['msg'] = validate._private.generateErrorMsg.require(currentChineseName, inputItemDefine[itemName]['require']['error']['define'], false);
+                        // console.log(`rule field ${itemName} define`)
+                        rc[itemName]['rc'] = collRules[itemName]['require']['error']['rc'];
+                        rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.require(currentChineseName, collRules[itemName]['require']['error']['define'], false);
                         // continue
                     }
                 }
                 continue;
             }
 
-            //先行判断输入值是否empty，然后赋值给变量；而不是多次使用isEmpty函数。如此，可以加快代码执行速度
+            //3.3 先行判断输入值是否empty，然后赋值给变量；而不是多次使用isEmpty函数。如此，可以加快代码执行速度
             //let emptyFlag=(false=== dataTypeCheck.isSetValue(inputValue[itemName]) &&  false===dataTypeCheck.isSetValue(inputValue[itemName]['value']))
             var emptyFlag = false;
             /*            console.log(`misc1 ${dataTypeCheck.isSetValue(inputValue[itemName])}`)
@@ -1320,11 +1316,6 @@ var validateInputValue = {
             //1 如果是require，但是value为空，那么检查是否有default设置，有的话，inputValue设成default
             var useDefaultValueFlag = false;
 
-            /*            console.log(inputValue[itemName])
-                        console.log(dataTypeCheck.isSetValue(inputValue[itemName]))
-                        console.log( dataTypeCheck.isSetValue(inputValue[itemName]['value']))*/
-            /*            console.log(inputValue[itemName]['value'])
-                        console.log(emptyFlag)*/
             /*          value
              * 1. 如贵value=notSet，且require=true && default isSet，value=default
              * 2. 如果value=notSet，且require=true && default notSet，返回错误
@@ -1346,8 +1337,8 @@ var validateInputValue = {
                         emptyFlag = dataTypeCheck.isEmpty(currentItemValue);
                     } else {
                         //console.log('default not defined')
-                        rc[itemName]['rc'] = validateError.valueNotDefineWithRequireTrue.rc;
-                        rc[itemName]['msg'] = currentItemRule['chineseName'] + ":" + validateError.valueNotDefineWithRequireTrue.msg;
+                        rc[itemName]['rc'] = validateInputValueError.valueNotDefineWithRequireTrue.rc;
+                        rc[itemName]['msg'] = currentItemRule['chineseName'] + ":" + validateInputValueError.valueNotDefineWithRequireTrue.msg;
                         //return validateError.valueNotDefineWithRequireTrue
                         continue;
                     }
@@ -1358,29 +1349,57 @@ var validateInputValue = {
                 //value不为空，付给变量，以便后续操作
                 currentItemValue = inputValue[itemName]['value'];
             }
-            //console.log(`empty check is ${JSON.stringify(rc)}`)
-            //console.log(currentItemValue)
+
             //如果currentItemValue为空，说明没有获得default，或者require为false
-            //2. 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
-            if (currentItemRule['maxLength'] && currentItemRule['maxLength']['define']) {
-                var maxLengthDefine = currentItemRule['maxLength']['define'];
-                if (false === emptyFlag && true === validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue, maxLengthDefine)) {
-                    rc[itemName]['rc'] = currentItemRule['maxLength']['error']['rc'];
-                    rc[itemName]['msg'] = validate._private.generateErrorMsg.maxLength(currentChineseName, maxLengthDefine, useDefaultValueFlag);
-                    continue;
-                    //return rc
+            //3.4 如果有format，直接使用format(其后的各种rule不用继续检查)
+            // console.log(`current rule is ${JSON.stringify(currentItemRule)}`)
+            if (currentItemRule['format'] && currentItemRule['format']['define']) {
+                var formatDefine = currentItemRule['format']['define'];
+                // console.log( `format define is ${formatDefine}`)
+
+                if (false === emptyFlag) {
+                    if (false === validateInputValue._private.ruleTypeCheck.format(currentItemValue, formatDefine)) {
+                        rc[itemName]['rc'] = currentItemRule['format']['error']['rc'];
+                        rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.format(currentChineseName, formatDefine, useDefaultValueFlag);
+                    }
+                    /*                    if(false===formatDefine.test(currentItemValue)){
+                                            rc[itemName]['rc']=currentItemRule['format']['error']['rc']
+                                            rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.format(currentChineseName,formatDefine,useDefaultValueFlag)
+                                        }*/
                 }
+                continue;
             }
 
-            /*        if(rc[itemName] && rc[itemName]['rc']>0){
-             break
-             return rc
-             }*/
+            //3.5 如果有maxLength属性，首先检查（防止输入的参数过于巨大）
+            if (currentItemRule['maxLength'] && currentItemRule['maxLength']['define']) {
+                var maxLengthDefine = currentItemRule['maxLength']['define'];
+                // console.log(`maxLength: define ${maxLengthDefine}, value ${currentItemValue}`)
+                if (false === emptyFlag && true === validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue, maxLengthDefine)) {
+                    rc[itemName]['rc'] = currentItemRule['maxLength']['error']['rc'];
+                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.maxLength(currentChineseName, maxLengthDefine, useDefaultValueFlag);
+                    continue;
+                }
+                //继续往下检查其他rule
+            }
 
-            //3. 检查value的类型是否符合type中的定义
+            //3.6 检查enum(需要自定义代码而不是调用ruleTypeCheck中的函数)
+            if (currentItemRule['enum'] && currentItemRule['enum']['define']) {
+                var enumDefine = currentItemRule['enum']['define'];
+                if (false === emptyFlag) {
+                    // if(-1===enumDefine.indexOf(currentItemValue)){
+                    if (false === validateInputValue._private.ruleTypeCheck.enum(currentItemValue, enumDefine)) {
+
+                        rc[itemName]['rc'] = currentItemRule['enum']['error']['rc'];
+                        rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.enum(currentChineseName, enumDefine, useDefaultValueFlag);
+                    }
+                }
+                continue;
+            }
+
+            //3.7 检查value的类型是否符合type中的定义
             /*console.log(currentItemValue)
             console.log(currentItemRule['type'])*/
-            var result = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, currentItemRule['type']);
+            var result = validateInputValue._private.checkDataTypeBaseOnTypeDefine(currentItemValue, currentItemRule['type']);
             //console.log(result)
             if (result.rc && 0 < result.rc) {
                 rc[itemName]['rc'] = result.rc;
@@ -1388,12 +1407,12 @@ var validateInputValue = {
                 continue;
             }
             if (false === result) {
-                rc[itemName]['rc'] = validateError.typeWrong.rc;
-                rc[itemName]['msg'] = "" + itemName + validateError.typeWrong.msg;
+                rc[itemName]['rc'] = validateInputValueError.typeWrong.rc;
+                rc[itemName]['msg'] = "" + itemName + validateInputValueError.typeWrong.msg;
                 continue;
             }
 
-            //    4. 检查出了maxLength之外的每个rule进行检测
+            //3.8 检查出了maxLength/enum/format之外的每个rule进行检测
             for (var singleItemRuleName in currentItemRule) {
                 if ('chineseName' !== singleItemRuleName && 'default' !== singleItemRuleName && 'type' !== singleItemRuleName && 'unit' !== singleItemRuleName) {
                     var ruleDefine = currentItemRule[singleItemRuleName]['define'];
@@ -1401,8 +1420,8 @@ var validateInputValue = {
                         case "require":
                             if (ruleDefine) {
                                 if (true === emptyFlag) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.require(currentChineseName, ruleDefine, useDefaultValueFlag); //参数ruleDefine无用，只是为了函数格式统一
+                                    rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.require(currentChineseName, ruleDefine, useDefaultValueFlag); //参数ruleDefine无用，只是为了函数格式统一
                                 }
                             }
                             break;
@@ -1412,66 +1431,66 @@ var validateInputValue = {
                                  return validateError.minLengthDefineNotInt
                                  }*/
                                 if (true === validateInputValue._private.ruleTypeCheck.exceedMinLength(currentItemValue, ruleDefine)) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.minLength(currentChineseName, ruleDefine, useDefaultValueFlag);
+                                    rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.minLength(currentChineseName, ruleDefine, useDefaultValueFlag);
                                 }
                             }
                             break;
-                        case "maxLength":
-                            if (false === emptyFlag) {
-                                /*                            if(false===dataTypeCheck.isInt(ruleDefine)){
-                                 return validateError.maxLengthDefineNotInt
-                                 }*/
-                                if (true === validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue, ruleDefine)) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.maxLength(currentChineseName, ruleDefine, useDefaultValueFlag);
-                                }
-                            }
-                            break;
+                        /*                        case "maxLength":
+                                                    if(false===emptyFlag){
+                                                        /!*                            if(false===dataTypeCheck.isInt(ruleDefine)){
+                                                         return validateError.maxLengthDefineNotInt
+                                                         }*!/
+                                                        if(true===validateInputValue._private.ruleTypeCheck.exceedMaxLength(currentItemValue,ruleDefine)){
+                                                            rc[itemName]['rc']=collRules[itemName][singleItemRuleName]['error']['rc']
+                                                            rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.maxLength(currentChineseName,ruleDefine,useDefaultValueFlag)
+                                                        }
+                                                    }
+                                                    break;*/
                         case "exactLength":
                             if (false === emptyFlag) {
                                 if (false === validateInputValue._private.ruleTypeCheck.exactLength(currentItemValue, ruleDefine)) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.exactLength(currentChineseName, ruleDefine, useDefaultValueFlag);
+                                    rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.exactLength(currentChineseName, ruleDefine, useDefaultValueFlag);
                                 }
                             }
                             break;
                         case 'max':
                             if (false === emptyFlag) {
                                 if (true === validateInputValue._private.ruleTypeCheck.exceedMax(currentItemValue, ruleDefine)) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.max(currentChineseName, ruleDefine, useDefaultValueFlag, inputItemDefine[itemName]['unit']);
+                                    rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.max(currentChineseName, ruleDefine, useDefaultValueFlag, collRules[itemName]['unit']);
                                 }
                             }
                             break;
                         case 'min':
                             if (false === emptyFlag) {
                                 if (true === validateInputValue._private.ruleTypeCheck.exceedMin(currentItemValue, ruleDefine)) {
-                                    rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                    rc[itemName]['msg'] = validate._private.generateErrorMsg.min(currentChineseName, ruleDefine, useDefaultValueFlag, inputItemDefine[itemName]['unit']);
+                                    rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                    rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.min(currentChineseName, ruleDefine, useDefaultValueFlag, collRules[itemName]['unit']);
                                 }
                             }
                             break;
-                        case "format":
-                            if (false === emptyFlag && false === validateInputValue._private.ruleTypeCheck.format(currentItemValue, ruleDefine)) {
-                                rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, ruleDefine, useDefaultValueFlag);
-                            }
-                            break;
+                        /*                        case "format":
+                                                    if(false===emptyFlag && false===validateInputValue._private.ruleTypeCheck.format(currentItemValue,ruleDefine)){
+                                                        rc[itemName]['rc']=collRules[itemName][singleItemRuleName]['error']['rc']
+                                                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.format(currentChineseName,ruleDefine,useDefaultValueFlag)
+                                                    }
+                                                    break;*/
                         case "equalTo":
-                            var equalToFiledName = inputItemDefine[itemName][singleItemRuleName]['define'];
+                            var equalToFiledName = collRules[itemName][singleItemRuleName]['define'];
 
                             if (true === emptyFlag || true === dataTypeCheck.isEmpty(inputValue[equalToFiledName]['value']) || inputValue[itemName]['value'] !== inputValue[equalToFiledName]['value']) {
-                                rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                rc[itemName]['msg'] = validate._private.generateErrorMsg.equalTo(currentChineseName, inputItemDefine[equalToFiledName]['chineseName']);
+                                rc[itemName]['rc'] = collRules[itemName][singleItemRuleName]['error']['rc'];
+                                rc[itemName]['msg'] = validateInputValue._private.generateErrorMsg.equalTo(currentChineseName, collRules[equalToFiledName]['chineseName']);
                             }
                             break;
-                        case 'enum':
-                            if (false === validateInputValue._private.ruleTypeCheck.enum(currentItemValue, ruleDefine)) {
-                                rc[itemName]['rc'] = inputItemDefine[itemName][singleItemRuleName]['error']['rc'];
-                                rc[itemName]['msg'] = validate._private.generateErrorMsg.format(currentChineseName, ruleDefine, useDefaultValueFlag);
-                            }
-                            break;
+                        /*                        case 'enum':
+                                                    if(false===validateInputValue._private.ruleTypeCheck.enum(currentItemValue,ruleDefine)){
+                                                        rc[itemName]['rc']=collRules[itemName][singleItemRuleName]['error']['rc']
+                                                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.format(currentChineseName,ruleDefine,useDefaultValueFlag)
+                                                    }
+                                                    break;*/
                         default:
                     }
                 }
@@ -1482,10 +1501,10 @@ var validateInputValue = {
             }
             //console.log(`rc is ${rc}`)
             //没有检测出错误，对inpputValue的value进行sanity操作
-            var tmpType = inputItemDefine[itemName]['type'];
+            var tmpType = collRules[itemName]['type'];
             if (tmpType === dataType.int || tmpType === dataType.float || tmpType === dataType.date) {
                 //对默认值或者inputValue进行sanity
-                inputValue[itemName]['value'] = validate._private.checkDataTypeBaseOnTypeDefine(currentItemValue, tmpType);
+                inputValue[itemName]['value'] = validateInputValue._private.checkDataTypeBaseOnTypeDefine(currentItemValue, tmpType);
             }
         }
 
@@ -1523,7 +1542,7 @@ var validateInputValue = {
             //判断长度是否超出maxlength
             if (true === validateInputValue._private.ruleTypeCheck.exceedMaxLength(fieldValue, maxLengthDefine)) {
                 rc[fieldName]['rc'] = currentRule['maxLength']['error']['rc'];
-                rc[fieldName]['msg'] = validate._private.generateErrorMsg.maxLength(chineseName, maxLengthDefine, false);
+                rc[fieldName]['msg'] = validateInputValue._private.generateErrorMsg.maxLength(chineseName, maxLengthDefine, false);
             }
         }
         return rc;
@@ -1605,7 +1624,7 @@ var generateClientRule = function generateClientRule(obj, level, resultObj) {
                             resultObj[key][field] = {};
                             resultObj[key][field]['define'] = obj[key][field]['define'];
                             //产生错误信息，以便angularjs检查input错误时使用
-                            resultObj[key][field]['msg'] = validate._private.generateErrorMsg[field](obj[key]['chineseName'], obj[key][field]['define'], obj[key]['default']);
+                            resultObj[key][field]['msg'] = validateInputValue._private.generateErrorMsg[field](obj[key]['chineseName'], obj[key][field]['define'], obj[key]['default']);
                         }
                     }
                 }

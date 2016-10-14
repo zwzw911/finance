@@ -42,6 +42,7 @@ var checkAllMandatoryFieldsExist=function(test){
     //rule.userName.require=
     //rule.userName.require=
     result=func(coll,field,rule)
+    //console.log(`result is ${JSON.stringify(result)}`)
     test.equal(result.rc,0,'all mandatory field defined check failed');
 
     test.done()
@@ -66,14 +67,31 @@ var checkChineseNameRule=function(test){
     test.done()
 }
 
+//3 检查type是否合法（预定义的几种type之一）
+var checkTypeValidate=function(test){
+    let func=testModule.validateInputRule.checkSingleFieldRuleDefine
+    let [coll,field,rule]=['testColl','testField',{}]
+    let result
 
-//3 检查某种type对应的关联rule是否存在
+    test.expect(1);
+
+    rule={'chineseName':'测试','type':'unknownDataType','require':{define:false,error:{rc:1234,msg:'1234'}}}
+    result=func(coll,field,rule)
+    test.equal(result.rc,validateInputRuleError.unknownDataType.rc,'unknown data type check failed');
+
+
+
+    test.done()
+}
+
+
+//4 检查某种type对应的关联rule是否存在
 var checkRelatedField=function(test){
     let func=testModule.validateInputRule.checkSingleFieldRuleDefine
     let [coll,field,rule]=['testColl','testField',{}]
     let result
 
-    test.expect(6);
+    test.expect(7);
 
     rule={'chineseName':'用户名','type':dataType.int,'require':{define:false,error:{rc:1234,msg:'1234'}}}
     result=func(coll,field,rule)
@@ -104,6 +122,10 @@ var checkRelatedField=function(test){
     result=func(coll,field,rule)
     test.equal(result.rc,0,'type string related field format exists, maxLength check failed');
 
+    delete rule.format
+    rule.enum={define:['a'],error:{rc:1000,msg:'test'}}
+    result=func(coll,field,rule)
+    test.equal(result.rc,0,'type string related field enum exists, maxLength check failed');
 
     rule={'chineseName':'用户名','type':dataType.objectId,'require':{define:false,error:{rc:1234,msg:'1234'}}}
     result=func(coll,field,rule)
@@ -114,7 +136,7 @@ var checkRelatedField=function(test){
     test.done()
 }
 
-//4 检测rule的格式是否正确（define/error/error.rc）
+//5 检测rule的格式是否正确（define/error/error.rc）
 var checkRuleFormat=function(test){
     let func=testModule.validateInputRule.checkSingleFieldRuleDefine
     let [coll,field,rule]=['testColl','testField',{}]
@@ -143,7 +165,7 @@ var checkRuleFormat=function(test){
 
 
 
-//5 检测rule的define
+//6 检测rule的define
 var checkRuleDefine=function(test){
     let func=testModule.validateInputRule.checkSingleFieldRuleDefine
     let [coll,field,rule]=['testColl','testField',{}]
@@ -199,7 +221,7 @@ var checkRuleDefine=function(test){
     test.done()
 }
 
-//6 check default
+//7 check default
 var checkDefaultType=function(test) {
     let func = testModule.validateInputRule.checkSingleFieldRuleDefine
     let [coll,field,rule]=['testColl', 'testField', {}]
@@ -265,6 +287,7 @@ var checkDefaultType=function(test) {
 exports.validate={
     checkAllMandatoryFieldsExist,
     checkChineseNameRule,
+    checkTypeValidate,
     checkRelatedField,
     checkRuleFormat,
      checkRuleDefine,

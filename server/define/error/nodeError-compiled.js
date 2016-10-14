@@ -26,16 +26,12 @@ var assistError = {
     misc: {
         validateInputRule: {
             //以下是检查rule，所以错误只需在server端现实，因此只要msg:'error'的格式，而不要client/server
-            unknownDataType: { rc: 69800, msg: '数据类型未定义' },
+            unknownDataType: { rc: 69800, msg: '未知数据类型' },
 
             mandatoryFiledNotExist: { rc: 69802, msg: '字段必需存在' },
             chineseNameNotString: { rc: 68804, msg: 'chineseName字段必须是字符串' },
             chineseNameEmpty: { rc: 68806, msg: 'chineseName字段不能为空' },
 
-            typeWrong: { rc: 69807, msg: '类型不正确' },
-
-            objectIdEmpty: { rc: 69808, msg: 'objectId不能为空' },
-            objectIdWrong: { rc: 69809, msg: 'objectId的格式不正确' },
             needMin: { rc: 69810, msg: 'type为int时，必需包含Min属性' },
             needMax: { rc: 69812, msg: 'type为int时，必需包含Max属性' },
             needMaxLength: { rc: 69814, msg: 'type为string或者number时，必需包含maxLength属性' },
@@ -82,10 +78,15 @@ var assistError = {
             //idWrong:{rc:68870,msg:'id格式不正确'},
             //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
             /*              checkInput              */
-            valueNotDefine: { rc: 69700, msg: '待检测的输入值未定义' },
-            valueNotDefineWithRequireTrue: { rc: 69702, msg: '待检测的输入值未定义，而rule中require为true' },
-            valueEmpty: { rc: 69704, msg: '待检测的输入值不能为空' },
-            valueRelatedRuleNotDefine: { rc: 68706, msg: '待检测的输入值没有对应的检测规则' }
+            unknownDataType: { rc: 69700, msg: '未知数据类型' },
+            //illegalField:function(fieldName){return {rc:69702,msg:`字段${fieldName}非法`}},
+            valueNotDefine: { rc: 69704, msg: '待检测的输入值未定义' },
+            valueNotDefineWithRequireTrue: { rc: 69706, msg: '待检测的输入值未定义，而rule中require为true' },
+            valueEmpty: { rc: 69708, msg: '待检测的输入值不能为空' },
+            valueRelatedRuleNotDefine: { rc: 69710, msg: '待检测的输入值没有对应的检测规则' },
+            objectIdEmpty: { rc: 69712, msg: 'objectId不能为空' },
+            objectIdWrong: { rc: 69714, msg: 'objectId的格式不正确' },
+            typeWrong: { rc: 69716, msg: '类型不正确' }
         },
         checkInterval: {
             sessionIdWrong: { rc: 69900, msg: { client: '请求格式不正确', server: 'session格式不正确' } },

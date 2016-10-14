@@ -12,6 +12,10 @@ var gmError=require('../../server/define/error/nodeError').nodeError.assistError
 var regex=require('../../server/define/regex/regex').regex
 var randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
 
+var moment=require('moment')
+
+// console.log(moment().format('YYYY-MM-DD h:mm:ss'))
+
 var dataTypeCheck=function(test){
 	test.expect(46);
 	
@@ -82,19 +86,19 @@ var dataTypeCheck=function(test){
     //isDate
     value='2016'        //转换成2016-01-01
     result=func.isDate(value)
-    test.equal(result.toLocaleString(),'2016-01-01 08:00:00','isDate: check year only date failed')
+    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-01-01 08:00:00','isDate: check year only date failed')
     value='2016-02-30'              //toLocaleString会自动转换成合适的日期（2016-03-01 08:00:00，8点是CST）
     result=func.isDate(value)
-    test.equal(result.toLocaleString(),'2016-03-01 08:00:00','isDate: check invalid date failed')
+    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-03-01 08:00:00','isDate: check invalid date failed')
     value='2016-02-02 25:30'
     result=func.isDate(value)
     test.equal(result,false,'isDate: check invalid time failed')
     value='2016-02-02 23:30'
     result=func.isDate(value)
-    test.equal(result.toLocaleString(),'2016-02-02 23:30:00','isDate: check valid time - failed')
+    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-02-02 23:30:00','isDate: check valid time - failed')
     value='2016/02/02'
     result=func.isDate(value)
-    test.equal(result.toLocaleString(),'2016-02-02 00:00:00','isDate: check valid date / failed')
+    test.equal(moment(result).format('YYYY-MM-DD HH:mm:ss'),'2016-02-02 00:00:00','isDate: check valid date / failed')
     //isInt
     value=123456789.0
     result=func.isInt(value)
@@ -447,25 +451,26 @@ var encodeHtml=function(test){
 var formatRc=function(test){
     test.expect(2)
     let func=testModule
+    let result
 
     let rc={rc:1000,msg:{client:'client',server:'server'}}
-    func.formatRc(rc)
-    test.equal(rc.msg,'client','format client msg failed')
+    result=func.formatRc(rc)
+    test.equal(result.msg,'client','format client msg failed')
 
     rc={rc:1000,msg:{client:'client',server:'server'}}
-    func.formatRc(rc,false)
-    test.equal(rc.msg,'server','format server msg failed')
+    result=func.formatRc(rc,false)
+    test.equal(result.msg,'server','format server msg failed')
 
 /*    console.log(rc)*/
     test.done()
 }
 exports.all={
-/*    dataTypeCheck:dataTypeCheck,
+    dataTypeCheck:dataTypeCheck,
     ruleTypeCheck:ruleTypeCheck,
     generateRandomString:generateRandomString,
     parseGmFileSize:parseGmFileSize,
     convertImageFileSizeToByte:convertImageFileSizeToByte,
-    encodeHtml,*/
+    encodeHtml,
     formatRc,
 }
 
