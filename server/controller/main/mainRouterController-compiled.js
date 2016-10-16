@@ -31,20 +31,19 @@ var common = function () {
     };
 }();
 
-//判断传入的参数是否正确（只能接受object，字符要看能否转换成object）
-
-
 //对create/update方法输入的value进行检查和转换（字符串的话）
 //create:false     update:true
+
+
 var sanityInput = function () {
-    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(originalInputValue, inputRule, basedOnInputValue) {
-        var convertedInput, checkResult, singleField;
+    var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(originalInputValue, inputRule, basedOnInputValue, maxFieldNum) {
+        var convertedInput, checkConvertedInput, checkField, checkResult, singleField;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
                         _context2.next = 2;
-                        return inputDataFormatValidate(originalInputValue);
+                        return miscFunc.validateInputValue.checkInputDataValidate(originalInputValue);
 
                     case 2:
                         convertedInput = _context2.sent;
@@ -58,44 +57,60 @@ var sanityInput = function () {
 
                     case 5:
                         _context2.next = 7;
-                        return validate.checkInput(convertedInput.msg, inputRule, basedOnInputValue);
+                        return miscFunc.validateInputValue.checkInputDataFormat(convertedInput.msg);
 
                     case 7:
-                        checkResult = _context2.sent;
+                        checkConvertedInput = _context2.sent;
 
-                        if (!(checkResult.rc > 0)) {
+                        if (!(checkConvertedInput.rc > 0)) {
                             _context2.next = 10;
                             break;
                         }
 
-                        return _context2.abrupt('return', checkResult);
+                        return _context2.abrupt('return', checkConvertedInput);
 
                     case 10:
+                        //3 检查字段数量，已经重复字段
+                        checkField = miscFunc.validateInputValue.checkInputValueKey(convertedInput.msg, maxFieldNum);
+
+                        if (!(checkField.rc > 0)) {
+                            _context2.next = 13;
+                            break;
+                        }
+
+                        return _context2.abrupt('return', checkField);
+
+                    case 13:
+                        _context2.next = 15;
+                        return miscFunc.validateInputValue.checkInput(convertedInput.msg, inputRule, basedOnInputValue);
+
+                    case 15:
+                        checkResult = _context2.sent;
                         _context2.t0 = regeneratorRuntime.keys(checkResult);
 
-                    case 11:
+                    case 17:
                         if ((_context2.t1 = _context2.t0()).done) {
-                            _context2.next = 17;
+                            _context2.next = 23;
                             break;
                         }
 
                         singleField = _context2.t1.value;
 
                         if (!(checkResult[singleField].rc > 0)) {
-                            _context2.next = 15;
+                            _context2.next = 21;
                             break;
                         }
 
                         return _context2.abrupt('return', checkResult[singleField]);
 
-                    case 15:
-                        _context2.next = 11;
+                    case 21:
+                        _context2.next = 17;
                         break;
 
-                    case 17:
+                    case 23:
                         return _context2.abrupt('return', convertedInput);
 
-                    case 18:
+                    case 24:
                     case 'end':
                         return _context2.stop();
                 }
@@ -103,15 +118,16 @@ var sanityInput = function () {
         }, _callee2, this);
     }));
 
-    return function sanityInput(_x4, _x5, _x6) {
+    return function sanityInput(_x4, _x5, _x6, _x7) {
         return _ref2.apply(this, arguments);
     };
 }();
 
+//对returnResult做包装，通过env的判断决定res.json输出的格式
+
+
 //fkColl：选择哪个coll进行id验证
 //currentColl+currentFkName：确定使用哪个error
-
-
 var checkIdExist = function () {
     var _ref3 = _asyncToGenerator(regeneratorRuntime.mark(function _callee3(fkColl, currentColl, currentFkName, id) {
         var dbOperation, result;
@@ -168,7 +184,7 @@ var checkIdExist = function () {
         }, _callee3, this);
     }));
 
-    return function checkIdExist(_x7, _x8, _x9, _x10) {
+    return function checkIdExist(_x8, _x9, _x10, _x11) {
         return _ref3.apply(this, arguments);
     };
 }();
@@ -182,9 +198,11 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
  * 因为expressjs的router只能支持callback，所有将所有的router处理都单独通过一个async函数处理，然后直接返回promise给router调用，
  *
  */
+var appSetting = require('../../config/global/appSetting');
+
 var inputRule = require('../../define/validateRule/inputRule').inputRule;
 var miscFunc = require('../../assist/misc-compiled').func;
-var validate = miscFunc.validate;
+// var validate=miscFunc.validate
 var checkInterval = miscFunc.checkInterval;
 
 /*                      error               */
@@ -197,21 +215,23 @@ var billTypeDbOperation = require('../../model/mongo/billTypeModel');
 var billDbOperation = require('../../model/mongo/billModel');
 
 /*                      regex               */
-var coll = require('../../define/enum/node').node.coll;function inputDataFormatValidate(values) {
-    if (false === miscFunc.dataTypeCheck.isObject(values) && false === miscFunc.dataTypeCheck.isString(values)) {
-        return pageError.common.inputValuesFormatWrong;
+var coll = require('../../define/enum/node').node.coll;
+/*                      enum                */
+var nodeEnum = require('../../define/enum/node').node;
+var envEnum = nodeEnum.env;
+
+/*                      app special param           */
+var maxFieldNum = {
+    department: 3, //_id/name/parentDepartment
+    employee: 7,
+    billType: 3,
+    bill: 7
+};function returnResult(rc) {
+    if (envEnum.production === appSetting.env) {
+        return miscFunc.formatRc(rc);
+    } else {
+        return rc;
     }
-    var result = values;
-    if (miscFunc.dataTypeCheck.isString(values)) {
-        try {
-            console.log('before parse ' + values);
-            result = JSON.parse(values);
-        } catch (e) {
-            console.log('parse error ' + e);
-            return pageError.common.inputValuesParseFail;
-        }
-    }
-    return { rc: 0, msg: result };
 }var debug = {};
 debug['removeAll'] = function () {
     var _ref4 = _asyncToGenerator(regeneratorRuntime.mark(function _callee4(req, res, next) {
@@ -231,7 +251,7 @@ debug['removeAll'] = function () {
                             break;
                         }
 
-                        return _context4.abrupt('return', res.json(miscFunc.formatRc(billRemoveResult)));
+                        return _context4.abrupt('return', res.json(returnResult(billRemoveResult)));
 
                     case 5:
                         _context4.next = 7;
@@ -245,7 +265,7 @@ debug['removeAll'] = function () {
                             break;
                         }
 
-                        return _context4.abrupt('return', res.json(miscFunc.formatRc(employeeRemoveResult)));
+                        return _context4.abrupt('return', res.json(returnResult(employeeRemoveResult)));
 
                     case 10:
                         _context4.next = 12;
@@ -259,7 +279,7 @@ debug['removeAll'] = function () {
                             break;
                         }
 
-                        return _context4.abrupt('return', res.json(miscFunc.formatRc(billTypeRemoveResult)));
+                        return _context4.abrupt('return', res.json(returnResult(billTypeRemoveResult)));
 
                     case 15:
                         _context4.next = 17;
@@ -273,7 +293,7 @@ debug['removeAll'] = function () {
                             break;
                         }
 
-                        return _context4.abrupt('return', res.json(miscFunc.formatRc(departmentRemoveResult)));
+                        return _context4.abrupt('return', res.json(returnResult(departmentRemoveResult)));
 
                     case 20:
                         return _context4.abrupt('return', res.json({ rc: 0 }));
@@ -286,7 +306,7 @@ debug['removeAll'] = function () {
         }, _callee4, this);
     }));
 
-    function removeAll(_x11, _x12, _x13) {
+    function removeAll(_x12, _x13, _x14) {
         return _ref4.apply(this, arguments);
     }
 
@@ -310,7 +330,7 @@ user['create'] = function () {
         }, _callee5, this);
     }));
 
-    return function (_x14, _x15, _x16) {
+    return function (_x15, _x16, _x17) {
         return _ref5.apply(this, arguments);
     };
 }();
@@ -328,7 +348,7 @@ user['update'] = function () {
         }, _callee6, this);
     }));
 
-    return function (_x17, _x18, _x19) {
+    return function (_x18, _x19, _x20) {
         return _ref6.apply(this, arguments);
     };
 }();
@@ -345,20 +365,19 @@ department['create'] = function () {
                 switch (_context7.prev = _context7.next) {
                     case 0:
                         _context7.next = 2;
-                        return sanityInput(req.body.values, inputRule.department, false);
+                        return sanityInput(req.body.values, inputRule.department, false, maxFieldNum.department);
 
                     case 2:
                         sanitizedInputValue = _context7.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context7.next = 6;
+                            _context7.next = 5;
                             break;
                         }
 
-                        miscFunc.formatRc(sanitizedInputValue);
-                        return _context7.abrupt('return', res.json(sanitizedInputValue));
+                        return _context7.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
-                    case 6:
+                    case 5:
                         //采用insertMany，所有输入必须是数组
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
@@ -366,14 +385,14 @@ department['create'] = function () {
                         //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg)}`)
 
                         arrayResult.push(miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg));
-                        _context7.next = 10;
+                        _context7.next = 9;
                         return departmentDbOperation.create(arrayResult);
 
-                    case 10:
+                    case 9:
                         result = _context7.sent;
-                        return _context7.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context7.abrupt('return', res.json(returnResult(result)));
 
-                    case 12:
+                    case 11:
                     case 'end':
                         return _context7.stop();
                 }
@@ -381,7 +400,7 @@ department['create'] = function () {
         }, _callee7, this);
     }));
 
-    return function (_x20, _x21, _x22) {
+    return function (_x21, _x22, _x23) {
         return _ref7.apply(this, arguments);
     };
 }();
@@ -394,7 +413,7 @@ department['remove'] = function () {
                 switch (_context8.prev = _context8.next) {
                     case 0:
                         _context8.next = 2;
-                        return sanityInput(req.body.values, inputRule.department, true);
+                        return sanityInput(req.body.values, inputRule.department, true, maxFieldNum.department);
 
                     case 2:
                         sanitizedInputValue = _context8.sent;
@@ -404,7 +423,7 @@ department['remove'] = function () {
                             break;
                         }
 
-                        return _context8.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context8.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -413,7 +432,7 @@ department['remove'] = function () {
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
-                        id = convertedResult._id;
+                        id = convertedResult._id.value;
                         //console.log(`id is ${id}`)
 
                         _context8.next = 9;
@@ -421,7 +440,7 @@ department['remove'] = function () {
 
                     case 9:
                         result = _context8.sent;
-                        return _context8.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context8.abrupt('return', res.json(returnResult(result)));
 
                     case 11:
                     case 'end':
@@ -431,7 +450,7 @@ department['remove'] = function () {
         }, _callee8, this);
     }));
 
-    return function (_x23, _x24, _x25) {
+    return function (_x24, _x25, _x26) {
         return _ref8.apply(this, arguments);
     };
 }();
@@ -444,7 +463,7 @@ department['update'] = function () {
                 switch (_context9.prev = _context9.next) {
                     case 0:
                         _context9.next = 2;
-                        return sanityInput(req.body.values, inputRule.department, true);
+                        return sanityInput(req.body.values, inputRule.department, true, maxFieldNum.department);
 
                     case 2:
                         sanitizedInputValue = _context9.sent;
@@ -454,11 +473,11 @@ department['update'] = function () {
                             break;
                         }
 
-                        return _context9.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context9.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
-                        //2. 将client输入转换成server端的格式
+                        //2. 将client输入转换成server端的格式()
                         convertedResult = miscFunc.convertClientValueToServerFormat(sanitizedInputValue.msg);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
@@ -472,7 +491,7 @@ department['update'] = function () {
 
                     case 10:
                         result = _context9.sent;
-                        return _context9.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context9.abrupt('return', res.json(returnResult(result)));
 
                     case 12:
                     case 'end':
@@ -482,7 +501,7 @@ department['update'] = function () {
         }, _callee9, this);
     }));
 
-    return function (_x26, _x27, _x28) {
+    return function (_x27, _x28, _x29) {
         return _ref9.apply(this, arguments);
     };
 }();
@@ -499,7 +518,7 @@ department['readAll'] = function () {
 
                     case 2:
                         result = _context10.sent;
-                        return _context10.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context10.abrupt('return', res.json(returnResult(result)));
 
                     case 4:
                     case 'end':
@@ -509,7 +528,7 @@ department['readAll'] = function () {
         }, _callee10, this);
     }));
 
-    return function (_x29, _x30, _x31) {
+    return function (_x30, _x31, _x32) {
         return _ref10.apply(this, arguments);
     };
 }();
@@ -530,8 +549,10 @@ department['readName'] = function () {
 
                         // console.log(`name is ${req.params.name}`)
                         constructedValue = { name: { value: req.params.name } };
+                        // console.log(`constructedValue is ${JSON.stringify(constructedValue)}`)
+
                         _context11.next = 5;
-                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.department);
+                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.department);
 
                     case 5:
                         validateResult = _context11.sent;
@@ -545,7 +566,7 @@ department['readName'] = function () {
 
                     case 8:
                         _context11.next = 10;
-                        return departmentDbOperation.readName(req.params.name);
+                        return departmentDbOperation.readName(constructedValue);
 
                     case 10:
                         recorder = _context11.sent;
@@ -560,7 +581,7 @@ department['readName'] = function () {
                         recorder = _context11.sent;
 
                     case 16:
-                        return _context11.abrupt('return', res.json(miscFunc.formatRc(recorder)));
+                        return _context11.abrupt('return', res.json(returnResult(recorder)));
 
                     case 17:
                     case 'end':
@@ -570,7 +591,7 @@ department['readName'] = function () {
         }, _callee11, this);
     }));
 
-    return function (_x32, _x33, _x34) {
+    return function (_x33, _x34, _x35) {
         return _ref11.apply(this, arguments);
     };
 }();
@@ -588,7 +609,7 @@ employee['create'] = function () {
                 switch (_context12.prev = _context12.next) {
                     case 0:
                         _context12.next = 2;
-                        return sanityInput(req.body.values, inputRule.employee, false);
+                        return sanityInput(req.body.values, inputRule.employee, false, maxFieldNum.employee);
 
                     case 2:
                         sanitizedInputValue = _context12.sent;
@@ -598,7 +619,7 @@ employee['create'] = function () {
                             break;
                         }
 
-                        return _context12.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context12.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
                         //采用insertMany，所有输入必须是数组
@@ -639,7 +660,7 @@ employee['create'] = function () {
                             break;
                         }
 
-                        return _context12.abrupt('return', res.json(miscFunc.formatRc(_result)));
+                        return _context12.abrupt('return', res.json(returnResult(_result)));
 
                     case 20:
                         _iteratorNormalCompletion = true;
@@ -686,7 +707,7 @@ employee['create'] = function () {
 
                     case 39:
                         result = _context12.sent;
-                        return _context12.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context12.abrupt('return', res.json(returnResult(result)));
 
                     case 41:
                     case 'end':
@@ -696,7 +717,7 @@ employee['create'] = function () {
         }, _callee12, this, [[10, 25, 29, 37], [30,, 32, 36]]);
     }));
 
-    return function (_x35, _x36, _x37) {
+    return function (_x36, _x37, _x38) {
         return _ref12.apply(this, arguments);
     };
 }();
@@ -709,7 +730,7 @@ employee['remove'] = function () {
                 switch (_context13.prev = _context13.next) {
                     case 0:
                         _context13.next = 2;
-                        return sanityInput(req.body.values, inputRule.employee, true);
+                        return sanityInput(req.body.values, inputRule.employee, true, maxFieldNum.employee);
 
                     case 2:
                         sanitizedInputValue = _context13.sent;
@@ -719,7 +740,7 @@ employee['remove'] = function () {
                             break;
                         }
 
-                        return _context13.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context13.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -736,7 +757,7 @@ employee['remove'] = function () {
 
                     case 9:
                         result = _context13.sent;
-                        return _context13.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context13.abrupt('return', res.json(returnResult(result)));
 
                     case 11:
                     case 'end':
@@ -746,7 +767,7 @@ employee['remove'] = function () {
         }, _callee13, this);
     }));
 
-    return function (_x38, _x39, _x40) {
+    return function (_x39, _x40, _x41) {
         return _ref13.apply(this, arguments);
     };
 }();
@@ -760,7 +781,7 @@ employee['update'] = function () {
                 switch (_context14.prev = _context14.next) {
                     case 0:
                         _context14.next = 2;
-                        return sanityInput(req.body.values, inputRule.employee, true);
+                        return sanityInput(req.body.values, inputRule.employee, true, maxFieldNum.employee);
 
                     case 2:
                         sanitizedInputValue = _context14.sent;
@@ -770,7 +791,7 @@ employee['update'] = function () {
                             break;
                         }
 
-                        return _context14.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context14.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -795,7 +816,7 @@ employee['update'] = function () {
                             break;
                         }
 
-                        return _context14.abrupt('return', res.json(miscFunc.formatRc(_result2)));
+                        return _context14.abrupt('return', res.json(returnResult(_result2)));
 
                     case 12:
                         //4， 提取数据并执行操作
@@ -808,7 +829,7 @@ employee['update'] = function () {
 
                     case 16:
                         result = _context14.sent;
-                        return _context14.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context14.abrupt('return', res.json(returnResult(result)));
 
                     case 18:
                     case 'end':
@@ -818,7 +839,7 @@ employee['update'] = function () {
         }, _callee14, this);
     }));
 
-    return function (_x41, _x42, _x43) {
+    return function (_x42, _x43, _x44) {
         return _ref14.apply(this, arguments);
     };
 }();
@@ -835,7 +856,7 @@ employee['readAll'] = function () {
 
                     case 2:
                         result = _context15.sent;
-                        return _context15.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context15.abrupt('return', res.json(returnResult(result)));
 
                     case 4:
                     case 'end':
@@ -845,7 +866,7 @@ employee['readAll'] = function () {
         }, _callee15, this);
     }));
 
-    return function (_x44, _x45, _x46) {
+    return function (_x45, _x46, _x47) {
         return _ref15.apply(this, arguments);
     };
 }();
@@ -867,7 +888,7 @@ employee['readName'] = function () {
                         // console.log(`name is ${req.params.name}`)
                         constructedValue = { name: { value: req.params.name } };
                         _context16.next = 5;
-                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.employee);
+                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.employee);
 
                     case 5:
                         validateResult = _context16.sent;
@@ -896,7 +917,7 @@ employee['readName'] = function () {
                         recorder = _context16.sent;
 
                     case 16:
-                        return _context16.abrupt('return', res.json(miscFunc.formatRc(recorder)));
+                        return _context16.abrupt('return', res.json(returnResult(recorder)));
 
                     case 17:
                     case 'end':
@@ -906,7 +927,7 @@ employee['readName'] = function () {
         }, _callee16, this);
     }));
 
-    return function (_x47, _x48, _x49) {
+    return function (_x48, _x49, _x50) {
         return _ref16.apply(this, arguments);
     };
 }();
@@ -922,7 +943,7 @@ billType['create'] = function () {
                 switch (_context17.prev = _context17.next) {
                     case 0:
                         _context17.next = 2;
-                        return sanityInput(req.body.values, inputRule.billType, false);
+                        return sanityInput(req.body.values, inputRule.billType, false, maxFieldNum.billType);
 
                     case 2:
                         sanitizedInputValue = _context17.sent;
@@ -932,7 +953,7 @@ billType['create'] = function () {
                             break;
                         }
 
-                        return _context17.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context17.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
                         //采用insertMany，所有输入必须是数组
@@ -947,7 +968,7 @@ billType['create'] = function () {
 
                     case 9:
                         result = _context17.sent;
-                        return _context17.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context17.abrupt('return', res.json(returnResult(result)));
 
                     case 11:
                     case 'end':
@@ -957,7 +978,7 @@ billType['create'] = function () {
         }, _callee17, this);
     }));
 
-    function create(_x50, _x51, _x52) {
+    function create(_x51, _x52, _x53) {
         return _ref17.apply(this, arguments);
     }
 
@@ -972,7 +993,7 @@ billType['update'] = function () {
                 switch (_context18.prev = _context18.next) {
                     case 0:
                         _context18.next = 2;
-                        return sanityInput(req.body.values, inputRule.billType, true);
+                        return sanityInput(req.body.values, inputRule.billType, true, maxFieldNum.billType);
 
                     case 2:
                         sanitizedInputValue = _context18.sent;
@@ -982,7 +1003,7 @@ billType['update'] = function () {
                             break;
                         }
 
-                        return _context18.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context18.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1000,7 +1021,7 @@ billType['update'] = function () {
 
                     case 10:
                         result = _context18.sent;
-                        return _context18.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context18.abrupt('return', res.json(returnResult(result)));
 
                     case 12:
                     case 'end':
@@ -1010,7 +1031,7 @@ billType['update'] = function () {
         }, _callee18, this);
     }));
 
-    function update(_x53, _x54, _x55) {
+    function update(_x54, _x55, _x56) {
         return _ref18.apply(this, arguments);
     }
 
@@ -1025,7 +1046,7 @@ billType['remove'] = function () {
                 switch (_context19.prev = _context19.next) {
                     case 0:
                         _context19.next = 2;
-                        return sanityInput(req.body.values, inputRule.department, true);
+                        return sanityInput(req.body.values, inputRule.billType, true, maxFieldNum.billType);
 
                     case 2:
                         sanitizedInputValue = _context19.sent;
@@ -1035,7 +1056,7 @@ billType['remove'] = function () {
                             break;
                         }
 
-                        return _context19.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context19.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1052,7 +1073,7 @@ billType['remove'] = function () {
 
                     case 9:
                         result = _context19.sent;
-                        return _context19.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context19.abrupt('return', res.json(returnResult(result)));
 
                     case 11:
                     case 'end':
@@ -1062,7 +1083,7 @@ billType['remove'] = function () {
         }, _callee19, this);
     }));
 
-    return function (_x56, _x57, _x58) {
+    return function (_x57, _x58, _x59) {
         return _ref19.apply(this, arguments);
     };
 }();
@@ -1079,7 +1100,7 @@ billType['readAll'] = function () {
 
                     case 2:
                         result = _context20.sent;
-                        return _context20.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context20.abrupt('return', res.json(returnResult(result)));
 
                     case 4:
                     case 'end':
@@ -1089,7 +1110,7 @@ billType['readAll'] = function () {
         }, _callee20, this);
     }));
 
-    return function (_x59, _x60, _x61) {
+    return function (_x60, _x61, _x62) {
         return _ref20.apply(this, arguments);
     };
 }();
@@ -1111,7 +1132,7 @@ billType['readName'] = function () {
                         // console.log(`name is ${req.params.name}`)
                         constructedValue = { name: { value: req.params.name } };
                         _context21.next = 5;
-                        return miscFunc.validate.checkSearchValue(constructedValue, inputRule.billType);
+                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.billType);
 
                     case 5:
                         validateResult = _context21.sent;
@@ -1140,7 +1161,7 @@ billType['readName'] = function () {
                         recorder = _context21.sent;
 
                     case 16:
-                        return _context21.abrupt('return', res.json(miscFunc.formatRc(recorder)));
+                        return _context21.abrupt('return', res.json(returnResult(recorder)));
 
                     case 17:
                     case 'end':
@@ -1150,7 +1171,7 @@ billType['readName'] = function () {
         }, _callee21, this);
     }));
 
-    return function (_x62, _x63, _x64) {
+    return function (_x63, _x64, _x65) {
         return _ref21.apply(this, arguments);
     };
 }();
@@ -1168,7 +1189,7 @@ bill['create'] = function () {
                 switch (_context22.prev = _context22.next) {
                     case 0:
                         _context22.next = 2;
-                        return sanityInput(req.body.values, inputRule.bill, false);
+                        return sanityInput(req.body.values, inputRule.bill, false, maxFieldNum.bill);
 
                     case 2:
                         sanitizedInputValue = _context22.sent;
@@ -1178,7 +1199,7 @@ bill['create'] = function () {
                             break;
                         }
 
-                        return _context22.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context22.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
                         //采用insertMany，所有输入必须是数组
@@ -1218,7 +1239,7 @@ bill['create'] = function () {
                             break;
                         }
 
-                        return _context22.abrupt('return', res.json(miscFunc.formatRc(fkReimburserResult)));
+                        return _context22.abrupt('return', res.json(returnResult(fkReimburserResult)));
 
                     case 22:
                         if (!(fkBillTypeResult.rc > 0)) {
@@ -1226,7 +1247,7 @@ bill['create'] = function () {
                             break;
                         }
 
-                        return _context22.abrupt('return', res.json(miscFunc.formatRc(fkBillTypeResult)));
+                        return _context22.abrupt('return', res.json(returnResult(fkBillTypeResult)));
 
                     case 24:
                         _iteratorNormalCompletion2 = true;
@@ -1273,7 +1294,7 @@ bill['create'] = function () {
 
                     case 43:
                         result = _context22.sent;
-                        return _context22.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context22.abrupt('return', res.json(returnResult(result)));
 
                     case 45:
                     case 'end':
@@ -1283,7 +1304,7 @@ bill['create'] = function () {
         }, _callee22, this, [[10, 29, 33, 41], [34,, 36, 40]]);
     }));
 
-    return function (_x65, _x66, _x67) {
+    return function (_x66, _x67, _x68) {
         return _ref22.apply(this, arguments);
     };
 }();
@@ -1296,7 +1317,7 @@ bill['remove'] = function () {
                 switch (_context23.prev = _context23.next) {
                     case 0:
                         _context23.next = 2;
-                        return sanityInput(req.body.values, inputRule.bill, true);
+                        return sanityInput(req.body.values, inputRule.bill, true, maxFieldNum.bill);
 
                     case 2:
                         sanitizedInputValue = _context23.sent;
@@ -1306,7 +1327,7 @@ bill['remove'] = function () {
                             break;
                         }
 
-                        return _context23.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context23.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1323,7 +1344,7 @@ bill['remove'] = function () {
 
                     case 9:
                         result = _context23.sent;
-                        return _context23.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context23.abrupt('return', res.json(returnResult(result)));
 
                     case 11:
                     case 'end':
@@ -1333,7 +1354,7 @@ bill['remove'] = function () {
         }, _callee23, this);
     }));
 
-    return function (_x68, _x69, _x70) {
+    return function (_x69, _x70, _x71) {
         return _ref25.apply(this, arguments);
     };
 }();
@@ -1346,7 +1367,7 @@ bill['update'] = function () {
                 switch (_context24.prev = _context24.next) {
                     case 0:
                         _context24.next = 2;
-                        return sanityInput(req.body.values, inputRule.bill, true);
+                        return sanityInput(req.body.values, inputRule.bill, true, maxFieldNum.bill);
 
                     case 2:
                         sanitizedInputValue = _context24.sent;
@@ -1356,7 +1377,7 @@ bill['update'] = function () {
                             break;
                         }
 
-                        return _context24.abrupt('return', res.json(miscFunc.formatRc(sanitizedInputValue)));
+                        return _context24.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1381,7 +1402,7 @@ bill['update'] = function () {
                             break;
                         }
 
-                        return _context24.abrupt('return', res.json(miscFunc.formatRc(fkBillTypeResult)));
+                        return _context24.abrupt('return', res.json(returnResult(fkBillTypeResult)));
 
                     case 12:
                         if (!convertedResult.reimburser) {
@@ -1400,7 +1421,7 @@ bill['update'] = function () {
                             break;
                         }
 
-                        return _context24.abrupt('return', res.json(miscFunc.formatRc(fkReimburserResult)));
+                        return _context24.abrupt('return', res.json(returnResult(fkReimburserResult)));
 
                     case 18:
 
@@ -1415,7 +1436,7 @@ bill['update'] = function () {
 
                     case 22:
                         result = _context24.sent;
-                        return _context24.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context24.abrupt('return', res.json(returnResult(result)));
 
                     case 24:
                     case 'end':
@@ -1425,7 +1446,7 @@ bill['update'] = function () {
         }, _callee24, this);
     }));
 
-    return function (_x71, _x72, _x73) {
+    return function (_x72, _x73, _x74) {
         return _ref26.apply(this, arguments);
     };
 }();
@@ -1442,7 +1463,7 @@ bill['readAll'] = function () {
 
                     case 2:
                         result = _context25.sent;
-                        return _context25.abrupt('return', res.json(miscFunc.formatRc(result)));
+                        return _context25.abrupt('return', res.json(returnResult(result)));
 
                     case 4:
                     case 'end':
@@ -1452,7 +1473,7 @@ bill['readAll'] = function () {
         }, _callee25, this);
     }));
 
-    return function (_x74, _x75, _x76) {
+    return function (_x75, _x76, _x77) {
         return _ref27.apply(this, arguments);
     };
 }();
@@ -1474,7 +1495,7 @@ bill['readAll'] = function () {
 
     //console.log(`db op result is ${JSON.stringify(result)}`)
 
-    return res.json(miscFunc.formatRc(recorder))
+    return res.json(returnResult(recorder))
 }*/
 
 module.exports = {

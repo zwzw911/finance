@@ -85,16 +85,17 @@ var checkInput=function(test){
     let rule,value,tmpDataType,result,tmp
     let error={rc:1234,msg:''}
 
-    test.expect(20)
+    test.expect(18)
 
-    //1 检测inputValue是否为空
+    //以下移动到checkInputDataValidate函数中
+/*    //1 检测inputValue是否为空
     rule={}
     value=null
     result=func(value,rule)
     test.equal(result.rc,validateInputValueError.valueNotDefine.rc,'value null check fail')
     value=undefined
     result=func(value,rule)
-    test.equal(result.rc,validateInputValueError.valueNotDefine.rc,'value undefined check fail')
+    test.equal(result.rc,validateInputValueError.valueNotDefine.rc,'value undefined check fail')*/
 
     //2 检查inputValue是否有未定义的字段
     rule={name:{}}

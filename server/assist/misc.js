@@ -1156,6 +1156,60 @@ var validateInputValue={
             }
         },
     },
+    //判断传入的参数是否正确，能否转换成JSON
+    checkInputDataValidate(values){
+        //1 检查参数的格式，必需是Object，且含有key
+        //general error，直接返回{rc:xxxx,msg:yyy}格式的错误
+        if(false===dataTypeCheck.isSetValue(values)){
+            return validateInputValueError.valueNotDefine
+        }
+        if(dataTypeCheck.isEmpty(values)){
+            return validateInputValueError.valueEmpty
+        }
+        //2 是否为object(JSON的格式为Object)
+        let result=values
+        if(false=== dataTypeCheck.isObject(values)){
+            return validateInputValueError.inputValuesTypeWrong
+        }
+/*        else{
+            try{
+                console.log(`before parse ${JSON.stringify(values)}`)
+                result=JSON.parse(values)
+                console.log(`after parse ${JSON.stringify(result)}`)
+            }
+            catch(e){
+                console.log(`parse error ${e}`)
+                // console.log(validateInputValueError.inputValuesParseFail)
+                return validateInputValueError.inputValuesParseFail
+            }
+        }*/
+
+        return {rc:0,msg:result}
+    },
+    //检查是否为{field:{value:'xxxx'},field2:{value:'yyyy'}}）的格式
+    checkInputDataFormat(values){
+        for(let singleField in values){
+            if(undefined===values[singleField]['value']){
+                return validateInputValueError.inputValuesFormatWrong
+            }
+        }
+        return rightResult
+    },
+    //检查key数量是否合适（不能超过最大定义）
+    //检查key是否有重复(无需检测，如果有重复，JSON.parse会用后面的覆盖前面的field)
+    checkInputValueKey(values,maxFieldNum){
+        let keys=Object.keys(values)
+        // console.log(`obj length is ${keys.length}`)
+        if(keys.length>maxFieldNum){
+            return validateInputValueError.inputValueFieldNumExceed
+        }
+/*        let tmp=new Set(keys)
+        // console.log(`set size is ${tmp.size}`)
+        if(tmp.size!==keys.length){
+            return validateInputValueError.inputValueHasDuplicateField
+        }*/
+        return rightResult
+    },
     /*********************************************/
     /*         主函数，检测input并返回结果        */
     /*********************************************/
@@ -1171,20 +1225,15 @@ var validateInputValue={
 
         let rc={}
         let tmpResult
-        //1 检查参数的格式，必需是Object，且含有key
-        //general error，直接返回{rc:xxxx,msg:yyy}格式的错误
-        if(false===dataTypeCheck.isSetValue(inputValue)){
-            return validateInputValueError.valueNotDefine
-        }
-        if(dataTypeCheck.isEmpty(inputValue)){
-            return validateInputValueError.valueEmpty
-        }
 
+/*        console.log(`input value  is ${inputValue}`)
+        console.log(`input value  type is ${typeof inputValue}`)*/
         //2 inputValue中所有field，是否为rule中定义的（阻止传入额外字段）
         for(let singleFieldName in inputValue){
             //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
             if(singleFieldName!=='_id' && singleFieldName !=='id'){
                 if(undefined===collRules[singleFieldName ]){
+                    // console.log(`single field name is ${singleFieldName}`)
                     rc[singleFieldName]=validateInputValueError.valueRelatedRuleNotDefine
                     return rc
                 }
@@ -1709,7 +1758,7 @@ var encodeHtml = function(s){
 };
 
 
-//前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成mongoose能辨认的格式{filed:'xxx'}
+//前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成普通的key:value mongoose能辨认的格式{filed:'xxx'}
 var convertClientValueToServerFormat=function(values){
     let result={}
     for(let key in values){

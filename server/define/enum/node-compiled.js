@@ -23,10 +23,15 @@ var coll = {
     bill: 'bill'
 };
 
+var env = {
+    'development': Symbol('development'),
+    'production': Symbol('production')
+};
 exports.node = {
     randomStringType: randomStringType,
     userState: userState,
-    coll: coll
+    coll: coll,
+    env: env
 };
 
 //# sourceMappingURL=node-compiled.js.map

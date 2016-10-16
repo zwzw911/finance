@@ -5,9 +5,7 @@
 module.exports={
     //60000~60100
     common:{
-        inputValuesFormatWrong:{rc:60000,msg:{client:'参数格式不正确',server:'参数格式不正确，必须是JSON或者能够解析成json的字符串'}},
-        inputValuesParseFail:{rc:60002,msg:{client:'参数格式不正确',server:'参数无法解析成JSON'}},
-        unknownColl:{rc:60003,msg:{'client':'数据库操作错误，请联系管理员',server:'未知的集合名'}},
+        unknownColl:{rc:60000,msg:{'client':'数据库操作错误，请联系管理员',server:'未知的集合名'}},
     },
     //60100~60200
     billType:{

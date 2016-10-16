@@ -62,6 +62,7 @@ var assistError = {
             },
 
             rcFormatWrong: { rc: 69842, msg: '错误代码格式不正确' }
+
         },
         validateInputValue: {
             //rule chekc fail
@@ -86,7 +87,13 @@ var assistError = {
             valueRelatedRuleNotDefine: { rc: 69710, msg: '待检测的输入值没有对应的检测规则' },
             objectIdEmpty: { rc: 69712, msg: 'objectId不能为空' },
             objectIdWrong: { rc: 69714, msg: 'objectId的格式不正确' },
-            typeWrong: { rc: 69716, msg: '类型不正确' }
+            typeWrong: { rc: 69716, msg: '类型不正确' },
+            inputValuesTypeWrong: { rc: 69718, msg: { client: '参数格式不正确', server: '参数格式不正确，必须是JSON' } },
+            // inputValuesParseFail:{rc:69720,msg:{client:'参数格式不正确',server:'参数无法解析成JSON'}},
+            inputValuesFormatWrong: { rc: 69722, msg: { client: '参数格式不正确', server: '参数格式必须是field:{value:val}' } },
+
+            inputValueFieldNumExceed: { rc: 69724, msg: { client: '参数格式不正确', server: '参数中的字段数量超出定义的数量' } },
+            inputValueHasDuplicateField: { rc: 69724, msg: { client: '参数格式不正确', server: '参数中的有重复字段' } }
         },
         checkInterval: {
             sessionIdWrong: { rc: 69900, msg: { client: '请求格式不正确', server: 'session格式不正确' } },

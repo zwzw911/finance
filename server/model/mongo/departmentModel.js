@@ -29,7 +29,7 @@ function create(values){
 function update(id,values){
     var updateOptions={
         'new':false,//是否返回更新后的doc。默认false，返回原始doc
-        'select':'', //返回哪些字段
+        'select':'name', //返回哪些字段
         'upsert':false,//如果doc不存在，是否创建新的doc，默认false
         runValidators:false,//更新时是否执行validator。因为默写cavert，默认false
         setDefaultsOnInsert:false,//当upsert为true && 设为true，则插入文档时，使用default。
@@ -37,13 +37,15 @@ function update(id,values){
     }
     values['uDate']=Date.now()
     return new Promise(function(resolve,reject){
+        // console.log(`update input is ${id}, ${JSON.stringify(values)}`)
         departmentModel.findByIdAndUpdate(id,values,updateOptions,function(err,result){
             if(err){
-                //console.log(`db err is ${err}`)
+                // console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
 
             //update成功，返回的是原始记录，需要转换成可辨认格式
+            // console.log(`db result is ${JSON.stringify(result)}`)
             resolve({rc:0})
         })
     })
@@ -107,10 +109,10 @@ function readName(nameToBeSearched){
         option.limit=pageSetting.department.limit
         departmentModel.find(condition,selectField,option,function(err,result){
             if(err){
-                //console.log(`db err is ${err}`)
+                console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
-            //console.log(`success result is ${result}`)
+            console.log(`success result is ${result}`)
             resolve({rc:0,msg:result})
         })
     })

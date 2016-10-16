@@ -3,7 +3,38 @@
  */
 'use strict'
 var app=angular.module('finance',[]);
+/*app.factory('CRUDUrl',function($http){
+    var department={
+        'create':function(values){
+            return
+        },
+        'readAll':function(){
+            return $http.get("/department/",{})
+        },
+        'readName':function(name){
+            return $http.get("/department/name/"+name,{})
+        },
+        'update':function(values){
+            return $http.put("/department/name/",{values:values})
+        },
+        'remove':function(values){
+            return $http.delete("/department",{values:values})
+        },
+    }
+})*/
 app.factory('financeCRUDHelper',function($http){
+    //根据inputAttr的内容，生成合适的values，以便server处理
+    var generateInputValue=function(inputAttr){
+        let values={}
+        for(let key in inputAttr){
+            if(inputAttr[key] && inputAttr[key]['value']){
+                values[key]={}
+                values[key]['value']=inputAttr[key]['value']
+            }
+        }
+        return values
+    }
+
     //在angular侧对数据的操作O,对所有页面都是通用的
     var _angularDataOp={
         //idx无用，只是为了统一使用参数
@@ -81,7 +112,13 @@ app.factory('financeCRUDHelper',function($http){
             //idx无用，只是为了统一使用参数
             'create':function(idx,inputAttr,recorder){
                 //首先加入db
+                // console.log(inputAttr)
 
+                $http.post('/department',{values:generateInputValue(inputAttr)},{}).success(function(data,ststus,header,config){
+                    console.log(data)
+                }).error(function(data,ststus,header,config){
+                    console.log(data)
+                })
                 //然后加入client数据，防止多次返回
                 _angularDataOp.create(idx,inputAttr,recorder)
             },

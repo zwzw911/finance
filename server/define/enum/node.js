@@ -22,8 +22,14 @@ var coll={
     bill:'bill',
 }
 
+
+var env={
+    'development':Symbol('development'),
+    'production':Symbol('production')
+}
 exports.node={
     randomStringType:randomStringType,
     userState:userState,
     coll,
+    env,
 }
