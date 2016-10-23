@@ -2,7 +2,7 @@
  * Created by ada on 2016/9/15.
  */
 'use strict'
-var app=angular.module('finance',[]);
+var app=angular.module('finance',['component']);
 /*app.factory('CRUDUrl',function($http){
     var department={
         'create':function(values){
@@ -22,8 +22,8 @@ var app=angular.module('finance',[]);
         },
     }
 })*/
-app.factory('financeCRUDHelper',function($http){
-    //根据inputAttr的内容，生成合适的values，以便server处理
+app.factory('financeCRUDHelper',function($http,$q,helper){
+/*    //根据inputAttr的内容，生成合适的values，以便server处理
     var generateInputValue=function(inputAttr){
         let values={}
         for(let key in inputAttr){
@@ -33,11 +33,13 @@ app.factory('financeCRUDHelper',function($http){
             }
         }
         return values
-    }
+    }*/
 
     //在angular侧对数据的操作O,对所有页面都是通用的
     var _angularDataOp={
         //idx无用，只是为了统一使用参数
+        //inputAttr：当前的一条记录中所有field的信息
+        //recorder: 数组，当前所有记录
         'create':function(idx,inputAttr,recorder){
             var tmpRecorder={}
             for(var field in inputAttr){
@@ -63,7 +65,9 @@ app.factory('financeCRUDHelper',function($http){
                 inputAttr[field]['originalValue']=''
             }
         },
-        'read':function(){
+        //newGetRecorder: 从server获得的数据
+        //recorder：angular维护的数组，用来存储
+        'read':function(newGetRecorder,recorder){
 
         }
     }
@@ -72,13 +76,7 @@ app.factory('financeCRUDHelper',function($http){
             //idx无用，只是为了统一使用参数(create和update同样在modal上操作，使用同一个按钮)
             'create':function(idx,inputAttr,recorder){
                 //首先加入db（加入db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
-                let value={}
-                for(let singleInputAttr in inputAttr){
-                    if(''!==inputAttr[singleInputAttr]['value']){
-                        value[singleInputAttr]={}
-                        value[singleInputAttr]['value']=inputAttr[singleInputAttr]['value']
-                    }
-                }
+
                 $http.post('/billType',{values:value})
 
                 //然后加入client数据，防止多次返回
@@ -113,14 +111,25 @@ app.factory('financeCRUDHelper',function($http){
             'create':function(idx,inputAttr,recorder){
                 //首先加入db
                 // console.log(inputAttr)
-
-                $http.post('/department',{values:generateInputValue(inputAttr)},{}).success(function(data,ststus,header,config){
+                var defer=$q.defer()
+                $http.post('/department',{values:generateInputValue(inputAttr)},{}).success(function(data,status,header,config){
                     console.log(data)
-                }).error(function(data,ststus,header,config){
+                    if(data.rc===0){
+                        //使用insertmany，所以返回数组
+                        let returnRec=data.msg[0]
+                        console.log(inputAttr)
+                        for(var singleField in returnRec){
+                            if('_id'!==singleField && returnRec[singleField]){
+                                inputAttr[singleField]['value']=returnRec[singleField]
+                            }
+                        }
+                        _angularDataOp.create(idx,inputAttr,recorder)
+                    }
+                }).error(function(data,status,header,config){
                     console.log(data)
                 })
                 //然后加入client数据，防止多次返回
-                _angularDataOp.create(idx,inputAttr,recorder)
+
             },
             'delete':function(idx,recorder){
                 //首先更新数据到db

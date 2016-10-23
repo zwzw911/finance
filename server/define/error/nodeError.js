@@ -91,7 +91,7 @@ var assistError={
             inputValuesFormatWrong:{rc:69722,msg:{client:'参数格式不正确',server:'参数格式必须是field:{value:val}'}},
 
             inputValueFieldNumExceed:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
-            inputValueHasDuplicateField:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
+            inputValueHasDuplicateField:{rc:69726,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
         },
         checkInterval:{
             sessionIdWrong:{rc:69900,msg:{client:'请求格式不正确',server:'session格式不正确'}},

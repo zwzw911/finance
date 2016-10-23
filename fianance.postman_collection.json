@@ -1,0 +1,4249 @@
+{
+	"variables": [],
+	"info": {
+		"name": "fianance",
+		"_postman_id": "be893c4e-e13b-f277-c934-f7c96eb11b6d",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "bill",
+			"description": "1. check empty object: values={}\n2. check name null:    values={\"name\":null}\n3. check invalid field: values={\"notExistField\":\"a\"}\n4. check too short name: values={\"name\":\"a\"}\n5. check too long name: values={\"name\":\"1234567890123456789012345\"}\n6. check chinane name: values={\"name\":\"机械部\"}\n7. check space split name: values={\"name\":\"M M M\"}\n8. check unique name: 2*values={\"name\":\"MIT\"}\n9. check parent name: values={\"name\":\"base line\"}",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": "postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");\npostman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");\n\npostman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");\npostman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");\n\npostman.setEnvironmentVariable(\"department_name_1\", \"MIT\");\npostman.setEnvironmentVariable(\"department_name_2\", \"MODEM\");\n\npostman.setEnvironmentVariable(\"bill_title_1\", \"FDD Capa test\");\npostman.setEnvironmentVariable(\"bill_title_2\", \"TDD Capa test\");\n\npostman.setEnvironmentVariable(\"bill_amount_1\", 100);\npostman.setEnvironmentVariable(\"bill_amount_2\", 371);\n// postman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new department MODEM",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"department_id_2\",result._id);\n\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new department MIT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"Contain MIT\"] = responseBody.has(environment.department_name_1);\ntests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"department_id_1\",result._id);\n\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_name_1}}\"},\"parentDepartment\":{\"value\":\"{{department_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new employee xubl",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"Body matches string\"] = responseBody.has(environment.employee_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"employee_id_2\",result._id);\n\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new employee wzhan039",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\ntests[\"create success\"] = jsonData.rc === 0;\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);\n\n\ntests[\"Contain emplyee wzhan039\"] = responseBody.has(environment.employee_name_1);\ntests[\"Contain emplyee leader xubol\"] = responseBody.has(environment.employee_name_2);\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_1}}\"},\"leader\":{\"value\":\"{{employee_id_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new billtype transport",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"create success\"] = jsonData.rc === 0;\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"billtype_id_2\",result._id);\n\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new billtype taxi",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);\ntests[\"Contain billtype taxi\"] = responseBody.has(environment.billtype_name_1);\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"create success\"] = jsonData.rc === 0;\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"billtype_id_1\",result._id);\n\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill:check not exist field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"ab\"},\"notExist\":{\"value\":1}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new with array",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":[{\"title\":{\"value\":\"{{billtype_name_1}}\"},\"title\":{\"value\":\"{{billtype_name_2}}\"},\"reimburser\":{\"value\":\"{{employee_id_1}}\"},\"amount\":{\"value\":\"{{bill_amount_1}}\"}}]}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new with more field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"aaaa\"},\"name1\":{\"value\":\"bbbb\"},\"name2\":{\"value\":\"cccc\"},\"name3\":{\"value\":\"dddd\"},\"name4\":{\"value\":\"bbbb\"},\"name5\":{\"value\":\"cccc\"},\"name6\":{\"value\":\"dddd\"},\"name7\":{\"value\":\"dddd\"},\"name8\":{\"value\":\"dddd\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new with duplicate field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.title === environment.bill_title_2;\n\npostman.setEnvironmentVariable(\"bill_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"{{bill_title_1}}\"},\"title\":{\"value\":\"{{bill_title_2}}\"},\"reimburser\":{\"value\":\"{{employee_id_1}}\"},\"amount\":{\"value\":\"{{bill_amount_1}}\"},\"billType\":{\"value\":\"{{billtype_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: check title unique",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"{{bill_title_2}}\"},\"reimburser\":{\"value\":\"{{employee_id_1}}\"},\"amount\":{\"value\":\"{{bill_amount_1}}\"},\"billType\":{\"value\":\"{{billtype_id_1}}\"},\"content\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title with wrong format {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_1}}\"},\"title\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title with wrong format 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_1}}\"},\"title\":\"a\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update title without _id.value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{bill_id_1}}\",\"title\":{\"value\":\"MODEM\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title with not exist field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{bill_id_1}}\",\"name\":{\"value\":\"MODEM\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title with format wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da2711\"},\"title\":{\"value\":\"{{bill_title_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title with not exist id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60406;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"},\"title\":{\"value\":\"{{bill_title_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update title normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.bill_title_2);\n\n// postman.clearEVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"},\"title\":{\"value\":\"{{bill_title_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update optional field billtype with null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"},\"billType\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update mandatory field reimburser with null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"reimburser\"].rc === 10884;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"},\"reimburser\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update mandatory field  amount with null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"amount\"].rc === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"},\"amount\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update employee/reimburser/amout normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;\n\n\ntests[\"Contain xubol\"] = responseBody.has(environment.employee_name_2);\ntests[\"Contain 317\"] = responseBody.has(environment.bill_amount_2);\ntests[\"Contain transport\"] = responseBody.has(environment.billtype_name_2);\ntests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"},\"billType\":{\"value\":\"{{billtype_id_2}}\"},\"reimburser\":{\"value\":\"{{employee_id_2}}\"},\"amount\":{\"value\":\"{{bill_amount_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create new FDD Capa test",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"Contain wzhan039\"] = responseBody.has(environment.employee_name_1);\ntests[\"Contain 317\"] = responseBody.has(environment.bill_amount_1);\ntests[\"Contain transport\"] = responseBody.has(environment.billtype_name_1);\ntests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_1);\n\npostman.setEnvironmentVariable(\"bill_id_1\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"{{bill_title_1}}\"},\"reimburser\":{\"value\":\"{{employee_id_1}}\"},\"amount\":{\"value\":\"{{bill_amount_1}}\"},\"billType\":{\"value\":\"{{billtype_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: read all exist rec",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);\ntests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);\ntests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/name",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: read namewith param",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"FDD Capa test\"] = responseBody.has(environment.bill_title_1);\ntests[\"TDD Capa test\"] = responseBody.has(environment.bill_title_2);\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/name/dd",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: delete one doc without value field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{bill_id_1}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: delete one doc with wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n// tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;\ntests[\"delete not exist bill id\"]=jsonData[\"rc\"]===0"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\n\n\n// tests[\"Body matches string\"] = responseBody.has(\"dDate\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{bill_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n// tests[\"Body matches string\"] = !responseBody.has(environment.);\n\ntests[\"Body matches string\"] = !responseBody.has(environment.bill_id_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/name",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL FINISH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"employee_name_1\");\npostman.clearEnvironmentVariable(\"employee_name_2\");\npostman.clearEnvironmentVariable(\"department_name_1\", \"MIT\");\npostman.clearEnvironmentVariable(\"department_name_2\", \"MODEM\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"employee_id_1\");\npostman.clearEnvironmentVariable(\"employee_id_2\");\npostman.clearEnvironmentVariable(\"department_id_1\");\npostman.clearEnvironmentVariable(\"department_id_2\");\n\n\npostman.clearEnvironmentVariable(\"bill_amount_1\", 100);\npostman.clearEnvironmentVariable(\"bill_amount_2\", 371);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "billtype",
+			"description": "1. check empty object: values={}\n2. check name null:    values={\"name\":null}\n3. check invalid field: values={\"notExistField\":\"a\"}\n4. check too short name: values={\"name\":\"a\"}\n5. check too long name: values={\"name\":\"1234567890123456789012345\"}\n6. check chinane name: values={\"name\":\"机械部\"}\n7. check space split name: values={\"name\":\"M M M\"}\n8. check unique name: 2*values={\"name\":\"MIT\"}\n9. check parent name: values={\"name\":\"base line\"}",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": "postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");\npostman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");\npostman.setEnvironmentVariable(\"billtype_name_3\", \"overtime fee\");\n\npostman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with empty values {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with values null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"null values\"] = jsonData.rc === 69704;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with field value null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"null value\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with name filed {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: not exist field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"ab\"},\"notExist\":{\"value\":1}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL",
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with array",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":[{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"name\":{\"value\":\"{{billtype_name_2}}\"}}]}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with more field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"aaaa\"},\"name1\":{\"value\":\"bbbb\"},\"name2\":{\"value\":\"cccc\"},\"name3\":{\"value\":\"dddd\"},\"name4\":{\"value\":\"bbbb\"},\"name5\":{\"value\":\"cccc\"},\"name6\":{\"value\":\"dddd\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with duplicate field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_2;\n\npostman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: check name unique",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new with parentBillType",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_1;\n\npostman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"Body matches string\"] = responseBody.has(environment.billtype_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update, with update null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name with wrong format {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{billtype_id_1}}\",\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name with wrong format 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{billtype_id_1}}\",\"name\":\"a\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name without _id.value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{billtype_id_1}}\",\"name\":{\"value\":\"MODEM\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name with format wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da2711\"},\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name with not exist id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60106;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"},\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update name normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.billtype_name_4);\n\n// postman.clearEVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_2}}\"},\"name\":{\"value\":\"{{billtype_name_4}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update parentBillType with wrong format '1234'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"parentBillType\"].rc === 10048;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"1234\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update parentDepartment with self _id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60102;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype_id_1: create new overtiem fee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_3;\n\npostman.setEnvironmentVariable(\"billtype_id_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update parentBillType with normal ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"update new parent billtype\"] = jsonData[\"msg\"][\"parentBillType\"][\"_id\"] === environment.billtype_id_3;\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL for read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new transport",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.billtype_name_2;\npostman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create new taxi with parent transport",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"transport insert\"] = result.name === environment.billtype_name_1;\npostman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update doc with parentbilltype null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.parentBillType === undefined;\ntests[\"name wzhan040\"] = result.name === \"launch\";\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":null},\"name\":{\"value\":\"{{billtype_name_4}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: restore",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.parentBillType._id === environment.billtype_id_2;\ntests[\"name wzhan040\"] = result.name === environment.billtype_name_1;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\npostman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_2}}\"},\"name\":{\"value\":\"{{billtype_name_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: read all exist rec",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"get name\"] = responseBody.has(environment.billtype_name_1);\ntests[\"get parent billtype name\"] = responseBody.has(environment.billtype_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"get name transport\"] = responseBody.has(environment.billtype_name_1);\ntests[\"get name taxi \"] = responseBody.has(environment.billtype_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/name",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: read namewith param",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"taxi\"] = responseBody.has(environment.billtype_name_1);\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/name/xi",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc without value field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc with wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n// tests[\"Body matches string\"] = !responseBody.has(environment.);\n\ntests[\"Body matches string\"] = !responseBody.has(environment.billtype_id_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/name",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL FINISH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"billtype_name_3\");\npostman.clearEnvironmentVariable(\"billtype_name_4\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"billtype_id_3\");\npostman.clearEnvironmentVariable(\"billtype_id_4\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "department",
+			"description": "1. check empty object: values={}\n2. check name null:    values={\"name\":null}\n3. check invalid field: values={\"notExistField\":\"a\"}\n4. check too short name: values={\"name\":\"a\"}\n5. check too long name: values={\"name\":\"1234567890123456789012345\"}\n6. check chinane name: values={\"name\":\"机械部\"}\n7. check space split name: values={\"name\":\"M M M\"}\n8. check unique name: 2*values={\"name\":\"MIT\"}\n9. check parent name: values={\"name\":\"base line\"}",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": "postman.setEnvironmentVariable(\"department_departmentName_1\", \"MIT\");\npostman.setEnvironmentVariable(\"department_departmentName_2\", \"MODEM\");\npostman.setEnvironmentVariable(\"department_departmentName_3\", \"LTE\");\n\npostman.setEnvironmentVariable(\"department_departmentName_update\", \"FI\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with empty values {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with values null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69704;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with field value null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with name filed {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: not exist field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"ab\"},\"notExist\":{\"value\":1}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL",
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with array",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":[{\"name\":{\"value\":\"{{department_departmentName_1}}\"},\"name\":{\"value\":\"{{department_departmentName_2}}\"}}]}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with more field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_1}}\"},\"name1\":{\"value\":\"{{department_departmentName_2}}\"},\"name2\":{\"value\":\"a\"},\"name3\":{\"value\":\"3\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with duplicate field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_2;\n\npostman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_1}}\"},\"name\":{\"value\":\"{{department_departmentName_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: check name unique",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 30002;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new with parentDepartment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_1;\n\npostman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_1}}\"},\"parentDepartment\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update, with update null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update name with wrong format {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\",\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update name with wrong format 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\",\"name\":\"a\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update name without _id.value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_department_id}}\",\"name\":{\"value\":\"MODEM\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update name with format wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da2711\"},\"name\":{\"value\":\"{{department_departmentName_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update parentDepartment with not exist id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"rc\"] === 60206;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update required field with value null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_1}}\"},\"name\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update name normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_update);\n\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"},\"name\":{\"value\":\"{{department_departmentName_update}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update parentDepartment with wrong format '1234'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"parentDepartment\"][\"rc\"] === 10008;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_1}}\"},\"parentDepartment\":{\"value\":\"1234\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update parentDepartment with self _id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60202;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_1}}\"},\"parentDepartment\":{\"value\":\"{{department_departmentId_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new LTE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_3;\n\npostman.setEnvironmentVariable(\"department_departmentId_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update parentDepartment with normal ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"empty values\"] = jsonData.rc === 60202;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_1}}\"},\"parentDepartment\":{\"value\":\"{{department_departmentId_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL for read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new MIT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.department_departmentName_1;\npostman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new MODEM with parent MIT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.department_departmentName_2;\npostman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_2}}\"},\"parentDepartment\":{\"value\":\"{{department_departmentId_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: update with parentDepartment null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"parent department null\"] = result.parentDepartment === undefined;\ntests[\"department name change to test\"] = result.name === environment.department_departmentName_update;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"},\"parentDepartment\":{\"value\":null},\"name\":{\"value\":\"{{department_departmentName_update}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: restore",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"restore parent department\"] = result.parentDepartment._id === environment.department_departmentId_1;\ntests[\"restore department name\"] = result.name === environment.department_departmentName_2;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"},\"parentDepartment\":{\"value\":\"{{department_departmentId_1}}\"},\"name\":{\"value\":\"{{department_departmentName_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read all exist rec",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/name",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read namewith param",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/name/dem",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: delete one doc without value field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: delete one doc with wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: delete one doc ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: delete one doc ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n\n\ntests[\"Body matches string\"] = !responseBody.has(environment.department_departmentId_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/name",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL FINISH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"DELERE ALL OK\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"department_departmentName_1\");\npostman.clearEnvironmentVariable(\"department_departmentName_2\");\npostman.clearEnvironmentVariable(\"department_departmentName_3\");\npostman.clearEnvironmentVariable(\"department_departmentId_1\");\npostman.clearEnvironmentVariable(\"department_departmentId_2\");\npostman.clearEnvironmentVariable(\"department_departmentId_3\");\n\npostman.clearEnvironmentVariable(\"department_departmentName_update\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "employee",
+			"description": "",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": "postman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");\npostman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");\npostman.setEnvironmentVariable(\"employee_name_3\", \"juanw\");\npostman.setEnvironmentVariable(\"employee_name_4\", \"wzhan040\");\n\npostman.setEnvironmentVariable(\"department_name_1\", \"MIT\");\n\npostman.setEnvironmentVariable(\"currentCat\", \"employee\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with empty values {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with values null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69704;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create  with field value null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with name filed {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with not exist field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"ab\"},\"notExist\":{\"value\":1}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL",
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new department",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;\npostman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_name_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new with array",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":[{\"name\":{\"value\":\"{{employee_name_2}}\"},\"name\":{\"value\":\"{{employee_name_1}}\"}}]}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with more field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"aaaa\"},\"name1\":{\"value\":\"bbbb\"},\"name2\":{\"value\":\"cccc\"},\"name3\":{\"value\":\"dddd\"},\"name4\":{\"value\":\"bbbb\"},\"name5\":{\"value\":\"cccc\"},\"name6\":{\"value\":\"dddd\"},\"name7\":{\"value\":\"dddd\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with duplicate field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.employee_name_2;\n\npostman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_1}}\"},\"name\":{\"value\":\"{{employee_name_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: check name unique",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate name\"] = jsonData.rc === 30002;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create  with leader",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"employee 1 wzhan039 created\"] = result.name === environment.employee_name_1;\n\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"xubol create with leader juanw\"] = responseBody.has(environment.employee_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_1}}\"},\"leader\":{\"value\":\"{{employee_id_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update, with update null field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update name with wrong format {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_Id_1}}\"},\"name\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update name with null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"].rc === 69706;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_Id_1}}\"},\"name\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update name with wrong format 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_Id_1}}\"},\"name\":\"a\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update id without value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{employee_Id_1}}\",\"name\":{\"value\":\"wzhan040\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update name with wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60306;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"},\"name\":{\"value\":\"{{employee_name_4}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update leader with wrong format '1234'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"leader\"].rc === 10026;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"},\"leader\":{\"value\":\"1234\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update leader with self _id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60304;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"},\"leader\":{\"value\":\"{{employee_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: create new- juanw",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"create new employee juanw\"] = result.name === environment.employee_name_3;\n\npostman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_3}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update leader with juanw ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"leader\"][\"name\"] === environment.employee_name_3;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"},\"leader\":{\"value\":\"{{employee_id_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL for read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new department again",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;\npostman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_name_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new xubli",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.employee_name_2;\npostman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new juanw",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.employee_name_3;\npostman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_3}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new wzhan039 with leader xubol",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"wzhan039 insert\"] = result.name === environment.employee_name_1;\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_1}}\"},\"leader\":{\"value\":\"{{employee_id_2}}\"},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: update wzhan039 with leader null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.leader === undefined;\ntests[\"name wzhan040\"] = result.name === environment.employee_name_4;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"},\"leader\":{\"value\":null},\"name\":{\"value\":\"{{employee_name_4}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee:restore",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"restore leader\"] = result.leader._id === environment.employee_id_2;\ntests[\"restore name\"] = result.name === environment.employee_name_1;\ntests[\"restore department\"] = result.department._id === environment.department_id_1;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_1}}\"},\"leader\":{\"value\":\"{{employee_id_2}}\"},\"name\":{\"value\":\"{{employee_name_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: read all exist rec",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"wzhan039  read\"] = responseBody.has(environment.employee_name_1);\ntests[\"xubli read\"] = responseBody.has(environment.employee_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: read name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "tests[\"wzhan039  read\"] = responseBody.has(environment.employee_name_1);\ntests[\"xubli read\"] = responseBody.has(environment.employee_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}/name",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: read name with param",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"wzhan039 read\"] = responseBody.has(environment.employee_name_1);\ntests[\"juanw read\"] = responseBody.has(environment.employee_name_3);\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}/name/w",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: delete one doc without value field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: delete one doc with wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: delete xubl",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"delete \"] = jsonData.rc === 0;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{employee_id_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: check deleted doc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n\n\ntests[\"xubl not show\"] = !responseBody.has(environment.employee_name_2);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL FINISH",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"billtype_name_3\");\npostman.clearEnvironmentVariable(\"billtype_name_4\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"billtype_id_3\");\npostman.clearEnvironmentVariable(\"billtype_id_4\");\n\npostman.clearEnvironmentVariable(\"department_name_1\");\n\npostman.clearEnvironmentVariable(\"currentCat\");"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "normal",
+			"description": "1. create department \"fpga\"\n2. create employee \"zhangwei\"\n3. create billType \"taxi\"\n4. create bill wiht title=\"work_taxi\", amount=10, billType=\"taxi\", remibuser=\"zhangwei\"\n5. check the new created recorder's field name are correct",
+			"item": [
+				{
+					"name": "127.0.0.1:3000",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": "postman.setEnvironmentVariable(\"normal_department_name\", \"FPGA\");\npostman.setEnvironmentVariable(\"normal_employee_name\", \"wzhan039\");\npostman.setEnvironmentVariable(\"normal_billType_name\", \"taxi\");\npostman.setEnvironmentVariable(\"normal_bill_title\", \"overtime taxi\");\npostman.setEnvironmentVariable(\"normal_bill_amount\", 10);\n\n//for update test\npostman.setEnvironmentVariable(\"normal_department_name1\", \"DSP\");\npostman.setEnvironmentVariable(\"normal_employee_name1\", \"xubl\");\npostman.setEnvironmentVariable(\"normal_billType_name1\", \"lunch\");\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "127.0.0.1:3000/department",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n\n// var normal=JSON.parse(environment.normal)\n// normal.department_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_department_id\", result[\"_id\"]);\n\n\ntests[\"check department create\"] = result.name === environment.normal_department_name;\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_department_name}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "127.0.0.1/employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);\n\n// tests[\"check employee create\"] = result.name === environment.employee_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.employee_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_employee_id\", result[\"_id\"]);\n\n\ntests[\"check employee create\"] = result.name === environment.normal_employee_name;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_employee_name}}\"},\"department\":{\"value\":\"{{normal_department_id}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "127.0.0.1:3000/billType",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"billType_id\", result[\"_id\"]);\n\n\n// tests[\"check billType create\"] = result.name === environment.billType_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.billType_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_billType_id\", result[\"_id\"]);\n\n\ntests[\"check billType create\"] = result.name === environment.normal_billType_name;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_billType_name}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "127.0.0.1:3000/bill",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\n\n// var normal=JSON.parse(environment.normal)\n\ntests[\"check bill create:title\"] = result.title === environment.normal_bill_title;\ntests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;\ntests[\"check bill create:billType\"] = result.billType[\"_id\"] === environment.normal_billType_id;\ntests[\"check bill create:reimburser\"] = result.reimburser[\"_id\"] === environment.normal_employee_id;\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.normal_employee_name);\ntests[\"Body matches string\"] = responseBody.has(environment.normal_billType_name);"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"{{normal_bill_title}}\"},\"amount\":{\"value\":\"{{normal_bill_amount}}\"},\"billType\":{\"value\":\"{{normal_billType_id}}\"},\"reimburser\":{\"value\":\"{{normal_employee_id}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "127.0.0.1:3000/bill",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n\n\n// var normal=JSON.parse(environment.normal)\n\ntests[\"check bill create:title\"] = result.title === environment.normal_bill_title;\ntests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;\ntests[\"check bill create:billType name\"] = result.billType.name === environment.normal_billType_name;\ntests[\"check bill create:reimburser name\"] = result.reimburser.name === environment.normal_employee_name;\n\n\n\n\n// postman.clearEnvironmentVariable(\"normal\");\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create new department  DSP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\n// var normal=JSON.parse(environment.normal)\n// normal.department_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_department_id_1\", result[\"_id\"]);\n\n\ntests[\"check department create\"] = result.name === environment.normal_department_name1;\n\n"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_department_name1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create new employee xubl",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);\n\n// tests[\"check employee create\"] = result.name === environment.employee_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.employee_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_employee_id_1\", result[\"_id\"]);\n\n\ntests[\"check employee create\"] = result.name === environment.normal_employee_name1;"
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_employee_name1}}\"},\"department\":{\"value\":\"{{normal_department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

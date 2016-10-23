@@ -7,6 +7,7 @@
       </div>
       <div class="modal-body">
         <!--<div >-->
+          <p ng-show="modal.commonError!==''" ng-bind="modal.commonError"></p>
         <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-class="{'has-error': 0<value.errorMsg.length}">
           <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
           <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >

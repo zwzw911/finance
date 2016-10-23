@@ -74,7 +74,7 @@ let fieldDefine={
         dDate:{type:Date},
     },
     employee:{
-        name:{type:String},
+        name:{type:String,unique:true},
         leader:{type:mongoose.Schema.Types.ObjectId,ref:"employees"},
         gender:{type:String},
         birthDay:{type:Date},
@@ -155,7 +155,9 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 // fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
 // console.log(fieldDefine['department']['name'])
 //console.log(fieldDefine['employee']['gender']['enum'])
-//console.log(JSON.stringify(fieldDefine['billType']))
+// console.log(JSON.stringify(fieldDefine['department']))
+// console.log(JSON.stringify(fieldDefine['employee']))
+// console.log(JSON.stringify(fieldDefine['billType']))
 
 var userSchema=new mongoose.Schema(
     fieldDefine['user'],

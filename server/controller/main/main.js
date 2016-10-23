@@ -89,6 +89,7 @@ router.delete("/",function(req,res,next){
 //create
 router.post('/employee',function(req,res,next){
     //employeeController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    // console.log(`employee in `)
     employeeController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
 })
 //read

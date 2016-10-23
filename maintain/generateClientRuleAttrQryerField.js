@@ -3,6 +3,8 @@
  * dbstructure==>inputRule==>clientInputRule/clientInputAttr==>deleteNonNeededObject==>objectIdToRealField==>最终结果
  */
     'use strict'
+require("babel-polyfill");
+require("babel-core/register")
 var miscFunc=require("../server/assist/misc-compiled").func
 var ruleDefine=require("../server/define/validateRule/inputRule").inputRule
 var fs=require('fs')
@@ -15,7 +17,8 @@ var clientInputRule={}
 
 var regex=require('../server/define/regex/regex').regex
 
-var skipList={
+//根据inputRule产生，不需要在客户端使用的字段
+var skipListForRule={
     user:['salt','encryptedPassword','cDate','uDate','dDate'],
     department:['cDate','uDate','dDate'],
     employee:['cDate','uDate','dDate'],
@@ -23,6 +26,14 @@ var skipList={
     bill:['cDate','uDate','dDate'],
 }
 
+//attr只负责显示，不负责check input
+var skipListForAttr={
+    user:['salt','encryptedPassword','dDate'],
+    department:['dDate'],
+    employee:['dDate'],
+    billType:['dDate'],
+    bill:['dDate'],
+}
 
 var matchList={
     department:{
@@ -42,12 +53,14 @@ var matchList={
 }
 
 miscFunc.generateClientInputAttr(ruleDefine,2,inputAttr)
-miscFunc.deleteNonNeededObject(inputAttr,skipList)
+console.log(inputAttr['department'])
+miscFunc.deleteNonNeededObject(inputAttr,skipListForAttr)
+console.log(inputAttr['department'])
 miscFunc.objectIdToRealField(inputAttr,matchList)
 fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))
 
 miscFunc.generateClientRule(ruleDefine,2,clientInputRule)
-miscFunc.deleteNonNeededObject(clientInputRule,skipList)
+miscFunc.deleteNonNeededObject(clientInputRule,skipListForRule)
 miscFunc.objectIdToRealField(clientInputRule,matchList)
 fs.writeFile('clientInputRule.txt',JSON.stringify(clientInputRule))
 

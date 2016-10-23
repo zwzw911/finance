@@ -1,6 +1,6 @@
 /**
  * Created by wzhan039 on 2016-03-03.
- * 对浏览器传入的数据的检测定义
+ * 对浏览器传入的数据的检测定义,node产生的数据就不做检查
  */
 
 var regex=require('../regex/regex').regex
@@ -21,7 +21,7 @@ var inputDataType=require('../enum/validEnum').enum.dataType
 //rule分成2种：一种是逐条检测（min/max/minLength/maxLength）；另一种是一次检测（regex）。前者用在client端，以便返回详细信息给客户；后者用在server端，一次检测完，并返回所有错误信息（当然server也可以使用前者，视情况而定）
 /*
 * _id不列入rule中，而是在checkInput中加入code，如果有_id，则检查，否则忽略
-* cDate/uDate/dDate由后台的mongodb或者server控制，无需从前端输入，所以也不用放在inputRule中
+* salt/cDate/uDate/dDate由后台的mongodb或者server控制，无需从前端输入，所以也不用放在inputRule中
 * */
 
 var inputRule={

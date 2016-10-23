@@ -238,6 +238,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     }
 
     $scope.modal={
+        commonError:"commonError",//create或者update是，发生的非field错误
         title:{'create':'添加数据','update':'修改数据'},
         inputBlur:financeHelper.checkInput,
         inputFocus:financeHelper.initSingleAllInputAttr,

@@ -24,3 +24,15 @@
 
 1。 学习postman（取得返回值供下一个case使用）/newman/jenkis
 2. misc.checinput，所有返回值格式要统一{field:{rc:xxx,msg:yyy}}，以便后台处理？？？===========》不改checkInput，而改调用函数，对不同的返回值做不同的处理
+
+
+1. 完成完整的CRUD（页面到server）
+2，准备聚合操作
+
+1. 为model的create/update/readAll添加populate操作，同时create/update只返回一个记录
+2. 为rule添加一个新的rule，internal：布尔。制定当前字段是否由server端产生，如果true，则不进行检查；否则，是client输入，必须检查=========>ignore
+3，为rule添加一个新的rule，showInClient：布尔。指定当前字段，是否要显示在client==========>ignore
+
+1. 为提供外键的model添加id是否存在的函数====>mainController/checkIdExist()
+
+1. 为remove和read添加对_id的check

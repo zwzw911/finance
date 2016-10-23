@@ -12,6 +12,8 @@ var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
 //var input_validate=require('../error_define/input_validate').input_validate
 
+var mongooseErrorHandler=require('../define/error/mongoError').mongooseErrorHandler
+
 var randomStringType=require('../define/enum/node').node.randomStringType
 var userStateEnum=require('../define/enum/node').node.userState
 var regex=require('../define/regex/regex').regex
@@ -50,6 +52,8 @@ var otherFiledNameEnum=require('../define/enum/validEnum').enum.otherFiledName
 var redisWrapAsync=require('./wrapAsync/db/redis/wrapAsyncRedis.js')
 
 var execSHALua=require("./component/shaLua").execSHALua
+
+
 
 var rightResult={rc:0,msg:null}
 
@@ -1160,17 +1164,21 @@ var validateInputValue={
     checkInputDataValidate(values){
         //1 检查参数的格式，必需是Object，且含有key
         //general error，直接返回{rc:xxxx,msg:yyy}格式的错误
+        // console.log(`in 1`)
         if(false===dataTypeCheck.isSetValue(values)){
             return validateInputValueError.valueNotDefine
         }
+        // console.log(`in 2`)
         if(dataTypeCheck.isEmpty(values)){
             return validateInputValueError.valueEmpty
         }
         //2 是否为object(JSON的格式为Object)
-        let result=values
+        //let result=values
+        // console.log(`in 3`)
         if(false=== dataTypeCheck.isObject(values)){
             return validateInputValueError.inputValuesTypeWrong
         }
+        // console.log(`in 4`)
 /*        else{
             try{
                 console.log(`before parse ${JSON.stringify(values)}`)
@@ -1184,7 +1192,8 @@ var validateInputValue={
             }
         }*/
 
-        return {rc:0,msg:result}
+        //return {rc:0,msg:result}
+        return rightResult
     },
     //检查是否为{field:{value:'xxxx'},field2:{value:'yyyy'}}）的格式
     checkInputDataFormat(values){
@@ -1196,10 +1205,10 @@ var validateInputValue={
         return rightResult
     },
     //检查key数量是否合适（不能超过最大定义）
-    //检查key是否有重复(无需检测，如果有重复，JSON.parse会用后面的覆盖前面的field)
     checkInputValueKey(values,maxFieldNum){
         let keys=Object.keys(values)
-        // console.log(`obj length is ${keys.length}`)
+/*        console.log(`obj length is ${keys.length}`)
+        console.log(`maxFieldNum is ${maxFieldNum}`)*/
         if(keys.length>maxFieldNum){
             return validateInputValueError.inputValueFieldNumExceed
         }
@@ -1208,6 +1217,24 @@ var validateInputValue={
         if(tmp.size!==keys.length){
             return validateInputValueError.inputValueHasDuplicateField
         }*/
+        return rightResult
+    },
+    //检查key是否有重复(无需检测，如果有重复，JSON.parse会用后面的覆盖前面的field)
+    checkInputValueDuplicateKey(value){
+        //console.log('dup check in')
+        let tmpValue={}
+        for(let key in value){
+            // console.log(`current key is ${key}`)
+            tmpValue[key]=1 //随便设个值，因为只需统计最终key数
+        }
+        // console.log(`converted dup is ${JSON.stringify(tmpValue)}`)
+        let tmpKeys=Object.keys(tmpValue)
+        let inputKeys=Object.keys(value)
+        // console.log(`tmp key is ${JSON.stringify(tmpValue)}`)
+        // console.log(`input key is ${JSON.stringify(value)}`)
+        if(tmpKeys.length!==inputKeys.length){
+            return validateInputValueError.inputValueHasDuplicateField
+        }
         return rightResult
     },
     /*********************************************/
@@ -1233,7 +1260,8 @@ var validateInputValue={
             //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
             if(singleFieldName!=='_id' && singleFieldName !=='id'){
                 if(undefined===collRules[singleFieldName ]){
-                    // console.log(`single field name is ${singleFieldName}`)
+                    console.log(`single field name is ${singleFieldName}`)
+                    console.log(`coll rule  is ${JSON.stringify(collRules)}`)
                     rc[singleFieldName]=validateInputValueError.valueRelatedRuleNotDefine
                     return rc
                 }
@@ -1250,6 +1278,7 @@ var validateInputValue={
         }
 
         for (let itemName in base ){
+            //console.log(`start to check fiekd ${itemName}`)
             rc[itemName]={}
             rc[itemName]['rc']=0
             //无法确定inputValue[itemName]['value']是否undefined，如果是，会报错。所以不适用变量赋值，而在之后的函数中直接传入
@@ -1285,7 +1314,7 @@ var validateInputValue={
  /*                       rc[itemName]['rc']=validateError.objectIdWrong.rc
                         rc[itemName]['msg']=`${currentChineseName}：${validateError.objectIdWrong.msg}`*/
                         rc[itemName]['rc']=collRules[itemName]['format']['error']['rc']
-                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.format(currentChineseName,collRules[itemName]['format']['error']['define'],false)
+                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.format(currentChineseName,collRules[itemName]['format']['define'],false)
                     }
                     // continue
                 }else{
@@ -1293,7 +1322,7 @@ var validateInputValue={
                     if(true===currentItemRule['require']['define']){
                         // console.log(`rule field ${itemName} define`)
                         rc[itemName]['rc']=collRules[itemName]['require']['error']['rc']
-                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.require(currentChineseName,collRules[itemName]['require']['error']['define'],false)
+                        rc[itemName]['msg']=validateInputValue._private.generateErrorMsg.require(currentChineseName,collRules[itemName]['require']['define'],false)
                         // continue
                     }
                 }
@@ -1762,11 +1791,63 @@ var encodeHtml = function(s){
 var convertClientValueToServerFormat=function(values){
     let result={}
     for(let key in values){
-        if(values[key]['value']){
+        if(values[key]['value'] || null===values[key]['value'] ){
             result[key]=values[key]['value']
         }
     }
     return result
+}
+
+//对update传入的参数进行检测，如果设置为null，就认为是控制端，无需传入db
+var constructCreateCriteria=function(formattedValues){
+    for(let key in formattedValues){
+        if(formattedValues[key]===null){
+            delete formattedValues[key]
+        }
+    }
+
+}
+
+//对update传入的参数进行检测，如果设置为null，就认为对应的field是要删除的，放入$unset中
+//formattedValues: 经过convertClientValueToServerFormat处理的输入条件
+var constructUpdateCriteria=function(formattedValues){
+    for(let key in formattedValues){
+        if(formattedValues[key]===null){
+            if(undefined===formattedValues['$unset']){
+                formattedValues['$unset']={}
+            }
+            formattedValues['$unset'][key]=formattedValues[key]
+            delete formattedValues[key]
+        }
+    }
+
+}
+
+var populateSingleDoc=function(singleDoc,populateOpt,populatedFields){
+    return new Promise(function(resolve,reject){
+        let populateFlag=false
+        // let createdResult=singleDoc
+        for(let singlePopulatedField of populatedFields){
+            if(singleDoc[singlePopulatedField]){
+                populateFlag=true
+                break;
+            }
+        }
+        // console.log(`department insert result is ${JSON.stringify(result)}`)
+        if(populateFlag){
+            singleDoc.populate(populateOpt,function(populateErr,populateResult){
+                //console.log('create populate')
+                if(populateErr){
+                    //console.log(`department create fail: ${JSON.stringify(populateErr)}`)
+                    resolve( mongooseErrorHandler(populateErr))
+                }
+                resolve({rc:0,msg:populateResult})
+            })
+        }else{
+            resolve({rc:0,msg:singleDoc})
+        }
+    })
+
 }
 
 //将server返回的rc格式化成client能接受的格式
@@ -1824,6 +1905,9 @@ exports.func={
 
 
     encodeHtml,
+    constructCreateCriteria,
+    constructUpdateCriteria,
+    populateSingleDoc,
     convertClientValueToServerFormat,
     formatRc,
 }

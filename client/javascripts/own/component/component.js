@@ -5,6 +5,7 @@
     'use strict'
 var app=angular.module('component',[]);
 
+//common的程序
 app.factory('basicHelper',function(){
     var dataTypeCheck=
         {
@@ -149,15 +150,6 @@ app.factory('helper',function(basicHelper){
         *   因为modal在隐藏时，无法计算得到height（试图通过在载入页面时，先瞬时显示在隐藏modal的方法，来获得height，但是失败），所以直接在元素填入height属性，供js提取使用
         */
         verticalModalCenter:function(dialogId){
-/*            let tmpModalOpenFlag=$('#'+dialogId).hasClass('show')
-            //当前modal没有打开，则瞬时打开，获得高度，以便计算
-            if(false===tmpModalOpenFlag){
-                console.log('sadfin')
-                $('#'+dialogId).addClass('show')
-                $('#'+dialogId).removeClass('fade')
-            }*/
-
-
             var dialog=document.getElementById(dialogId)
             //因为此函数可能在整个window上监听onsize，所以需要判断modal是否存在，不存在直接退出
             if(null===dialog){
@@ -167,24 +159,15 @@ app.factory('helper',function(basicHelper){
             //var dialogHeight=dialog.offsetHeight
             //console.log(dialog.offsetHeight)
             var dialogHeight=dialog.style.height.replace('px','')
-/*console.log(dialog.style.height.replace('px',''))
-            console.log(windowHeight)
 
-console.log(dialogHeight)*/
             //60是botstrap中为diaglog定义的上下margin，略微上移，符合人类审美
             var top=((windowHeight-dialogHeight)/2)-60
             if(top<0){
                 top=0
             }
-            //console.log(top)
+
             dialog.style.top=top+'px'
 
-/*            //当前modal没有打开，则瞬时显示计算完毕后，立刻消失
-            if(false===tmpModalOpenFlag){
-                console.log('in')
-/!*                $('#'+dialogId).removeClass('show')
-                 $('#'+dialogId).addClass('fade')*!/
-            }*/
         },
 
     }
@@ -221,8 +204,12 @@ app.factory('financeHelper',function(basicHelper){
 
         },
 
-        //检查input value（对单个field进行检查，inputRule/inputAttr是coll级别）
+        //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
+        // inputRule/inputAttr是coll级别
         checkInput:function(field,inputRule,inputAttr){
+/*            if(undefined===inputRule[field]){
+
+            }*/
             var requireFlag=inputRule[field]['require']['define']
             var currentValue=inputAttr[field]['value']
             if(undefined===requireFlag){
@@ -284,8 +271,8 @@ app.factory('financeHelper',function(basicHelper){
             }
             return true
         },
-        //init input
-        initSingleAllInputAttr:function(field,inputAttr,opType){
+        //对inputAttr中的一个字段进行初始化
+        initSingleFieldInputAttr:function(field,inputAttr,opType){
             // console.log(opType)
             if('create'===opType){
                 inputAttr[field]['value']=''
@@ -294,7 +281,8 @@ app.factory('financeHelper',function(basicHelper){
             inputAttr[field]['validated']='undefined'
             inputAttr[field]['errorMsg']=''
         },
-        initAllInputAttr:function(inputAttr,opType){
+        //对一个inputAttr中所有field进行初始化
+        initAllFieldInputAttr:function(inputAttr,opType){
             // console.log(inputAttr)
             for(let singleField in inputAttr){
                 // console.log(singleField)
@@ -319,6 +307,30 @@ app.factory('financeHelper',function(basicHelper){
                 inputAttr[field]['originalValue']=recorder[idx][field] //用来比较是不是做了修改
             }
         },
+
+        //为未在inputRule中定义的字段，在inputAttr中产生对应的field，以便显示在页面
+        //举例，创建或者修改记录时，其中的cDate/uDate，是server自动产生，而无需client输入，但是可能需要显示在页面，此时，需要添加到inputAttr
+        //记录到inputAttr是，只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
+        generateAdditionalFieldIntoInputAttr(recorder,inputAttr){
+            for(var singleFieldName in recorder){
+                if(undefined===inputAttr[singleFieldName]){
+                    inputAttr[singleFieldName]={}
+                    inputAttr[singleFieldName]['value']=recorder[singleFieldName] //只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
+                }
+            }
+        },
+
+        //将inputAttr的value转换成values:{f1:{value:1},f2:{value:2}}的格式，以便在传递到server
+        convertedInputAttrFormat(inputAttr){
+            var value={}
+            for(var singleInputAttr in inputAttr){
+                if(undefined!==inputAttr[singleInputAttr]['value'] &&  null!==inputAttr[singleInputAttr]['value'] && ''==inputAttr[singleInputAttr]['value']){
+                    value[singleInputAttr]={}
+                    value[singleInputAttr]['value']=inputAttr[singleInputAttr]['value']
+                }
+            }
+            return value
+        }
     }
 
     return allFunc

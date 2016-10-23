@@ -48,6 +48,7 @@ var errorDefine={
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
+            console.log(errmsg)
 /*            let regex=/.*error\s+index:(.*)\s+dup.+/
             let match=errmsg.match(regex)
             let matchResult=match[1]
