@@ -109,7 +109,7 @@ router.get('/employee/name/:name',function(req,res,next){
 router.put('/employee',function(req,res,next){
     employeeController.update(req,res,next).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
 })
-//delete
+//angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/employee',function(req,res,next){
     employeeController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
@@ -138,7 +138,7 @@ router.get('/department/name/:name',function(req,res,next){
 router.put('/department',function(req,res,next){
     departmentController.update(req,res,next).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
 })
-//delete
+//angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/department',function(req,res,next){
     departmentController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
@@ -165,8 +165,9 @@ router.get('/billType/name/:name',function(req,res,next){
 router.put('/billType',function(req,res,next){
     billTypeController.update(req,res,next).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
 })
-//delete
-router.delete('/billType',function(req,res,next){
+//angular的delete无法像post一样传递额外数据，所以id要放在URL
+router.delete('/billType/:id',function(req,res,next){
+    //console.log(req.params)
     billTypeController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
 
@@ -194,7 +195,7 @@ router.get('/bill/name/:name',function(req,res,next){
 router.put('/bill',function(req,res,next){
     billController.update(req,res,next).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
 })
-//delete
+//angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/bill',function(req,res,next){
     billController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })

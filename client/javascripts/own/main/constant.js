@@ -420,6 +420,9 @@ app.constant('cont',{
             }
         },
         "billType": {
+/*            "id":{
+                "value":'',//不能改变
+            },*/
             "name": {
                 "value": "",
                 "originalValue": "",
@@ -546,7 +549,7 @@ app.constant('cont',{
                 "originalValue": "",
                 "isSelect": false,
                 "selectOption": [],
-		"isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+		        "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
                 "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
@@ -645,7 +648,30 @@ app.constant('cont',{
                 "key": "reimburser"
             }
         ]
-    }
+    },
 
-    
+    //每个coll中，类型为date的字段。用来再cilent对server返回的数据进行日期处理
+    dateField:{
+        billType:['cDate','uDate'],
+        bill:['billDate','cDate','uDate'],
+        employee:['cDate','uDate'],
+        department:['cDate','uDate'],
+    },
+
+
+})
+
+app.constant('contEnum',{
+    opType:{
+        'create': Symbol('create'),
+        'read': Symbol('read'),
+        'update': Symbol('update'),
+        'delete': Symbol('delete'),
+    },
+/*    opType:{
+        'create': 'create',
+        'read': 'read',
+        'update': 'update',
+        'delete': 'delete',
+    },*/
 })

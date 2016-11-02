@@ -1801,6 +1801,7 @@ var convertClientValueToServerFormat=function(values){
 //对update传入的参数进行检测，如果设置为null，就认为是控制端，无需传入db
 var constructCreateCriteria=function(formattedValues){
     for(let key in formattedValues){
+        //如果不是null，而是""或者"   "等，会在checkInput被检测到并拒绝
         if(formattedValues[key]===null){
             delete formattedValues[key]
         }

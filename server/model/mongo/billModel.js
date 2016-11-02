@@ -134,9 +134,9 @@ function readAll(populateOpt){
 }*/
 
 //作为外键时，是否存在
-function findById(id){
+function findById(id,selectedFields='-cDate -uDate -dDate'){
     return new Promise(function(resolve,reject){
-        billModel.find(id,'-cDate -uDate -dDate',function(err,result){
+        billModel.find(id,selectedFields,function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))

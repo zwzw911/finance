@@ -87,6 +87,11 @@ let fieldDefine={
     billType:{
         name:{type:String,unique:true},
         parentBillType:{type:mongoose.Schema.Types.ObjectId,ref:"billTypes"},
+        //而外信息，简化查询处理。无validator（无inputRule），因为由程序自动处理，保证了正确性
+        //
+        parentBillTypeFields:{
+            name:{type:String}
+        },
         cDate:{type:Date,default:Date.now},
         uDate:{type:Date,default:Date.now},
         dDate:{type:Date},

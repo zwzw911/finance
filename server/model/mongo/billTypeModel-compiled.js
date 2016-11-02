@@ -41,7 +41,7 @@ function create(values) {
 }
 function update(id, values) {
     values['uDate'] = Date.now();
-    // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
+    console.log("id is " + id + ", values is " + JSON.stringify(values));
     return new Promise(function (resolve, reject) {
         billTypeModel.findByIdAndUpdate(id, values, updateOptions, function (err, result) {
             if (err) {
@@ -137,9 +137,12 @@ function readName(nameToBeSearched) {
 }
 
 //作为外键时，是否存在
+//selectedFields:'-cDate -uDate -dDate'
 function findById(id) {
+    var selectedFields = arguments.length <= 1 || arguments[1] === undefined ? '-cDate -uDate -dDate' : arguments[1];
+
     return new Promise(function (resolve, reject) {
-        billTypeModel.findById(id, '-cDate -uDate -dDate', function (err, result) {
+        billTypeModel.findById(id, selectedFields, function (err, result) {
             if (err) {
                 //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));
@@ -158,6 +161,7 @@ module.exports = {
     readAll: readAll,
     readName: readName,
     findById: findById
+
 };
 
 //# sourceMappingURL=billTypeModel-compiled.js.map

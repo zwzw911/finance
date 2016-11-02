@@ -6,10 +6,10 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var app = angular.module('component', []);
+var app = angular.module('component', ['angularMoment']);
 
 //common的程序
-app.factory('basicHelper', function () {
+app.factory('validateHelper', function () {
     var dataTypeCheck = {
         isArray: function isArray(obj) {
             return obj && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && Array == obj.constructor;
@@ -78,10 +78,84 @@ app.factory('basicHelper', function () {
         }
     };
 
-    return { dataTypeCheck: dataTypeCheck, ruleTypeCheck: ruleTypeCheck };
+    //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
+    // inputRule/inputAttr是coll级别
+    function checkInput(field, inputRule, inputAttr) {
+        //id不需要检测
+        if ('id' === field) {
+            return true;
+        }
+        var requireFlag = inputRule[field]['require']['define'];
+        var currentValue = inputAttr[field]['value'];
+        if (undefined === requireFlag) {
+            requireFlag = false;
+        }
+
+        if ('' === currentValue) {
+            if (false === requireFlag) {
+                inputAttr[field]['validated'] = true;
+                return true;
+            }
+            if (true === requireFlag) {
+                inputAttr[field]['validated'] = false;
+                inputAttr[field]['errorMsg'] = inputRule[field]['require']['msg'];
+                return false;
+            }
+        }
+
+        //input不空，检查当前字段除了require之外的其他所有rule
+        if ('' !== currentValue) {
+            for (var singleRule in inputRule[field]) {
+                var ruleCheckFunc = void 0;
+                if ('require' === singleRule) {
+                    continue;
+                }
+                switch (singleRule) {
+                    case 'max':
+                        ruleCheckFunc = 'exceedMax';
+                        break;
+                    case 'min':
+                        ruleCheckFunc = 'exceedMin';
+                        break;
+                    case 'maxLength':
+                        ruleCheckFunc = 'exceedMaxLength';
+                        break;
+                    case 'minLength':
+                        ruleCheckFunc = 'exceedMinLength';
+                        break;
+                }
+
+                if (true === ruleTypeCheck[ruleCheckFunc](currentValue, inputRule[field][singleRule]['define'])) {
+                    inputAttr[field]['errorMsg'] = inputRule[field][singleRule]['msg'];
+                    inputAttr[field]['validated'] = false;
+                    return false;
+                } else {
+                    inputAttr[field]['errorMsg'] = "";
+                    inputAttr[field]['validated'] = true;
+                }
+            }
+        }
+        return true;
+    }
+    //对所有的input进行检测
+    function allCheckInput(inputRule, inputAttr) {
+        // console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        // console.log('check input in')
+        var tmpResult = void 0;
+        for (var singleField in inputAttr) {
+            tmpResult = checkInput(singleField, inputRule, inputAttr);
+            // console.log(`single filed ${singleField} check result is ${tmpResult}`)
+            if (false === tmpResult) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return { dataTypeCheck: dataTypeCheck, ruleTypeCheck: ruleTypeCheck, checkInput: checkInput, allCheckInput: allCheckInput };
 });
 
-app.factory('helper', function (basicHelper) {
+app.factory('htmlHelper', function (validateHelper) {
     return {
         /*
         * leftOffset:覆盖元素的left和当前元素left 之间的offset。可正可负。
@@ -112,7 +186,7 @@ app.factory('helper', function (basicHelper) {
             }
 
             for (var key in offset) {
-                if (basicHelper.dataTypeCheck.isNumber(offset[key])) {
+                if (validateHelper.dataTypeCheck.isNumber(offset[key])) {
                     return errorMsg.paramNotNumber(key);
                 }
             }
@@ -174,166 +248,213 @@ app.factory('helper', function (basicHelper) {
     };
 });
 
-app.factory('financeHelper', function (basicHelper) {
-    var allFunc = {};
-    allFunc = {
-        //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
-        deleteQueryValue: function deleteQueryValue(field, value, activateQueryFieldAndValue) {
-            for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
-                if (value === activateQueryFieldAndValue[field][i]) {
-                    activateQueryFieldAndValue[field].splice(i, 1);
-                    break;
-                }
+app.factory('financeHelper', function (contEnum) {
+    //var allFunc={}
+    //allFunc={
+    //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
+    function deleteQueryValue(field, value, activateQueryFieldAndValue) {
+        for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
+            if (value === activateQueryFieldAndValue[field][i]) {
+                activateQueryFieldAndValue[field].splice(i, 1);
+                break;
             }
-            if (0 === activateQueryFieldAndValue[field].length) {
-                delete activateQueryFieldAndValue[field];
-            }
-        },
-        //将选中的field和value加入到allData.activeQueryValue
-        addQueryValue: function addQueryValue(field, value, activateQueryFieldAndValue) {
-            if (undefined === activateQueryFieldAndValue[field]) {
-                activateQueryFieldAndValue[field] = [];
-            }
+        }
+        if (0 === activateQueryFieldAndValue[field].length) {
+            delete activateQueryFieldAndValue[field];
+        }
+    }
 
-            //如果是select传递过来的值
-            if (value.key) {
-                activateQueryFieldAndValue[field].push(value.key);
-            } else {
-                activateQueryFieldAndValue[field].push(value);
-            }
-        },
+    //将选中的field和value加入到allData.activeQueryValue
+    function addQueryValue(field, value, activateQueryFieldAndValue) {
+        if (undefined === activateQueryFieldAndValue[field]) {
+            activateQueryFieldAndValue[field] = [];
+        }
 
-        //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
-        // inputRule/inputAttr是coll级别
-        checkInput: function checkInput(field, inputRule, inputAttr) {
-            /*            if(undefined===inputRule[field]){
-            
-                        }*/
-            var requireFlag = inputRule[field]['require']['define'];
-            var currentValue = inputAttr[field]['value'];
-            if (undefined === requireFlag) {
-                requireFlag = false;
-            }
+        //如果是select传递过来的值
+        if (value.key) {
+            activateQueryFieldAndValue[field].push(value.key);
+        } else {
+            activateQueryFieldAndValue[field].push(value);
+        }
+    }
 
-            if ('' === currentValue) {
-                if (false === requireFlag) {
-                    inputAttr[field]['validated'] = true;
-                    return true;
-                }
-                if (true === requireFlag) {
-                    inputAttr[field]['validated'] = false;
-                    inputAttr[field]['errorMsg'] = inputRule[field]['require']['msg'];
-                    return false;
-                }
-            }
-            //input不空，检查当前字段除了require之外的其他所有rule
-            if ('' !== currentValue) {
-                for (var singleRule in inputRule[field]) {
-                    var ruleCheckFunc = void 0;
-                    if ('require' === singleRule) {
-                        continue;
-                    }
-                    switch (singleRule) {
-                        case 'max':
-                            ruleCheckFunc = 'exceedMax';
-                            break;
-                        case 'min':
-                            ruleCheckFunc = 'exceedMin';
-                            break;
-                        case 'maxLength':
-                            ruleCheckFunc = 'exceedMaxLength';
-                            break;
-                        case 'minLength':
-                            ruleCheckFunc = 'exceedMinLength';
-                            break;
-                    }
+    return { deleteQueryValue: deleteQueryValue, addQueryValue: addQueryValue };
+});
 
-                    if (true === basicHelper.ruleTypeCheck[ruleCheckFunc](currentValue, inputRule[field][singleRule]['define'])) {
-                        inputAttr[field]['errorMsg'] = inputRule[field][singleRule]['msg'];
-                        inputAttr[field]['validated'] = false;
-                        break;
-                    } else {
-                        inputAttr[field]['errorMsg'] = "";
-                        inputAttr[field]['validated'] = true;
-                    }
-                }
+app.factory('inputAttrHelper', function (contEnum) {
+    //对某个input设置errorMsg（errorMsg隐式设置input样式）
+    function setSingleInputAttrErrorMsg(field, inputAttr, errMsg) {
+        inputAttr[field]['errorMsg'] = errMsg;
+        inputAttr[field]['validated'] = false;
+    }
+    //对inputAttr中的一个字段进行初始化
+    function initSingleFieldInputAttrCreate(field, inputAttr) {
+        // console.log(opType)
+        // if(contEnum.opType.create===opType){
+        inputAttr[field]['value'] = '';
+        // }
+        inputAttr[field]['originalValue'] = '';
+        inputAttr[field]['validated'] = 'undefined';
+        inputAttr[field]['errorMsg'] = '';
+    }
+    //对一个inputAttr中所有field进行初始化
+    function initAllFieldInputAttrCreate(inputAttr) {
+        // console.log(inputAttr)
+        for (var singleField in inputAttr) {
+            // console.log(singleField)
+            initSingleFieldInputAttrCreate(singleField, inputAttr);
+        }
+        // console.log(inputAttr)
+    }
+
+    function initSingleFieldInputAttrUpdate(field, inputAttr) {
+        // console.log(opType)
+        // if(contEnum.opType.create===opType){
+        //     inputAttr[field]['value']=''
+        // }
+        inputAttr[field]['originalValue'] = '';
+        inputAttr[field]['validated'] = 'undefined';
+        inputAttr[field]['errorMsg'] = '';
+    }
+    //对一个inputAttr中所有field进行初始化
+    function initAllFieldInputAttrUpdate(inputAttr) {
+        // console.log(inputAttr)
+        for (var singleField in inputAttr) {
+            // console.log(singleField)
+            initSingleFieldInputAttrUpdate(singleField, inputAttr);
+        }
+        // console.log(inputAttr)
+    }
+    //是否所有的input检测都通过了（或者无需）
+    function allInputValidCheck(inputAttr) {
+        for (var field in inputAttr) {
+            if (false === inputAttr[field]['validated']) {
+                // console.log(inputAttr[field])
+                return false;
             }
-        },
-        //对所有的input进行检测
-        allCheckInput: function allCheckInput(inputRule, inputAttr) {
-            var tmpResult = void 0;
-            for (var singleField in inputAttr) {
-                tmpResult = allFunc.checkInput(singleField, inputRule, inputAttr);
-                if (false === tmpResult) {
-                    return false;
-                }
-            }
-            return true;
-        },
-        //对inputAttr中的一个字段进行初始化
-        initSingleFieldInputAttr: function initSingleFieldInputAttr(field, inputAttr, opType) {
-            // console.log(opType)
-            if ('create' === opType) {
+        }
+        return true;
+    }
+    //将当前的记录载入到inputAttr
+    function loadCurrentData(idx, inputAttr, recorder) {
+        for (var field in inputAttr) {
+            if (undefined === recorder[idx][field] || null === recorder[idx][field]) {
                 inputAttr[field]['value'] = '';
-            }
-            inputAttr[field]['originalValue'] = '';
-            inputAttr[field]['validated'] = 'undefined';
-            inputAttr[field]['errorMsg'] = '';
-        },
-        //对一个inputAttr中所有field进行初始化
-        initAllFieldInputAttr: function initAllFieldInputAttr(inputAttr, opType) {
-            // console.log(inputAttr)
-            for (var singleField in inputAttr) {
-                // console.log(singleField)
-                allFunc.initSingleAllInputAttr(singleField, inputAttr, opType);
-            }
-            // console.log(inputAttr)
-        },
-        //是否所有的input检测都通过了（或者无需）
-        allInputValidCheck: function allInputValidCheck(inputAttr) {
-            for (var field in inputAttr) {
-                if (false === inputAttr[field]['validated']) {
-                    // console.log(inputAttr[field])
-                    return false;
-                }
-            }
-            return true;
-        },
-        //将当前的记录载入到inputAttr
-        loadCurrentData: function loadCurrentData(idx, inputAttr, recorder) {
-            for (var field in inputAttr) {
+                inputAttr[field]['originalValue'] = ''; //用来比较是不是做了修改
+            } else {
                 inputAttr[field]['value'] = recorder[idx][field];
                 inputAttr[field]['originalValue'] = recorder[idx][field]; //用来比较是不是做了修改
             }
-        },
-
-        //为未在inputRule中定义的字段，在inputAttr中产生对应的field，以便显示在页面
-        //举例，创建或者修改记录时，其中的cDate/uDate，是server自动产生，而无需client输入，但是可能需要显示在页面，此时，需要添加到inputAttr
-        //记录到inputAttr是，只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
-        generateAdditionalFieldIntoInputAttr: function generateAdditionalFieldIntoInputAttr(recorder, inputAttr) {
-            for (var singleFieldName in recorder) {
-                if (undefined === inputAttr[singleFieldName]) {
-                    inputAttr[singleFieldName] = {};
-                    inputAttr[singleFieldName]['value'] = recorder[singleFieldName]; //只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
-                }
-            }
-        },
-
-
-        //将inputAttr的value转换成values:{f1:{value:1},f2:{value:2}}的格式，以便在传递到server
-        convertedInputAttrFormat: function convertedInputAttrFormat(inputAttr) {
-            var value = {};
-            for (var singleInputAttr in inputAttr) {
-                if (undefined !== inputAttr[singleInputAttr]['value'] && null !== inputAttr[singleInputAttr]['value'] && '' == inputAttr[singleInputAttr]['value']) {
-                    value[singleInputAttr] = {};
-                    value[singleInputAttr]['value'] = inputAttr[singleInputAttr]['value'];
-                }
-            }
-            return value;
         }
-    };
+    }
 
-    return allFunc;
+    //为未在inputRule中定义的字段，在inputAttr中产生对应的field，以便显示在页面
+    //举例，创建或者修改记录时，其中的cDate/uDate，是server自动产生，而无需client输入，但是可能需要显示在页面，此时，需要添加到inputAttr
+    //记录到inputAttr是，只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
+    function generateAdditionalFieldIntoInputAttr(recorder, inputAttr) {
+        for (var singleFieldName in recorder) {
+            if (undefined === inputAttr[singleFieldName]) {
+                inputAttr[singleFieldName] = {};
+                inputAttr[singleFieldName]['value'] = recorder[singleFieldName]; //只需value一个key，无需type，因为只是显示，不会修改（只在server修改）
+            }
+        }
+    }
+
+    //将inputAttr的value转换成values:{f1:{value:1},f2:{value:2}}的格式，以便在传递到server
+    //如果无值，则设成null，server会自动进行处理
+    function convertedInputAttrFormatCreate(inputAttrs) {
+        var value = {};
+        for (var singleInputAttr in inputAttrs) {
+            value[singleInputAttr] = {};
+            //console.log(`current field is ${singleInputAttr}`)
+            //console.log(`current field value is ${JSON.stringify(inputAttrs[singleInputAttr]) }`)
+            if (undefined !== inputAttrs[singleInputAttr]['value'] && null !== inputAttrs[singleInputAttr]['value'] && '' !== inputAttrs[singleInputAttr]['value']) {
+                value[singleInputAttr]['value'] = inputAttrs[singleInputAttr]['value'];
+            } else {
+                value[singleInputAttr]['value'] = null;
+            }
+        }
+        return value;
+    }
+
+    //只有value和originalValue的值不同，才会将value发送到server
+    function convertedInputAttrFormatUpdate(inputAttrs) {
+        var value = {};
+        for (var singleInputAttr in inputAttrs) {
+            value[singleInputAttr] = {};
+            //console.log(`current field is ${singleInputAttr}`)
+            //console.log(`current field value is ${JSON.stringify(inputAttrs[singleInputAttr]) }`)
+            if (inputAttr[singleInputAttr]['value'] !== inputAttr[singleInputAttr]['originalValue']) {
+                if (undefined !== inputAttrs[singleInputAttr]['value'] && null !== inputAttrs[singleInputAttr]['value'] && '' !== inputAttrs[singleInputAttr]['value']) {
+                    value[singleInputAttr]['value'] = inputAttrs[singleInputAttr]['value'];
+                } else {
+                    value[singleInputAttr]['value'] = null;
+                }
+            }
+        }
+        return value;
+    }
+
+    //acObj:客户端获得的autoComplete的选中值；values：将要发送到server的数据
+    //acObj {parentBillType:{value:'xxx','_id':null}====>values  {parentBillType:{value:'_id'}}
+    function convertSingleACFormat(acField, acObj, values) {
+        // for(let key in acObj){
+        values[acField] = { value: null };
+        if (undefined !== acObj[acField]['_id'] || null !== acObj[acField]['_id']) {
+            values[acField]['value'] = acObj[acField]['_id'];
+        }
+        // }
+    }
+
+    //对于create，如果是null的话，说明没有设置
+    function initSingleAcFieldForCreate(acField, acObj) {
+        if (undefined === acObj[acField] || null === acObj[acField]) {
+            acObj[acField] = {};
+        }
+        acObj[acField]['value'] = '';
+        acObj[acField]['_id'] = null;
+    }
+
+    //对于update，如果_id是-1的话，说明没有设置（null代表要删除此字段）
+    function initSingleAcFieldForUpdate(acField, acObj) {
+        if (undefined === acObj[acField] || null === acObj[acField]) {
+            acObj[acField] = {};
+        }
+        acObj[acField]['value'] = '';
+        acObj[acField]['_id'] = -1;
+    }
+    return {
+        setSingleInputAttrErrorMsg: setSingleInputAttrErrorMsg,
+        initSingleFieldInputAttrCreate: initSingleFieldInputAttrCreate,
+        initAllFieldInputAttrCreate: initAllFieldInputAttrCreate,
+        initSingleFieldInputAttrUpdate: initSingleFieldInputAttrUpdate,
+        initAllFieldInputAttrUpdate: initAllFieldInputAttrUpdate,
+        allInputValidCheck: allInputValidCheck,
+        loadCurrentData: loadCurrentData,
+        generateAdditionalFieldIntoInputAttr: generateAdditionalFieldIntoInputAttr,
+        convertedInputAttrFormatCreate: convertedInputAttrFormatCreate,
+        convertedInputAttrFormatUpdate: convertedInputAttrFormatUpdate,
+        convertSingleACFormat: convertSingleACFormat,
+        initSingleAcField: initSingleAcField
+    };
+});
+
+app.factory('commonHelper', function () {
+    //对server返回的result，进行检查，如果是日期，用moment进行转换
+    //result：从server返回的结果(非数组，而是单个记录)；filedType：当前result的field类型
+    function convertDateTime(singleRecorder, fieldType) {
+        var dateFormat = 'YYYY-MM-DD HH:mm:ss';
+        for (var singleFiled in singleRecorder) {
+            //result中的字段是否为date，是的话用moment进行转换
+            if (-1 !== fieldType.indexOf(singleFiled)) {
+                singleRecorder[singleFiled] = moment(singleRecorder[singleFiled]).format(dateFormat);
+            }
+        }
+    }
+
+    return {
+        convertDateTime: convertDateTime
+    };
 });
 
 //# sourceMappingURL=component-compiled.js.map

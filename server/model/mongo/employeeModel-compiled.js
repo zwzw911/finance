@@ -133,8 +133,10 @@ function readName(nameToBeSearched) {
 
 //作为外键时，是否存在
 function findById(id) {
+    var selectedFields = arguments.length <= 1 || arguments[1] === undefined ? '-cDate -uDate -dDate' : arguments[1];
+
     return new Promise(function (resolve, reject) {
-        employeeModel.findById(id, '-cDate -uDate -dDate', function (err, result) {
+        employeeModel.findById(id, selectedFields, function (err, result) {
             if (err) {
                 //console.log(`db err is ${err}`)
                 resolve(mongooseErrorHandler(err));

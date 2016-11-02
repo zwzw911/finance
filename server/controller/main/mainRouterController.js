@@ -18,6 +18,7 @@ var departmentDbOperation=require('../../model/mongo/departmentModel')
 var employeeDbOperation=require('../../model/mongo/employeeModel')
 var billTypeDbOperation=require('../../model/mongo/billTypeModel')
 var billDbOperation=require('../../model/mongo/billModel')
+//var fkAdditionalFields=require('../../model/mongo/not_used_fkAdditionalFieldsModel')
 
 /*                      regex               */
 var coll=require('../../define/enum/node').node.coll
@@ -63,6 +64,18 @@ var populateOpt={
         match:{},//populate后，过滤字段(不符合这显示null)。一般不用
         options:{},//{sort:{name:-1}}
     },
+}
+
+//每个外键需要的冗余字段
+var fkAdditionalFieldsConfig={
+    billType:{
+        //冗余字段（nested）的名称：具体冗余那几个字段
+        //parentBillType:此字段为外键，需要冗余字段
+        //relatedColl：外键对应的coll
+        //nestedPrefix： 冗余字段一般放在nested结构中
+        //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
+        parentBillType:{relatedColl:coll.billType,nestedPrefix:'parentBillTypeFields',forSelect:'name',forSetValue:['name']}
+    }
 }
 /*********************  common  *******************************/
 //1. checkInterval
@@ -154,11 +167,92 @@ async function checkIdExist(fkColl,currentColl,currentFkName,id){
 //console.log(`dboperation is ${dbOperation['findById'].toString()}`)
 //    console.log(`id is ${id}`)
     let result=await dbOperation['findById'](id)
-    console.log(`findByID result is ${JSON.stringify(result)}`)
+    //console.log(`findByID result is ${JSON.stringify(result)}`)
     if(null===result.msg){
         return pageError[currentColl][currentFkName+'NotExist']
     }else{
         return {rc:0}
+    }
+}
+
+//从coll中，根据id查找到记录，然后返回其中的fields
+//和checkIdExist使用同样的函数，目的是为了能让代码更加清晰
+/*
+* fkFieldName：需要获得冗余字段的外键名，主要为了产生 错误信息
+* fkid：ObjectId
+* fkColl：fk对应的coll
+* fkAdditionalFields：需要哪些fk的冗余字段
+* */
+async function getAdditionalFields(fkFieldName,fkId,fkColl,fkAdditionalFields){
+    let dbOperation
+    switch (fkColl){
+        case coll.employee:
+            dbOperation=employeeDbOperation;
+            break;
+        case coll.department:
+            dbOperation=departmentDbOperation;
+            break;
+        case coll.billType:
+            dbOperation=billTypeDbOperation;
+            break;
+        case coll.bill:
+            dbOperation=billDbOperation
+            break;
+        default:
+            return pageError.common.unknownColl
+    }
+//console.log(`dboperation is ${dbOperation['findById'].toString()}`)
+//    console.log(`id is ${id}`)
+    let result=await dbOperation['findById'](fkId,fkAdditionalFields)
+    //console.log(`findByID result is ${JSON.stringify(result)}`)
+    if(null===result.msg){
+        return pageError[fkColl][fkFieldName+'NotExist']
+    }else{
+        return {rc:0,msg:result.msg}
+    }
+}
+
+//
+//
+/*
+* 说明：根据外键，设置对应的冗余字段
+* 输入参数：
+* 1.arrayResult：当前要操作的doc（create或者update，从client输入的数据）
+* 2. fkFieldsName：要添加冗余字段的外键名。数组（可能有多个fk）
+* 3. fkColl：外键所在的coll（外键链接到的coll）
+* 4. fkAdditionalConfig: 外键冗余字段的设置（已coll为单位进行设置，可能有多个fk），包括relatedColl(当前fk对应的coll)，nestedPrefix（外键冗余字段一般放在一个nested结构中，此结构的名称），forSelect：需要返回并设置的冗余字段（用在mongoose的查询中），forSetValue（在arrayResult中设置的字段名）
+*
+* 无返回值
+* */
+async function getFkAdditionalFields(arrayResult,fkAdditionalConfig){
+    for(let idx in arrayResult){
+        // console.log(`idx is ${idx}`)
+        let doc=arrayResult[idx]
+        for(let fkFieldName in fkAdditionalConfig){
+            // console.log(`configed fk field name is ${fkFieldName}`)
+            //如果文档中外键存在（例如，objectId存在）
+            if(doc[fkFieldName]){
+/*                console.log(`configed fk  is ${doc[fkFieldName]}`)
+                console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)*/
+                let nestedPrefix=fkAdditionalConfig[fkFieldName].nestedPrefix
+                let fkAdditionalFields=await getAdditionalFields(fkFieldName,doc[fkFieldName],fkAdditionalConfig[fkFieldName]['relatedColl'],fkAdditionalConfig[fkFieldName].forSelect)
+                // console.log(`get fk doc ${JSON.stringify(fkAdditionalFields)}`)
+                if(fkAdditionalFields.rc>0){
+                    return fkAdditionalFields
+                }
+                // console.log(`add result is ${JSON.stringify(fkAdditionalFields)}`)
+                doc[nestedPrefix]={}
+                //将读取到的额外字段赋值给
+                for(let field of fkAdditionalConfig[fkFieldName].forSetValue){
+                    // console.log(`add field is ${field}`)
+                    //需要转换成parentBillTypeFields.name的格式，因为是nested
+                    // let tmpField='parentBillTypeFields.'+field
+                    doc[nestedPrefix][field]=fkAdditionalFields['msg'][field]
+                }
+            }
+        }
+return {rc:0}
+        // console.log(`added result is ${JSON.stringify(doc)}`)
     }
 }
 /*                      debug                               */
@@ -548,6 +642,16 @@ billType['create']=async function(req,res,next){
     for(let doc of arrayResult){
         miscFunc.constructCreateCriteria(doc)
     }
+
+// console.log(`arr`)
+    //4.5 如果外键存在，获得外键的额外字段
+    // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.billType)}`)
+    let getFkResult=await getFkAdditionalFields(arrayResult,fkAdditionalFieldsConfig.billType)
+    if(getFkResult.rc>0){
+        return res.json(getFkResult)
+    }
+    // console.log(`converted result is ${JSON.stringify(arrayResult)}`)
+
     //5. 对db执行操作
     let result=await billTypeDbOperation.create(arrayResult)
     if(result.rc>0){
@@ -598,6 +702,7 @@ billType['update']=async function(req,res,next){
         return res.json(returnResult(result))
     }
     //null说明没有执行任何更新
+    console.log(`billtype update is ${JSON.stringify(result)}`)
     if(null===result.msg){
         return res.json(returnResult(pageError.billType.billTypeNotExists))
     }
@@ -611,9 +716,11 @@ billType['update']=async function(req,res,next){
 
 
 billType['remove']=async function(req,res,next){
+    //对于delete，需要将参数转换成{field:{value:'val'}}
+    let inputResult={}
+    inputResult['_id']={value:req.params.id}
     //1 检查输入的参数，并作转换（如果是字符串）
-    //console.log(`sanity result is ${JSON.stringify(req.body.values)}`)
-    let sanitizedInputValue=await sanityInput(req.body.values,inputRule.billType,true,maxFieldNum.billType)
+    let sanitizedInputValue=await sanityInput(inputResult,inputRule.billType,true,maxFieldNum.billType)
     //console.log(`sanity result is ${JSON.stringify(sanitizedInputValue)}`)
     //console.log(`update sanity result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
@@ -622,7 +729,7 @@ billType['remove']=async function(req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=miscFunc.convertClientValueToServerFormat(inputResult)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3 提取数据
     let id=convertedResult._id

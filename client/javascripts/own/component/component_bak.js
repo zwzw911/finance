@@ -6,7 +6,7 @@
 var app=angular.module('component',['angularMoment']);
 
 //common的程序
-app.factory('validateHelper',function(){
+app.factory('basicHelper',function(){
     var dataTypeCheck=
         {
             isArray(obj) {
@@ -78,84 +78,10 @@ app.factory('validateHelper',function(){
                 },
             }
 
-    //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
-    // inputRule/inputAttr是coll级别
-    function checkInput(field,inputRule,inputAttr){
-        //id不需要检测
-        if('id'===field){
-            return true
-        }
-        var requireFlag=inputRule[field]['require']['define']
-        var currentValue=inputAttr[field]['value']
-        if(undefined===requireFlag){
-            requireFlag=false
-        }
-
-        if(''===currentValue){
-            if(false===requireFlag){
-                inputAttr[field]['validated']=true
-                return true
-            }
-            if(true===requireFlag){
-                inputAttr[field]['validated']=false
-                inputAttr[field]['errorMsg']=inputRule[field]['require']['msg']
-                return false
-            }
-        }
-
-        //input不空，检查当前字段除了require之外的其他所有rule
-        if(''!==currentValue){
-            for(let singleRule in inputRule[field]){
-                let ruleCheckFunc
-                if('require'===singleRule){
-                    continue
-                }
-                switch (singleRule){
-                    case 'max':
-                        ruleCheckFunc='exceedMax'
-                        break;
-                    case 'min':
-                        ruleCheckFunc='exceedMin'
-                        break;
-                    case 'maxLength':
-                        ruleCheckFunc='exceedMaxLength'
-                        break;
-                    case 'minLength':
-                        ruleCheckFunc='exceedMinLength'
-                        break;
-                }
-
-                if(true===ruleTypeCheck[ruleCheckFunc](currentValue,inputRule[field][singleRule]['define'])){
-                    inputAttr[field]['errorMsg']=inputRule[field][singleRule]['msg']
-                    inputAttr[field]['validated']=false
-                    return false
-                }else{
-                    inputAttr[field]['errorMsg']=""
-                    inputAttr[field]['validated']=true
-                }
-            }
-        }
-        return true
-    }
-    //对所有的input进行检测
-    function allCheckInput(inputRule,inputAttr){
-        // console.log(`input attr is ${JSON.stringify(inputAttr)}`)
-        // console.log('check input in')
-        let tmpResult
-        for(let singleField in inputAttr){
-            tmpResult=checkInput(singleField,inputRule,inputAttr)
-            // console.log(`single filed ${singleField} check result is ${tmpResult}`)
-            if(false===tmpResult){
-                return false
-            }
-        }
-        return true
-    }
-
-    return {dataTypeCheck,ruleTypeCheck,checkInput,allCheckInput}
+    return {dataTypeCheck,ruleTypeCheck}
 })
 
-app.factory('htmlHelper',function(validateHelper){
+app.factory('helper',function(basicHelper){
     return {
         /*
         * leftOffset:覆盖元素的left和当前元素left 之间的offset。可正可负。
@@ -184,7 +110,7 @@ app.factory('htmlHelper',function(validateHelper){
             }
 
             for(let key in offset){
-                if(validateHelper.dataTypeCheck.isNumber(offset[key])){return errorMsg.paramNotNumber(key)}
+                if(basicHelper.dataTypeCheck.isNumber(offset[key])){return errorMsg.paramNotNumber(key)}
             }
 
             //设置覆盖元素的参数
@@ -249,43 +175,115 @@ app.factory('htmlHelper',function(validateHelper){
 })
 
 
-app.factory('financeHelper',function(contEnum) {
+app.factory('financeHelper',function(basicHelper,contEnum){
     //var allFunc={}
     //allFunc={
-    //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
-    function deleteQueryValue(field, value, activateQueryFieldAndValue) {
-        for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
-            if (value === activateQueryFieldAndValue[field][i]) {
-                activateQueryFieldAndValue[field].splice(i, 1)
+        //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
+    function deleteQueryValue(field,value,activateQueryFieldAndValue){
+        for(var i=0;i<activateQueryFieldAndValue[field].length;i++){
+            if(value===activateQueryFieldAndValue[field][i]){
+                activateQueryFieldAndValue[field].splice(i,1)
                 break
             }
         }
-        if (0 === activateQueryFieldAndValue[field].length) {
+        if( 0===activateQueryFieldAndValue[field].length){
             delete activateQueryFieldAndValue[field]
         }
     }
-
     //将选中的field和value加入到allData.activeQueryValue
-    function addQueryValue(field, value, activateQueryFieldAndValue) {
-        if (undefined === activateQueryFieldAndValue[field]) {
-            activateQueryFieldAndValue[field] = []
+    function addQueryValue(field,value,activateQueryFieldAndValue){
+        if(undefined===activateQueryFieldAndValue[field]){
+            activateQueryFieldAndValue[field]=[]
         }
 
         //如果是select传递过来的值
-        if (value.key) {
+        if(value.key){
             activateQueryFieldAndValue[field].push(value.key)
-        } else {
+        }else{
             activateQueryFieldAndValue[field].push(value)
         }
 
     }
 
-    return {deleteQueryValue,addQueryValue}
-})
+    //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
+    // inputRule/inputAttr是coll级别
+    function checkInput(field,inputRule,inputAttr){
+/*            if(undefined===inputRule[field]){
 
-app.factory('inputAttrHelper',function(contEnum) {
+        }*/
+        //id不需要检测
+        if('id'===field){
+            return true
+        }
+        var requireFlag=inputRule[field]['require']['define']
+        var currentValue=inputAttr[field]['value']
+        if(undefined===requireFlag){
+            requireFlag=false
+        }
+
+        if(''===currentValue){
+            if(false===requireFlag){
+                inputAttr[field]['validated']=true
+                return true
+            }
+            if(true===requireFlag){
+                inputAttr[field]['validated']=false
+                inputAttr[field]['errorMsg']=inputRule[field]['require']['msg']
+                return false
+            }
+        }
+
+        //input不空，检查当前字段除了require之外的其他所有rule
+        if(''!==currentValue){
+            for(let singleRule in inputRule[field]){
+                let ruleCheckFunc
+                if('require'===singleRule){
+                    continue
+                }
+                switch (singleRule){
+                    case 'max':
+                        ruleCheckFunc='exceedMax'
+                        break;
+                    case 'min':
+                        ruleCheckFunc='exceedMin'
+                        break;
+                    case 'maxLength':
+                        ruleCheckFunc='exceedMaxLength'
+                        break;
+                    case 'minLength':
+                        ruleCheckFunc='exceedMinLength'
+                        break;
+                }
+
+                if(true===basicHelper.ruleTypeCheck[ruleCheckFunc](currentValue,inputRule[field][singleRule]['define'])){
+                    inputAttr[field]['errorMsg']=inputRule[field][singleRule]['msg']
+                    inputAttr[field]['validated']=false
+                    return false
+                }else{
+                    inputAttr[field]['errorMsg']=""
+                    inputAttr[field]['validated']=true
+                }
+            }
+        }
+        return true
+    }
+    //对所有的input进行检测
+    function allCheckInput(inputRule,inputAttr){
+        // console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        // console.log('check input in')
+        let tmpResult
+        for(let singleField in inputAttr){
+            tmpResult=checkInput(singleField,inputRule,inputAttr)
+            // console.log(`single filed ${singleField} check result is ${tmpResult}`)
+            if(false===tmpResult){
+                return false
+            }
+        }
+        return true
+    }
+
     //对某个input设置errorMsg（errorMsg隐式设置input样式）
-    function setSingleInputAttrErrorMsg(field,inputAttr,errMsg){
+    function setSingleInputErrorMsg(field,inputAttr,errMsg){
         inputAttr[field]['errorMsg']=errMsg
         inputAttr[field]['validated']=false
     }
@@ -381,7 +379,7 @@ app.factory('inputAttrHelper',function(contEnum) {
     }
 
 
-    //只有value和originalValue的值不同，才会将value发送到server
+//}
     function convertedInputAttrFormatUpdate(inputAttrs){
         var value={}
         for(var singleInputAttr in inputAttrs){
@@ -401,35 +399,34 @@ app.factory('inputAttrHelper',function(contEnum) {
     }
 
     //acObj:客户端获得的autoComplete的选中值；values：将要发送到server的数据
-    //acObj {parentBillType:{value:'xxx','_id':null}====>values  {parentBillType:{value:'_id'}}
-    function convertSingleACFormat(acField,acObj,values){
-        // for(let key in acObj){
-            values[acField]={value:null}
-            if(undefined!==acObj[acField]['_id'] || null!==acObj[acField]['_id']){
-                values[acField]['value']=acObj[acField]['_id']
+    //acObj {parentBillType:'_id'}====>values  {parentBillType:{value:'_id'}}
+    function convertACIdFormat(acObj,values){
+        for(let key in acObj){
+            values[key]={value:null}
+            if(undefined!==acObj[key] || null!==acObj[key]){
+                values[key]['value']=acObj[key]
             }
-        // }
+        }
+    }
+    //对server返回的result，进行检查，如果是日期，用moment进行转换
+    //result：从server返回的结果(非数组，而是单个记录)；filedType：当前result的field类型
+    function convertDateTime(result,fieldType){
+        let dateFormat='YYYY-MM-DD HH:mm:ss'
+        for(let singleFiled in result){
+            //result中的字段是否为date，是的话用moment进行转换
+            if(-1!==fieldType.indexOf(singleFiled)){
+                result[singleFiled]=moment(result[singleFiled]).format(dateFormat)
+            }
+        }
     }
 
-    //对于create，如果是null的话，说明没有设置
-    function initSingleAcFieldForCreate(acField,acObj){
-        if(undefined===acObj[acField] || null===acObj[acField]){
-            acObj[acField]={}
-        }
-        acObj[acField]['value']=''
-        acObj[acField]['_id']=null
-    }
 
-    //对于update，如果_id是-1的话，说明没有设置（null代表要删除此字段）
-    function initSingleAcFieldForUpdate(acField,acObj){
-        if(undefined===acObj[acField] || null===acObj[acField]){
-            acObj[acField]={}
-        }
-        acObj[acField]['value']=''
-        acObj[acField]['_id']=-1
-    }
     return {
-        setSingleInputAttrErrorMsg,
+        deleteQueryValue,
+        addQueryValue,
+        checkInput,
+        allCheckInput,
+        setSingleInputErrorMsg,
         initSingleFieldInputAttrCreate,
         initAllFieldInputAttrCreate,
         initSingleFieldInputAttrUpdate,
@@ -439,25 +436,8 @@ app.factory('inputAttrHelper',function(contEnum) {
         generateAdditionalFieldIntoInputAttr,
         convertedInputAttrFormatCreate,
         convertedInputAttrFormatUpdate,
-        convertSingleACFormat,
-        initSingleAcField,
-    }
-})
-
-app.factory('commonHelper',function(){
-    //对server返回的result，进行检查，如果是日期，用moment进行转换
-    //result：从server返回的结果(非数组，而是单个记录)；filedType：当前result的field类型
-    function convertDateTime(singleRecorder,fieldType){
-        let dateFormat='YYYY-MM-DD HH:mm:ss'
-        for(let singleFiled in singleRecorder){
-            //result中的字段是否为date，是的话用moment进行转换
-            if(-1!==fieldType.indexOf(singleFiled)){
-                singleRecorder[singleFiled]=moment(singleRecorder[singleFiled]).format(dateFormat)
-            }
-        }
-    }
-
-    return {
+        convertACIdFormat,
         convertDateTime,
     }
+
 })

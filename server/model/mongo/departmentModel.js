@@ -10,7 +10,7 @@ var mongooseErrorHandler=require('../../define/error/mongoError').mongooseErrorH
 
 var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 
-var miscModel=require('../../assist/not_used_miscModel')
+//var miscModel=require('../../assist/not_used_miscModel')
 
 //当前coll中，需要被populated的字段，如果此字段有内容，那么执行populate，否则不执行（节省populate的操作）
 
@@ -145,9 +145,9 @@ function readName(nameToBeSearched){
 }
 
 //作为外键时，是否存在
-function findById(id){
+function findById(id,selectedFields='-cDate -uDate -dDate'){
     return new Promise(function(resolve,reject){
-        departmentModel.findById(id,'-cDate -uDate -dDate',function(err,result){
+        departmentModel.findById(id,selectedFields,function(err,result){
             if(err){
                 console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))

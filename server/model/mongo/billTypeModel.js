@@ -41,7 +41,7 @@ function create(values){
 }
 function update(id,values){
     values['uDate']=Date.now()
-    // console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
+     console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     return new Promise(function(resolve,reject){
         billTypeModel.findByIdAndUpdate(id,values,updateOptions,function(err,result){
             if(err){
@@ -138,9 +138,10 @@ function readName(nameToBeSearched){
 }
 
 //作为外键时，是否存在
-function findById(id){
+//selectedFields:'-cDate -uDate -dDate'
+function findById(id,selectedFields='-cDate -uDate -dDate'){
     return new Promise(function(resolve,reject){
-        billTypeModel.findById(id,'-cDate -uDate -dDate',function(err,result){
+        billTypeModel.findById(id,selectedFields,function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
@@ -151,6 +152,7 @@ function findById(id){
     })
 }
 
+
 module.exports={
     create,
     update,
@@ -159,4 +161,5 @@ module.exports={
     readAll,
     readName,
     findById,
+
 }
