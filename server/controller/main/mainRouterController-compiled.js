@@ -278,7 +278,7 @@ var getAdditionalFields = function () {
 /*
 * 说明：根据外键，设置对应的冗余字段
 * 输入参数：
-* 1.arrayResult：当前要操作的doc（create或者update，从client输入的数据）
+* 1.singleDoc：当前要操作的doc（create或者update，从client输入的数据）
 * 2. fkFieldsName：要添加冗余字段的外键名。数组（可能有多个fk）
 * 3. fkColl：外键所在的coll（外键链接到的coll）
 * 4. fkAdditionalConfig: 外键冗余字段的设置（已coll为单位进行设置，可能有多个fk），包括relatedColl(当前fk对应的coll)，nestedPrefix（外键冗余字段一般放在一个nested结构中，此结构的名称），forSelect：需要返回并设置的冗余字段（用在mongoose的查询中），forSetValue（在arrayResult中设置的字段名）
@@ -288,64 +288,54 @@ var getAdditionalFields = function () {
 
 
 var getFkAdditionalFields = function () {
-    var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(arrayResult, fkAdditionalConfig) {
-        var idx, doc, fkFieldName, nestedPrefix, fkAdditionalFields, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, field;
+    var _ref5 = _asyncToGenerator(regeneratorRuntime.mark(function _callee5(doc, fkAdditionalConfig) {
+        var fkFieldName, nestedPrefix, fkAdditionalFields, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, field;
 
         return regeneratorRuntime.wrap(function _callee5$(_context5) {
             while (1) {
                 switch (_context5.prev = _context5.next) {
                     case 0:
-                        _context5.t0 = regeneratorRuntime.keys(arrayResult);
+                        _context5.t0 = regeneratorRuntime.keys(fkAdditionalConfig);
 
                     case 1:
                         if ((_context5.t1 = _context5.t0()).done) {
-                            _context5.next = 39;
+                            _context5.next = 33;
                             break;
                         }
 
-                        idx = _context5.t1.value;
-
-                        // console.log(`idx is ${idx}`)
-                        doc = arrayResult[idx];
-                        _context5.t2 = regeneratorRuntime.keys(fkAdditionalConfig);
-
-                    case 5:
-                        if ((_context5.t3 = _context5.t2()).done) {
-                            _context5.next = 36;
-                            break;
-                        }
-
-                        fkFieldName = _context5.t3.value;
+                        fkFieldName = _context5.t1.value;
 
                         if (!doc[fkFieldName]) {
-                            _context5.next = 34;
+                            _context5.next = 31;
                             break;
                         }
 
-                        /*                console.log(`configed fk  is ${doc[fkFieldName]}`)
-                                        console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)*/
+                        //console.log(`configed fk  is ${doc[fkFieldName]}`)
+                        //console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)
                         nestedPrefix = fkAdditionalConfig[fkFieldName].nestedPrefix;
-                        _context5.next = 11;
+                        _context5.next = 7;
                         return getAdditionalFields(fkFieldName, doc[fkFieldName], fkAdditionalConfig[fkFieldName]['relatedColl'], fkAdditionalConfig[fkFieldName].forSelect);
 
-                    case 11:
+                    case 7:
                         fkAdditionalFields = _context5.sent;
 
+                        console.log('get fk doc ' + JSON.stringify(fkAdditionalFields));
+
                         if (!(fkAdditionalFields.rc > 0)) {
-                            _context5.next = 14;
+                            _context5.next = 11;
                             break;
                         }
 
                         return _context5.abrupt('return', fkAdditionalFields);
 
-                    case 14:
+                    case 11:
                         // console.log(`add result is ${JSON.stringify(fkAdditionalFields)}`)
                         doc[nestedPrefix] = {};
                         //将读取到的额外字段赋值给
                         _iteratorNormalCompletion = true;
                         _didIteratorError = false;
                         _iteratorError = undefined;
-                        _context5.prev = 18;
+                        _context5.prev = 15;
                         for (_iterator = fkAdditionalConfig[fkFieldName].forSetValue[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                             field = _step.value;
 
@@ -354,52 +344,52 @@ var getFkAdditionalFields = function () {
                             // let tmpField='parentBillTypeFields.'+field
                             doc[nestedPrefix][field] = fkAdditionalFields['msg'][field];
                         }
-                        _context5.next = 26;
+                        _context5.next = 23;
                         break;
 
-                    case 22:
-                        _context5.prev = 22;
-                        _context5.t4 = _context5['catch'](18);
+                    case 19:
+                        _context5.prev = 19;
+                        _context5.t2 = _context5['catch'](15);
                         _didIteratorError = true;
-                        _iteratorError = _context5.t4;
+                        _iteratorError = _context5.t2;
 
-                    case 26:
-                        _context5.prev = 26;
-                        _context5.prev = 27;
+                    case 23:
+                        _context5.prev = 23;
+                        _context5.prev = 24;
 
                         if (!_iteratorNormalCompletion && _iterator.return) {
                             _iterator.return();
                         }
 
-                    case 29:
-                        _context5.prev = 29;
+                    case 26:
+                        _context5.prev = 26;
 
                         if (!_didIteratorError) {
-                            _context5.next = 32;
+                            _context5.next = 29;
                             break;
                         }
 
                         throw _iteratorError;
 
-                    case 32:
-                        return _context5.finish(29);
-
-                    case 33:
+                    case 29:
                         return _context5.finish(26);
 
-                    case 34:
-                        _context5.next = 5;
+                    case 30:
+                        return _context5.finish(23);
+
+                    case 31:
+                        _context5.next = 1;
                         break;
 
-                    case 36:
+                    case 33:
                         return _context5.abrupt('return', { rc: 0 });
 
-                    case 39:
+                    case 34:
                     case 'end':
                         return _context5.stop();
                 }
             }
-        }, _callee5, this, [[18, 22, 26, 34], [27,, 29, 33]]);
+        }, _callee5, this, [[15, 19, 23, 31], [24,, 26, 30]]);
     }));
 
     return function getFkAdditionalFields(_x16, _x17) {
@@ -1514,7 +1504,7 @@ var billType = {};
 
 billType['create'] = function () {
     var _ref19 = _asyncToGenerator(regeneratorRuntime.mark(function _callee19(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, doc, _result7, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, _doc3, getFkResult, result, populateResult;
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _doc3, _result7, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, _doc4, idx, doc, getFkResult, result, populateResult;
 
         return regeneratorRuntime.wrap(function _callee19$(_context19) {
             while (1) {
@@ -1554,15 +1544,15 @@ billType['create'] = function () {
                             break;
                         }
 
-                        doc = _step6.value;
+                        _doc3 = _step6.value;
 
-                        if (!doc.parentBillType) {
+                        if (!_doc3.parentBillType) {
                             _context19.next = 20;
                             break;
                         }
 
                         _context19.next = 17;
-                        return checkIdExist(coll.billType, coll.billType, 'parentBillType', doc.parentBillType);
+                        return checkIdExist(coll.billType, coll.billType, 'parentBillType', _doc3.parentBillType);
 
                     case 17:
                         _result7 = _context19.sent;
@@ -1620,9 +1610,9 @@ billType['create'] = function () {
                         _iteratorError7 = undefined;
                         _context19.prev = 40;
                         for (_iterator7 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                            _doc3 = _step7.value;
+                            _doc4 = _step7.value;
 
-                            miscFunc.constructCreateCriteria(_doc3);
+                            miscFunc.constructCreateCriteria(_doc4);
                         }
 
                         // console.log(`arr`)
@@ -1662,45 +1652,58 @@ billType['create'] = function () {
                         return _context19.finish(48);
 
                     case 56:
-                        _context19.next = 58;
-                        return getFkAdditionalFields(arrayResult, fkAdditionalFieldsConfig.billType);
+                        _context19.t2 = regeneratorRuntime.keys(arrayResult);
 
-                    case 58:
+                    case 57:
+                        if ((_context19.t3 = _context19.t2()).done) {
+                            _context19.next = 67;
+                            break;
+                        }
+
+                        idx = _context19.t3.value;
+
+                        // console.log(`idx is ${idx}`)
+                        doc = arrayResult[idx];
+                        _context19.next = 62;
+                        return getFkAdditionalFields(doc, fkAdditionalFieldsConfig.billType);
+
+                    case 62:
                         getFkResult = _context19.sent;
 
                         if (!(getFkResult.rc > 0)) {
-                            _context19.next = 61;
+                            _context19.next = 65;
                             break;
                         }
 
                         return _context19.abrupt('return', res.json(getFkResult));
 
-                    case 61:
-                        console.log('converted result is ' + JSON.stringify(arrayResult));
+                    case 65:
+                        _context19.next = 57;
+                        break;
 
-                        //5. 对db执行操作
-                        _context19.next = 64;
+                    case 67:
+                        _context19.next = 69;
                         return billTypeDbOperation.create(arrayResult);
 
-                    case 64:
+                    case 69:
                         result = _context19.sent;
 
                         if (!(result.rc > 0)) {
-                            _context19.next = 67;
+                            _context19.next = 72;
                             break;
                         }
 
                         return _context19.abrupt('return', res.json(result));
 
-                    case 67:
-                        _context19.next = 69;
+                    case 72:
+                        _context19.next = 74;
                         return miscFunc.populateSingleDoc(result.msg[0], populateOpt.billType, populatedFields.billType);
 
-                    case 69:
+                    case 74:
                         populateResult = _context19.sent;
                         return _context19.abrupt('return', res.json(returnResult(populateResult)));
 
-                    case 71:
+                    case 76:
                     case 'end':
                         return _context19.stop();
                 }
@@ -1715,7 +1718,7 @@ billType['create'] = function () {
 
 billType['update'] = function () {
     var _ref20 = _asyncToGenerator(regeneratorRuntime.mark(function _callee20(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, _result8, result, populateResult;
+        var sanitizedInputValue, convertedResult, id, getFkResult, _result8, result, populateResult;
 
         return regeneratorRuntime.wrap(function _callee20$(_context20) {
             while (1) {
@@ -1754,63 +1757,79 @@ billType['update'] = function () {
                         return _context20.abrupt('return', res.json(returnResult(pageError.billType.parentCantBeSelf)));
 
                     case 10:
+                        _context20.next = 12;
+                        return getFkAdditionalFields(convertedResult, fkAdditionalFieldsConfig.billType);
+
+                    case 12:
+                        getFkResult = _context20.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context20.next = 15;
+                            break;
+                        }
+
+                        return _context20.abrupt('return', res.json(getFkResult));
+
+                    case 15:
+                        //console.log(`after get ${JSON.stringify(convertedResult)}`)
+
                         //5 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
                         miscFunc.constructUpdateCriteria(convertedResult);
                         // console.log(`after check null field ${JSON.stringify(convertedResult)}`)
                         //6 检查外键是否存在
 
                         if (!(null !== convertedResult.parentBillType && undefined !== convertedResult.parentBillType)) {
-                            _context20.next = 17;
+                            _context20.next = 22;
                             break;
                         }
 
-                        _context20.next = 14;
+                        _context20.next = 19;
                         return checkIdExist(coll.billType, coll.billType, 'parentBillType', convertedResult.parentBillType);
 
-                    case 14:
+                    case 19:
                         _result8 = _context20.sent;
 
                         if (!(0 < _result8.rc)) {
-                            _context20.next = 17;
+                            _context20.next = 22;
                             break;
                         }
 
                         return _context20.abrupt('return', res.json(returnResult(_result8)));
 
-                    case 17:
-                        _context20.next = 19;
+                    case 22:
+                        _context20.next = 24;
                         return billTypeDbOperation.update(id, convertedResult);
 
-                    case 19:
+                    case 24:
                         result = _context20.sent;
 
                         if (!(result.rc > 0)) {
-                            _context20.next = 22;
+                            _context20.next = 27;
                             break;
                         }
 
                         return _context20.abrupt('return', res.json(returnResult(result)));
 
-                    case 22:
+                    case 27:
                         //null说明没有执行任何更新
                         console.log('billtype update is ' + JSON.stringify(result));
 
                         if (!(null === result.msg)) {
-                            _context20.next = 25;
+                            _context20.next = 30;
                             break;
                         }
 
                         return _context20.abrupt('return', res.json(returnResult(pageError.billType.billTypeNotExists)));
 
-                    case 25:
-                        _context20.next = 27;
+                    case 30:
+                        _context20.next = 32;
                         return miscFunc.populateSingleDoc(result.msg, populateOpt.billType, populatedFields.billType);
 
-                    case 27:
+                    case 32:
                         populateResult = _context20.sent;
                         return _context20.abrupt('return', res.json(returnResult(populateResult)));
 
-                    case 29:
+                    case 34:
                     case 'end':
                         return _context20.stop();
                 }
@@ -1973,7 +1992,7 @@ billType['readName'] = function () {
 var bill = {};
 bill['create'] = function () {
     var _ref24 = _asyncToGenerator(regeneratorRuntime.mark(function _callee24(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, doc, _ref25, _ref26, fkReimburserResult, fkBillTypeResult, _iteratorNormalCompletion9, _didIteratorError9, _iteratorError9, _iterator9, _step9, _doc4, result, populateResult;
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, doc, _ref25, _ref26, fkReimburserResult, fkBillTypeResult, _iteratorNormalCompletion9, _didIteratorError9, _iteratorError9, _iterator9, _step9, _doc5, result, populateResult;
 
         return regeneratorRuntime.wrap(function _callee24$(_context24) {
             while (1) {
@@ -2087,9 +2106,9 @@ bill['create'] = function () {
                         _iteratorError9 = undefined;
                         _context24.prev = 44;
                         for (_iterator9 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-                            _doc4 = _step9.value;
+                            _doc5 = _step9.value;
 
-                            miscFunc.constructCreateCriteria(_doc4);
+                            miscFunc.constructCreateCriteria(_doc5);
                         }
                         //5. 对db执行操作
                         _context24.next = 52;

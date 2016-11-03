@@ -175,22 +175,31 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
 
         //当input提供autoComplete功能时，blur要做的操作
         //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
-        //currentId:当前记录的objId
+        //currentId:当前记录的objId（如果是create，为undefined）
         acBlur:function(field,inputAttr,currentId){
-            //console.log(`currentId is ${currentId}`)
-            inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+            console.log(`field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
+            // if(contEnum.opType.update===$scope.allData.currentOpType){
+            //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+            // }
+
             //console.log(`check id is ${$scope.allData.selectedAC[field]}`)
             //acBlur无需检测input（min/max/minLength等），只需检测a，是否选择（null或者objId），b.是否和当前一样（不能把自己当成自己的父）
-            if(-1===$scope.allData.selectedAC[field]){
-                //console.log(`before msg is ${JSON.stringify(inputAttr[field])}`)
+            if(-1===$scope.allData.selectedAC[field]['_id']){
+                // console.log(`before msg is ${JSON.stringify(inputAttr[field])}`)
                 inputAttrHelper.setSingleInputAttrErrorMsg(field,inputAttr,`${inputAttr[field]['chineseName']}${inputAttr[field]['value']}不存在`)
                 //console.log(`after err msg is ${JSON.stringify(JSON.stringify(inputAttr[field]))}`)
                 //return false
             }else{
-                if($scope.allData.selectedAC[field]===currentId){
+                console.log(`check is self`)
+                //只有update的时候，才需要判断是否为自己
+                if(contEnum.opType.update===$scope.allData.currentOpType && $scope.allData.selectedAC[field]['_id']===currentId){
+                    // console.log(`check is self in`)
                     inputAttrHelper.setSingleInputAttrErrorMsg(field,inputAttr,`${inputAttr[field]['chineseName']}不能为自己`)
                 }
-
+                if(contEnum.opType.create===$scope.allData.currentOpType){
+                    inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+                    inputAttr[field]['value']=$scope.allData.selectedAC[field]['value']
+                }
             }
 
 /*            else{
@@ -205,18 +214,31 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
 
         nonAcBlur:function(field,inputRule,inputAttr){
             validateHelper.checkInput(field,inputRule,inputAttr)
-        },
-
-
-        allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
         },
+
+
+/*        allInputValidCheck:function(inputAttr){
+            $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+        },*/
         //create/update
 
         allCheckInput:function(inputRule,inputAttr){
             validateHelper.allCheckInput(inputRule,inputAttr)
         },
 
+        //从activatedQueryValue中删除value
+        //queryFiled:parentBillType
+        //queryValue:'a'
+        //activatedQueryValue:{parentBillType:['a','b']}
+        deleteQueryValue:function(queryFiled,queryValue,activatedQueryValue){
+            financeHelper.deleteQueryValue(queryFiled,queryValue,activatedQueryValue)
+        },
+        // $scope.addQueryValue=financeHelper.addQueryValue
+        addQueryValue:function(queryFiled,queryValue,activatedQueryValue){
+            console.log(`add query in`)
+            financeHelper.addQueryValue(queryFiled,queryValue,activatedQueryValue)
+        },
         queryFieldChange:function(selectedQueryField){
             $scope.allData.selectedQueryFieldValue=''
         },
@@ -247,7 +269,7 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
                         //console.log(`get suggest result is ${data.msg}`)
                         //初始设为-1
                         if ('' !== name && null !== name) {
-                            $scope.allData.selectedAC.parentBillType = -1
+                            $scope.allData.selectedAC.parentBillType._id = -1
                         }
 
                         if (data.msg.length > 0) {
@@ -258,8 +280,9 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
                                 console.log(`suggest change: term is ${name}, item name is ${e.name}`)
                                 if (name === e.name) {
 //console.log(`input is selet`)
-                                    $scope.allData.selectedAC.parentBillType = e._id
-                                    console.log(`set id is ${$scope.allData.selectedAC.parentBillType}`)
+                                    $scope.allData.selectedAC.parentBillType._id = e._id
+                                    $scope.allData.selectedAC.parentBillType.value = name
+                                    console.log(`set id is ${JSON.stringify($scope.allData.selectedAC.parentBillType)}`)
                                 }
                             })
                             deferred.resolve(tmpResult)
@@ -273,10 +296,11 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
                 },
                 on_select: function (selected) {
                     console.log(`selected is ${JSON.stringify(selected)}`)
-                    $scope.allData.selectedAC.parentBillType = selected.id
+                    $scope.allData.selectedAC.parentBillType._id = selected.id
+                    $scope.allData.selectedAC.parentBillType.value = selected.value
                 }
             },
-            //only for query
+            //only for query。query的时候，提供可能的选项
             name: {
                 suggest: function (name) {
                     let deferred = $q.defer()
@@ -286,7 +310,7 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
                         //console.log(`get suggest result is ${data.msg}`)
                         //初始设为-1
                         if ('' !== name && null !== name) {
-                            $scope.allData.selectedAC.illType = -1
+                            $scope.allData.selectedAC.name._id = -1
                         }
 
                         if (data.msg.length > 0) {
@@ -297,8 +321,8 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
                                 console.log(`suggest change: term is ${name}, item name is ${e.name}`)
                                 if (name === e.name) {
 //console.log(`input is selet`)
-                                    $scope.allData.selectedAC.billType = e._id
-                                    console.log(`set id is ${$scope.allData.selectedAC.billType}`)
+                                    $scope.allData.selectedAC.name._id = e._id
+                                    console.log(`set id is ${$scope.allData.selectedAC.name}`)
                                 }
                             })
                             deferred.resolve(tmpResult)
@@ -325,13 +349,12 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
 
     htmlHelper.adjustFooterPosition()
     //初始化调用
-    $scope.deleteQueryValue=financeHelper.deleteQueryValue
-    $scope.addQueryValue=financeHelper.addQueryValue
+
 
     //同时提供query和update时使用
     $scope.allData.inputAttr['parentBillType']['suggestList']=$scope.allFunc.acFun.parentBillType
     //only for query
-    $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.acFun.billType
+    $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.acFun.name
 
     financeCRUDHelper.dataOperator.billType.read($scope.allData.recorder)
 

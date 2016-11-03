@@ -217,26 +217,24 @@ async function getAdditionalFields(fkFieldName,fkId,fkColl,fkAdditionalFields){
 /*
 * 说明：根据外键，设置对应的冗余字段
 * 输入参数：
-* 1.arrayResult：当前要操作的doc（create或者update，从client输入的数据）
+* 1.singleDoc：当前要操作的doc（create或者update，从client输入的数据）
 * 2. fkFieldsName：要添加冗余字段的外键名。数组（可能有多个fk）
 * 3. fkColl：外键所在的coll（外键链接到的coll）
 * 4. fkAdditionalConfig: 外键冗余字段的设置（已coll为单位进行设置，可能有多个fk），包括relatedColl(当前fk对应的coll)，nestedPrefix（外键冗余字段一般放在一个nested结构中，此结构的名称），forSelect：需要返回并设置的冗余字段（用在mongoose的查询中），forSetValue（在arrayResult中设置的字段名）
 *
 * 无返回值
 * */
-async function getFkAdditionalFields(arrayResult,fkAdditionalConfig){
-    for(let idx in arrayResult){
-        // console.log(`idx is ${idx}`)
-        let doc=arrayResult[idx]
+async function getFkAdditionalFields(doc,fkAdditionalConfig){
+
         for(let fkFieldName in fkAdditionalConfig){
             // console.log(`configed fk field name is ${fkFieldName}`)
             //如果文档中外键存在（例如，objectId存在）
             if(doc[fkFieldName]){
-/*                console.log(`configed fk  is ${doc[fkFieldName]}`)
-                console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)*/
+                //console.log(`configed fk  is ${doc[fkFieldName]}`)
+                //console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)
                 let nestedPrefix=fkAdditionalConfig[fkFieldName].nestedPrefix
                 let fkAdditionalFields=await getAdditionalFields(fkFieldName,doc[fkFieldName],fkAdditionalConfig[fkFieldName]['relatedColl'],fkAdditionalConfig[fkFieldName].forSelect)
-                // console.log(`get fk doc ${JSON.stringify(fkAdditionalFields)}`)
+                 console.log(`get fk doc ${JSON.stringify(fkAdditionalFields)}`)
                 if(fkAdditionalFields.rc>0){
                     return fkAdditionalFields
                 }
@@ -253,7 +251,7 @@ async function getFkAdditionalFields(arrayResult,fkAdditionalConfig){
         }
 return {rc:0}
         // console.log(`added result is ${JSON.stringify(doc)}`)
-    }
+
 }
 /*                      debug                               */
 let debug={}
@@ -646,10 +644,15 @@ billType['create']=async function(req,res,next){
 // console.log(`arr`)
     //4.5 如果外键存在，获得外键的额外字段
     // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.billType)}`)
-    let getFkResult=await getFkAdditionalFields(arrayResult,fkAdditionalFieldsConfig.billType)
-    if(getFkResult.rc>0){
-        return res.json(getFkResult)
+    for(let idx in arrayResult) {
+        // console.log(`idx is ${idx}`)
+        let doc = arrayResult[idx]
+        let getFkResult=await getFkAdditionalFields(doc,fkAdditionalFieldsConfig.billType)
+        if(getFkResult.rc>0){
+            return res.json(getFkResult)
+        }
     }
+
     // console.log(`converted result is ${JSON.stringify(arrayResult)}`)
 
     //5. 对db执行操作
@@ -684,6 +687,16 @@ billType['update']=async function(req,res,next){
     if(id===convertedResult.parentBillType){
         return res.json(returnResult(pageError.billType.parentCantBeSelf))
     }
+    //console.log(`convertedResult is  ${JSON.stringify(convertedResult)}`)
+    //console.log(`before get ${JSON.stringify(convertedResult)}`)
+    //4.5 如果外键存在，获得外键的额外字段
+    // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.billType)}`)
+    let getFkResult=await getFkAdditionalFields(convertedResult,fkAdditionalFieldsConfig.billType)
+    if(getFkResult.rc>0){
+        return res.json(getFkResult)
+    }
+    //console.log(`after get ${JSON.stringify(convertedResult)}`)
+
     //5 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
     miscFunc.constructUpdateCriteria(convertedResult)
     // console.log(`after check null field ${JSON.stringify(convertedResult)}`)

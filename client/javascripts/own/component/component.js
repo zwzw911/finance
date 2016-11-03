@@ -267,6 +267,7 @@ app.factory('financeHelper',function(contEnum) {
 
     //将选中的field和value加入到allData.activeQueryValue
     function addQueryValue(field, value, activateQueryFieldAndValue) {
+        console.log(`field is ${field},value is ${JSON.stringify(value)}, activated value is ${activateQueryFieldAndValue}`)
         if (undefined === activateQueryFieldAndValue[field]) {
             activateQueryFieldAndValue[field] = []
         }
@@ -395,7 +396,6 @@ app.factory('inputAttrHelper',function(contEnum) {
                     value[singleInputAttr]['value']=null
                 }
             }
-
         }
         return value
     }
@@ -404,10 +404,13 @@ app.factory('inputAttrHelper',function(contEnum) {
     //acObj {parentBillType:{value:'xxx','_id':null}====>values  {parentBillType:{value:'_id'}}
     function convertSingleACFormat(acField,acObj,values){
         // for(let key in acObj){
+        if(undefined!==acObj && null!==acObj){
             values[acField]={value:null}
             if(undefined!==acObj[acField]['_id'] || null!==acObj[acField]['_id']){
                 values[acField]['value']=acObj[acField]['_id']
             }
+        }
+
         // }
     }
 
@@ -440,7 +443,8 @@ app.factory('inputAttrHelper',function(contEnum) {
         convertedInputAttrFormatCreate,
         convertedInputAttrFormatUpdate,
         convertSingleACFormat,
-        initSingleAcField,
+        initSingleAcFieldForCreate,
+        initSingleAcFieldForUpdate,
     }
 })
 
