@@ -93,6 +93,18 @@ var assistError={
             inputValueFieldNumExceed:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
             inputValueHasDuplicateField:{rc:69726,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
         },
+        validateInputSearch:{
+            inputSearchNotObject:{rc:69500,msg:{client:`查询参数格式不正确`,server:`查询参数必须是对象`}},
+            inputSearchCanNotEmpty:{rc:69502,msg:{client:`查询参数格式不正确`,server:`查询参数不能为空对象`}},
+            inputSearchValueMustBeArray:{rc:69504,msg:{client:`查询参数格式不正确`,server:`查询参数的键值必须是数组`}},
+            inputSearchValueCanNotEmpty:{rc:69506,msg:{client:`查询参数格式不正确`,server:`查询参数的键值不能为空`}},
+            inputSearchValueLengthExceed:{rc:69508,msg:{client:`查询参数数量过多`,server:`查询参数的键值中的值数量过多`}},
+            inputSearchValueElementMustBeObject:{rc:69510,msg:{client:`查询字符不正确`,server:`查询参数的键值中的查询字符必须是对象`}},
+            inputSearchValueElementCanNotEmpty:{rc:69512,msg:{client:`查询字符不能为空`,server:`查询参数的键值中的查询字符不能为空`}},
+            inputSearchValueElementKeyNotDefined:{rc:69513,msg:{client:`查询字符不正确`,server:`查询参数的键值中的key没有在fkAdditionalConfig中定义`}},
+            inputSearchNoRelatedRule:{rc:69514,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
+            inputSearchValueElementMustBeStringNumberDate:{rc:69516,msg:{client:`查询字符不正确`,server:`查询参数中非外键的键值值，其中每个元素必须是字符数字日期`}},
+        },
         checkInterval:{
             sessionIdWrong:{rc:69900,msg:{client:'请求格式不正确',server:'session格式不正确'}},
             IPWrong:{rc:69902,msg:{client:'请求格式不正确',server:'IP格式不正确'}},

@@ -32,30 +32,31 @@ var ruleType = {
     'enum': 'enum'
 };
 var dataType = {
-    int: Symbol('int'),
-    float: Symbol('float'),
-    string: Symbol('string'),
-    date: Symbol('date'),
-    array: Symbol('array'),
-    object: Symbol('object'),
-    file: Symbol('file'),
-    folder: Symbol('folder'),
-    number: Symbol('number'),
-    password: Symbol('string')
-};
+    'int': Symbol('int'),
+    'float': Symbol('float'),
+    'string': Symbol('string'),
+    // 'string':'string',
+    'date': Symbol('date'),
+    'array': Symbol('array'),
+    'object': Symbol('object'),
+    'file': Symbol('file'),
+    'folder': Symbol('folder'),
+    'number': Symbol('number'),
+    'password': Symbol('string'),
+    'objectId': Symbol('objectId') };
 
-//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
-var clientRule = {
-    require: 'require',
-    maxLength: 'maxLength',
-    minLength: 'minLength',
+/*//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
+var clientRule={
+    require:'require',
+    maxLength:'maxLength',
+    minLength:'minLength',
     //exactLength:'exactLength',
-    min: 'min',
-    max: 'max',
-    'enum': 'enum'
-    /*    format:'format',
-     equalTo:'equalTo',*/
-};
+    min:'min',
+    max:'max',
+    'enum':'enum'
+    /!*    format:'format',
+     equalTo:'equalTo',*!/
+}*/
 
 //input对应的rule(server)
 /*var ruleType={
@@ -83,13 +84,14 @@ var clientRuleType = {
     minLength: 'minLength',
     //exactLength:'exactLength',
     min: 'min',
-    max: 'max'
+    max: 'max',
+    'enum': 'enum'
 };
 
 exports.enum = {
     dataType: dataType,
     ruleType: ruleType,
-    clientRule: clientRule,
+    //clientRule,
     otherFiledName: otherFiledName,
     clientRuleType: clientRuleType
 };

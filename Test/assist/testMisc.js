@@ -464,14 +464,26 @@ var formatRc=function(test){
 /*    console.log(rc)*/
     test.done()
 }
+
+var convertClientSearchValueToServerFormat=function(test){
+    test.expect(1)
+    let func=testModule.convertClientSearchValueToServerFormat
+
+    let value={field1:['val1','val2'],field2:['val3','val4']}
+    let result=func(value)
+    console.log(JSON.stringify(result))
+    test.equal(JSON.stringify(result),'{$or:[field1:{$in:["val1"]},field2:{$in:["val2"]}]}','format server msg failed')
+    test.done()
+}
 exports.all={
-    dataTypeCheck:dataTypeCheck,
-    ruleTypeCheck:ruleTypeCheck,
-    generateRandomString:generateRandomString,
-    parseGmFileSize:parseGmFileSize,
-    convertImageFileSizeToByte:convertImageFileSizeToByte,
-    encodeHtml,
-    formatRc,
+    // dataTypeCheck:dataTypeCheck,
+    // ruleTypeCheck:ruleTypeCheck,
+    // generateRandomString:generateRandomString,
+    // parseGmFileSize:parseGmFileSize,
+    // convertImageFileSizeToByte:convertImageFileSizeToByte,
+    // encodeHtml,
+    // formatRc,
+    convertClientSearchValueToServerFormat,
 }
 
 //console.log(testModule.generateRandomString(10,randomStringTypeEnum.complicated))

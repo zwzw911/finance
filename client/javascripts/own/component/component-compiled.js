@@ -266,7 +266,11 @@ app.factory('financeHelper', function (contEnum) {
 
     //将选中的field和value加入到allData.activeQueryValue
     function addQueryValue(field, value, activateQueryFieldAndValue) {
-        console.log('field is ' + field + ',value is ' + JSON.stringify(value) + ', activated value is ' + activateQueryFieldAndValue);
+        // console.log(`field is ${field},value is ${JSON.stringify(value)}, activated value is ${activateQueryFieldAndValue}`)
+        // if(undefined===activateQueryFieldAndValue){
+        //     console.log(`in to init activea vlauy`)
+        //     activateQueryFieldAndValue={}
+        // }
         if (undefined === activateQueryFieldAndValue[field]) {
             activateQueryFieldAndValue[field] = [];
         }

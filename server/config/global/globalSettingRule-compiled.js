@@ -60,6 +60,8 @@ var mongoSetting = {
 
 };
 
+var searchSetting = {
+    maxKeyNum: 5 };
 //内部设定，无法更改
 var internalSetting = {
     /*      cookie-session      login refer（refer是本server地址，则跳转到refer）*/
@@ -513,6 +515,7 @@ var defaultSetting = {
 module.exports = {
     defaultSetting: defaultSetting,
     mongoSetting: mongoSetting,
+    searchSetting: searchSetting,
     internalSetting: internalSetting,
     session: session,
     pageSetting: pageSetting

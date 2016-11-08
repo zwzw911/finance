@@ -77,8 +77,8 @@ var fkAdditionalFieldsConfig={
         parentBillType:{relatedColl:coll.billType,nestedPrefix:'parentBillTypeFields',forSelect:'name',forSetValue:['name']}
     }
 }
-/*********************  common  *******************************/
-//1. checkInterval
+
+//1. checkInterval，在main中执行，所以必须定义在非main文件，否则无法编译
 async function common(req,res,next){
     let result=await checkInterval(req)
     return result
@@ -132,6 +132,33 @@ async function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFie
     }
 
 
+    return {rc:0}
+}
+
+/*
+* 参数：
+*       1.  inputSearch:{field:[value1,value2]}
+*       2.  fkAdditionalFieldsConfig:外键的一些设置，包括此外键对应到那个coll的哪个field
+*       3.  collName
+*       4.  inputRules：整个个inputRules，因为可能有字段是外键字段，此时需要检查外键对应的coll/field
+*
+* */
+async function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
+    // console.log(   `sanitySearchInput in`)
+    //1 检查输入格式
+    let formatCheckResult=await miscFunc.validateInputValue.validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    // console.log(   `format resuot is ${formatCheckResult}`)
+    if(formatCheckResult.rc>0){
+        return formatCheckResult
+    }
+    //2 检查搜索值是否正确
+    let valueCheckResult=await miscFunc.validateInputValue.validateInputSearch(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    // console.log(   `value resuot is ${valueCheckResult}`)
+    for(let singleFieldName in valueCheckResult){
+        if(valueCheckResult[singleFieldName]['rc']>0){
+            return {rc:9999,msg:valueCheckResult}
+        }
+    }
     return {rc:0}
 }
 
@@ -671,8 +698,6 @@ billType['update']=async function(req,res,next){
     //1 检查输入的参数，并作转换（如果是字符串）
     //console.log(`sanity result is ${JSON.stringify(req.body.values)}`)
     let sanitizedInputValue=await sanityInput(req.body.values,inputRule.billType,true,maxFieldNum.billType)
-    //console.log(`sanity result is ${JSON.stringify(sanitizedInputValue)}`)
-    //console.log(`update sanity result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
         return res.json(returnResult(sanitizedInputValue))
     }
@@ -783,7 +808,20 @@ billType['readName']=async function(req,res,next){
     //return JSON.stringify(result)
 }
 
+billType['search']=async function(req,res,next){
+    //let recorder
+    console.log(`search input is ${JSON.stringify(req.body.values)}`)
+    let sanitizedInputValue=await sanitySearchInput(req.body.values,fkAdditionalFieldsConfig.billType,coll.billType,inputRule)
+    console.log(`santiy result is ${sanitizedInputValue}`)
+    if(sanitizedInputValue.rc>0){
+        return res.json(returnResult(sanitizedInputValue))
+    }
 
+    //console.log(`db op result is ${JSON.stringify(result)}`)
+
+    //return res.json(returnResult(recorder))
+    //return JSON.stringify(result)m
+}
 
 /*********************  bill  ******************************
  * 部门

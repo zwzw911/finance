@@ -10,9 +10,10 @@ var express = require('express');
 var app = express();
 var router = express.Router();
 
-var common = require('./mainRouterController-compiled').common;
+//var checkInterval=require('../../assist/misc-compiled').func.checkInterval
 
 var controller = require('./mainRouterController-compiled');
+var common = controller.common;
 var debugController = controller.debug;
 var userController = controller.user;
 var departmentController = controller.department;
@@ -238,6 +239,15 @@ router.delete('/billType/:id', function (req, res, next) {
         console.log("delete result is " + JSON.stringify(v));
     }, function (e) {
         return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+//search
+router.post('/billType/search', function (req, res, next) {
+    //console.log(req.params)
+    billTypeController.search(req, res, next).then(function (v) {
+        console.log("search result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("search fail " + JSON.stringify(e));
     });
 });
 

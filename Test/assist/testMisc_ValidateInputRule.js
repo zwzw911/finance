@@ -6,7 +6,7 @@ require("babel-polyfill");
 require("babel-core/register")
 var testModule=require('../../server/assist/misc').func;
 var miscError=require('../../server/define/error/nodeError').nodeError.assistError
-var validateInputRuleError=miscError.misc.validateInputRule
+var validateInputRuleError=miscError.misc.validateInputSearch
 /*          for generateRandomString test       */
 var regex=require('../../server/define/regex/regex').regex
 var dataType=require('../../server/define/enum/validEnum').enum.dataType
@@ -15,10 +15,10 @@ var dataType=require('../../server/define/enum/validEnum').enum.dataType
 /***************     checkRuleTypeBaseOnTypeDefine      *******************/
 /***************************************************************************/
 
-//1. 检查必须字段是否存在
+//1. 检查输入格式
 var checkAllMandatoryFieldsExist=function(test){
     //let a=testModule.validate._private.checkRuleBaseOnRuleDefine
-    let func=testModule.validateInputRule.checkSingleFieldRuleDefine
+    let func=testModule.va.checkSingleFieldRuleDefine
     let [coll,field,rule]=['testColl','testField',{}]
     let result
     test.expect(4);
@@ -281,7 +281,6 @@ var checkDefaultType=function(test) {
     //number(偷懒，不测)
     test.done()
 }
-
 
 
 exports.validate={

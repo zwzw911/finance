@@ -242,6 +242,7 @@ var redisError = require('../define/error/redisError').redisError;
 
 /*      for CRUDGlobalSetting       */
 var defaultSetting = require('../config/global/globalSettingRule').defaultSetting;
+var searchSetting = require('../config/global/globalSettingRule').searchSetting;
 //use redis to save get golbalSetting
 var ioredisClient = require('../model/redis/connection/redis_connection').ioredisClient;
 /*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
@@ -1313,8 +1314,8 @@ var validateInputValue = {
             //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
             if (singleFieldName !== '_id' && singleFieldName !== 'id') {
                 if (undefined === collRules[singleFieldName]) {
-                    console.log("single field name is " + singleFieldName);
-                    console.log("coll rule  is " + JSON.stringify(collRules));
+                    //console.log(`single field name is ${singleFieldName}`)
+                    //console.log(`coll rule  is ${JSON.stringify(collRules)}`)
                     rc[singleFieldName] = validateInputValueError.valueRelatedRuleNotDefine;
                     return rc;
                 }
@@ -1329,6 +1330,7 @@ var validateInputValue = {
             base = collRules;
         }
 
+        //itemName: 字段名称
         for (var itemName in base) {
             //console.log(`start to check fiekd ${itemName}`)
             rc[itemName] = {};
@@ -1589,11 +1591,11 @@ var validateInputValue = {
         }
 
         return rc;
-        //    注意，返回的结果是对象，结构和inputValue类型，不是{rc;xxx,msg:xxx}的格式
+        //    注意，返回的结果是对象，结构和inputValue类似，不是{rc;xxx,msg:xxx}的格式
     },
 
 
-    /*      对输入的搜索值进行检测     */
+    /*      对GET的输入的搜索值进行检测（readName/readAll）     */
     //value的格式仿照checkInput，即：{field:{value:'val1'}}
     //只对字符进行搜索，那么检测是否 超出maxlength（是否为空在Model中确定）
     //value：包含了fiele名字和filedvalue；inputRule：coll对应的inpuitRule
@@ -1626,6 +1628,285 @@ var validateInputValue = {
             }
         }
         return rc;
+    },
+
+
+    /* 对POST输入的 查询参数 的格式检查(复杂搜索：多个字段，每个字段多个搜索值)
+    *           1.inputSearch:{field:[value1,value2]}
+    *           client传入的搜索参数，以coll为单位。因为使用独立的函数进行处理，所以可以和validateInput的输入参数不一致.如此可以简化对格式的检查步骤
+    *           2. fkAdditionalFieldsConfig
+    *           基于coll
+    *           返回{rc:0,msg:'xxxx}
+    * */
+    validateInputSearchFormat: function validateInputSearchFormat(inputSearch, fkAdditionalFieldsConfig, collName, inputRules) {
+        // console.log(`start format check`)
+        //1. 检查inputSearch数据类型是否为obj
+        var typeResult = dataTypeCheck.isObject(inputSearch);
+        if (false === typeResult) {
+            return miscError.validateInputSearch.inputSearchNotObject;
+        }
+        //2  检查inputSearch是否为空obj
+        var emptyObjCheckResult = dataTypeCheck.isEmpty(inputSearch);
+        // console.log(`input search empty check result is ${emptyObjCheckResult}`)
+        if (true === emptyObjCheckResult) {
+            return miscError.validateInputSearch.inputSearchCanNotEmpty;
+        }
+        //3. 检查inputSearch的每个key，对应的value是否 3.0 有对应的inputRule（换句话，字段名是正确的） 3.1 为数组  3.2 是否为空 3.3 数组长度是否超过限制 3.4数组元素必须是对象，且不能为空 3.5 数组元素的key必须是在fkAdditionalConfig中有定义的
+        for (var singleFieldName in inputSearch) {
+            // console.log(`current field  is ${singleFieldName}, coll is ${JSON.stringify(collName)}`)
+            //3.0  是否有对应的rule
+            if (undefined === inputRules[collName][singleFieldName]) {
+                return miscError.validateInputSearch.inputSearchNoRelatedRule;
+            }
+            // console.log(`rule exist`)
+            var objValue = inputSearch[singleFieldName];
+            var objValueTypeCheck = dataTypeCheck.isArray(objValue);
+            //3.1 是否为数组
+            if (false === objValueTypeCheck) {
+                return miscError.validateInputSearch.inputSearchValueMustBeArray;
+            }
+            // console.log(`is array`)
+            //3.2 数组是否为空
+            var objValueEmptyCheck = dataTypeCheck.isEmpty(objValue);
+            if (true === objValueEmptyCheck) {
+                return miscError.validateInputSearch.inputSearchValueCanNotEmpty;
+            }
+            //3.3 数组长度是否超过限制
+            if (objValue.length > searchSetting.maxKeyNum) {
+                return miscError.validateInputSearch.inputSearchValueLengthExceed;
+            }
+
+            //3.4 如果是外键，数组中的每个元素必须是对象，且不能为空;  如果不是外键，则值为字符，数字，日期
+            //    且每个对象的key，必须在fkAdditional中有定义
+
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = objValue[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var singleSearchElement = _step2.value;
+
+                    if (fkAdditionalFieldsConfig[singleFieldName]) {
+                        if (false === dataTypeCheck.isObject(singleSearchElement)) {
+                            return miscError.validateInputSearch.inputSearchValueElementMustBeObject;
+                        }
+                        if (dataTypeCheck.isEmpty(singleSearchElement)) {
+                            return miscError.validateInputSearch.inputSearchValueElementCanNotEmpty;
+                        }
+                        for (var singleSearchElementKey in singleSearchElement) {
+                            if (-1 === fkAdditionalFieldsConfig[singleFieldName]['forSetValue'].indexOf(singleSearchElementKey)) {
+                                return miscError.validateInputSearch.inputSearchValueElementKeyNotDefined;
+                            }
+                        }
+                    } else {
+                        // console.log(`non fk field value is ${singleSearchElement}`)
+
+                        if (false === dataTypeCheck.isString(singleSearchElement) && false === dataTypeCheck.isDate(singleSearchElement) && false === dataTypeCheck.isNumber(singleSearchElement)) {
+                            return miscError.validateInputSearch.inputSearchValueElementMustBeStringNumberDate;
+                        }
+                    }
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+        }
+        return rightResult;
+    },
+    /*
+    * 对输入的查询 参数进行 检验，不对输入进行任何修改(复杂搜索：多个字段，每个字段多个搜索值)
+    * 输入参数：
+    *           1.inputSearch:{normalField:[val1,val2],fkField:[{relatedField1:value1,relatedField2:value2},{relatedField1:value3}]}
+    *           client传入的搜索参数，以coll为单位。因为使用独立的函数进行处理，所以可以和validateInput的输入参数不一致.如此可以简化对格式的检查步骤
+    *           2. fkAdditionalFieldsConfig：：{parentBillType:{relatedColl:billtye, forSetValue:['name']}}
+    *           搜索参数，如果有外键，从中获得外键对应的coll.field，查询得知对应inputRule。以coll为单位
+    *           3. collName
+    *           当前对哪一个coll进行搜索
+    *           4 inputRules
+    *           整个inputRule，因为外键可能对应在其他coll
+    * 返回: {field1:{rc:0},field2:{rc:9123.msg:'值不正确'}}
+    * */
+    validateInputSearch: function validateInputSearch(inputSearch, fkAdditionalFieldsConfig, collName, inputRules) {
+        var result = {};
+        //1. 对数组中的每个值： 1.1 是否为undefined/null/''， 1.2 是否符合regex限定
+        //inputSearch：{name:['juanw'],parentBillType:[{name:'wzhan039',title:'asb'},{name:'xubol'}]}
+        for (var singleFieldName in inputSearch) {
+
+            result[singleFieldName] = { rc: 0 };
+
+            var objValue = inputSearch[singleFieldName];
+
+            // console.log(`siangle field rule is ${JSON.stringify(singleFieldRule)}`)
+            //objValue是数组，singleSearchValueKey是数组的key（正常字段，为数字；外键）
+            //objValue： ['juanw']  && [{name:'wzhan039',title:'asb'},{name:'xubol'}]
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
+
+            try {
+                for (var _iterator3 = objValue[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                    var singleSearchValue = _step3.value;
+
+                    var chineseName = void 0,
+                        singleSearchString = void 0,
+                        singleFieldRule = void 0,
+                        tmpSingleCheckResult = void 0;
+
+                    //chineseName总是当前字段的中文名（无论是否fk）
+                    chineseName = inputRules[collName][singleFieldName]['chineseName'];
+                    // console.log(`chinese name is ${chineseName}`)
+                    console.log("fk define is " + JSON.stringify(fkAdditionalFieldsConfig[singleFieldName]) + " ");
+                    //如果是普通字段
+                    if (undefined === fkAdditionalFieldsConfig[singleFieldName]) {
+                        singleFieldRule = inputRules[collName][singleFieldName];
+
+                        singleSearchString = singleSearchValue;
+                        console.log("to be check value is " + singleSearchString + ",rule is " + JSON.stringify(singleFieldRule));
+                        tmpSingleCheckResult = validateInputValue.checkSingleSearchValue(chineseName, singleSearchString, singleFieldRule);
+                        // console.log(`normal field ${singleFieldName} rule check result is ${JSON.stringify(tmpSingleCheckResult)}`)
+                        if (tmpSingleCheckResult.rc > 0) {
+                            result[singleFieldName]['rc'] = tmpSingleCheckResult.rc;
+                            result[singleFieldName]['msg'] = tmpSingleCheckResult.msg;
+                            break;
+                        }
+                    } else if (fkAdditionalFieldsConfig[singleFieldName]) {
+                        var fkColl = fkAdditionalFieldsConfig[singleFieldName]['relatedColl'];
+                        //singleFkRelatedField: name   title
+                        for (var singleFkRelatedField in singleSearchValue) {
+                            singleFieldRule = inputRules[fkColl][singleFkRelatedField];
+                            singleSearchString = singleSearchValue[singleFkRelatedField];
+                            tmpSingleCheckResult = validateInputValue.checkSingleSearchValue(chineseName, singleSearchString, singleFieldRule);
+                            if (tmpSingleCheckResult.rc > 0) {
+                                result[singleFieldName]['rc'] = tmpSingleCheckResult.rc;
+                                result[singleFieldName]['msg'] = tmpSingleCheckResult.msg;
+                                break;
+                            }
+                        }
+                        /*                    //如果是外键，找到外键所在coll的对应字段的定义
+                                            let fkColl = fkAdditionalFieldsConfig[singleFieldName]['relatedColl']
+                                            let fkField = fkAdditionalFieldsConfig[singleFieldName]['forSetValue'][0]
+                                            singleFieldRule = inputRules[fkColl][fkField]*/
+                    }
+                }
+            } catch (err) {
+                _didIteratorError3 = true;
+                _iteratorError3 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                        _iterator3.return();
+                    }
+                } finally {
+                    if (_didIteratorError3) {
+                        throw _iteratorError3;
+                    }
+                }
+            }
+        }
+        return result;
+    },
+
+    //需要单独定义成一个函数，因为在validateInputSearch中，需要在根据是否为外键，在不同的地方调用
+    //singleSearchString: 要检查的值（非数组或者对象）
+    //singleFieldRule： 对应的rule定义
+    checkSingleSearchValue: function checkSingleSearchValue(chineseName, singleSearchString, singleFieldRule) {
+        // console.log(`function checkSingleSearchValue called`)
+        var result = { rc: 0 };
+        if (singleFieldRule['format']) {
+            // console.log(`format defined`)
+            var currentRule = singleFieldRule['format'];
+            var currentRuleDefine = currentRule['define'];
+            // console.log(`format defined as ${currentRuleDefine.toString()}`)
+            if (false === validateInputValue._private.ruleTypeCheck.format(singleSearchString, currentRuleDefine)) {
+                result['rc'] = currentRule['error']['rc'];
+                result['msg'] = validateInputValue._private.generateErrorMsg.format(chineseName, currentRuleDefine, false);
+                // console.log(    `format check failed result is ${JSON.stringify(result)}`)
+                return result;
+                /*                result[singleFieldName]['rc']=currentRule['error']['rc']
+                                result[singleFieldName]['msg']=validateInputValue._private.generateErrorMsg.format(currentRule['chineseName'],currentRuleDefine,false)*/
+                // break
+            }
+        }
+
+        //1.2 检查value的类型是否符合type中的定义
+        // console.log(currentItemValue)
+        //  console.log(`data type is ${singleFieldRule['type']}`)
+
+        var typeCheckResult = validateInputValue._private.checkDataTypeBaseOnTypeDefine(singleSearchString, singleFieldRule['type']);
+        // console.log(`data type check result is ${JSON.stringify(typeCheckResult)}`)
+        if (typeCheckResult.rc && 0 < typeCheckResult.rc) {
+            //当前字段值的类型未知
+            result['rc'] = typeCheckResult.rc;
+            result['msg'] = "" + chineseName + typeCheckResult.msg;
+            return result;
+        }
+        if (false === typeCheckResult) {
+            result['rc'] = validateInputValueError.typeWrong.rc;
+            result['msg'] = "" + chineseName + validateInputValueError.typeWrong.msg;
+            return result;
+        }
+        //1.3 对field的每个rule检测
+        for (var singleRule in singleFieldRule) {
+            var _currentRule = singleFieldRule[singleRule];
+            var _currentRuleDefine = _currentRule['define'];
+            // console.log(`currentRule is ${JSON.stringify(currentRule)},currentRuleDefine is ${currentRuleDefine}`)
+            switch (singleRule) {
+                case 'min':
+                    if (true === validateInputValue._private.ruleTypeCheck.exceedMin(singleSearchString, _currentRuleDefine)) {
+                        result['rc'] = _currentRule['error']['rc'];
+                        result['msg'] = validateInputValue._private.generateErrorMsg.min(chineseName, _currentRuleDefine, false, _currentRule['unit']);
+                        return result;
+                        /*                        result[singleFieldName]['rc']=currentRule['error']['rc']
+                                                result[singleFieldName]['msg']=validateInputValue._private.generateErrorMsg.min(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])*/
+                    }
+                    break;
+                case 'max':
+                    if (true === validateInputValue._private.ruleTypeCheck.exceedMax(singleSearchString, _currentRuleDefine)) {
+                        result['rc'] = _currentRule['error']['rc'];
+                        result['msg'] = validateInputValue._private.generateErrorMsg.max(chineseName, _currentRuleDefine, false, _currentRule['unit']);
+                        return result;
+                        // result[singleFieldName]['rc']=currentRule['error']['rc']
+                        // result[singleFieldName]['msg']=validateInputValue._private.generateErrorMsg.max(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])
+                    }
+                    break;
+                case 'minLength':
+                    if (true === validateInputValue._private.ruleTypeCheck.exceedMinLength(singleSearchString, _currentRuleDefine)) {
+                        result['rc'] = _currentRule['error']['rc'];
+                        result['msg'] = validateInputValue._private.generateErrorMsg.minLength(chineseName, _currentRuleDefine, false);
+                        return result;
+                        // result[singleFieldName]['rc']=currentRule['error']['rc']
+                        // result[singleFieldName]['msg']=validateInputValue._private.generateErrorMsg.minLength(currentRule['chineseName'],currentRuleDefine,false)
+                    }
+                    break;
+                case 'maxLength':
+                    // console.log(`max`)
+                    // console.log(`value is ${singleSearchString},define is ${currentRuleDefine}`)
+                    if (true === validateInputValue._private.ruleTypeCheck.exceedMaxLength(singleSearchString, _currentRuleDefine)) {
+                        result['rc'] = _currentRule['error']['rc'];
+                        result['msg'] = validateInputValue._private.generateErrorMsg.maxLength(chineseName, _currentRuleDefine, false);
+                        return result;
+                        // result[singleFieldName]['rc']=currentRule['error']['rc']
+                        // result[singleFieldName]['msg']=validateInputValue._private.generateErrorMsg.maxLength(currentRule['chineseName'],currentRuleDefine,false)
+                    }
+                    break;
+            }
+            /*            //一个rule出错，ield的其他rule就无需检测
+                        if(result[singleFieldName]['rc']>0){
+                            break
+                        }*/
+        }
+        return result;
     }
 };
 
@@ -1854,6 +2135,44 @@ var convertClientValueToServerFormat = function convertClientValueToServerFormat
     return result;
 };
 
+//前端传入的搜索数据是{filed1:[{name:'val1',age:15},{name:"val2"}],field2:[{title:'val3",author:"zw"}]}的格式，因为一个外键可以能有多个冗余字段
+// 需要转换成{$or:[field1.name:{$in:['val1','val2']},field1.age:{$in:[15]},field2:{$in:['val2']}]}
+var convertClientSearchValueToServerFormat = function convertClientSearchValueToServerFormat(values) {
+    var result = { '$or': [] };
+    for (var key in values) {
+        var tmp = {};
+        tmp[key] = { '$in': [] };
+        // console.log(`field init result is ${JSON.stringify(tmp)}`)
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+            for (var _iterator4 = values[key][Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                var singleSearchString = _step4.value;
+
+                tmp[key]['$in'].push(singleSearchString);
+            }
+        } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                    _iterator4.return();
+                }
+            } finally {
+                if (_didIteratorError4) {
+                    throw _iteratorError4;
+                }
+            }
+        }
+
+        result['$or'].push(tmp);
+    }
+    return result;
+};
+
 //对update传入的参数进行检测，如果设置为null，就认为是控制端，无需传入db
 var constructCreateCriteria = function constructCreateCriteria(formattedValues) {
     for (var key in formattedValues) {
@@ -1882,13 +2201,13 @@ var populateSingleDoc = function populateSingleDoc(singleDoc, populateOpt, popul
     return new Promise(function (resolve, reject) {
         var populateFlag = false;
         // let createdResult=singleDoc
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
 
         try {
-            for (var _iterator2 = populatedFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var singlePopulatedField = _step2.value;
+            for (var _iterator5 = populatedFields[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                var singlePopulatedField = _step5.value;
 
                 if (singleDoc[singlePopulatedField]) {
                     populateFlag = true;
@@ -1897,16 +2216,16 @@ var populateSingleDoc = function populateSingleDoc(singleDoc, populateOpt, popul
             }
             // console.log(`department insert result is ${JSON.stringify(result)}`)
         } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
         } finally {
             try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                    _iterator2.return();
+                if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                    _iterator5.return();
                 }
             } finally {
-                if (_didIteratorError2) {
-                    throw _iteratorError2;
+                if (_didIteratorError5) {
+                    throw _iteratorError5;
                 }
             }
         }
@@ -1972,6 +2291,7 @@ exports.func = {
     getPemFile: getPemFile,
     //objectIndexOf:objectIndexOf,
     //extractKey:extractKey,
+    // validateInputSearchFormat,
     validateInputRule: validateInputRule,
     validateInputValue: validateInputValue,
     generateClientInputAttr: generateClientInputAttr,
@@ -1986,6 +2306,7 @@ exports.func = {
     constructUpdateCriteria: constructUpdateCriteria,
     populateSingleDoc: populateSingleDoc,
     convertClientValueToServerFormat: convertClientValueToServerFormat,
+    convertClientSearchValueToServerFormat: convertClientSearchValueToServerFormat,
     formatRc: formatRc
 };
 

@@ -62,6 +62,9 @@ var mongoSetting={
 
 }
 
+var searchSetting={
+    maxKeyNum:5, //对某个字段，最大选取5个字段，作为select的条件
+}
 //内部设定，无法更改
 var internalSetting={
     /*      cookie-session      login refer（refer是本server地址，则跳转到refer）*/
@@ -551,6 +554,7 @@ var defaultSetting= {
 module.exports={
 	defaultSetting,
 	mongoSetting,
+    searchSetting,
 	internalSetting,
 	session,
     pageSetting,

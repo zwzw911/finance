@@ -90,7 +90,7 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
         selectedQueryFieldValue:undefined,//下拉菜单中选中的值
         queryField:cont.queryField.billType, //可选的查询字段
 
-        activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
+        activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}   采用{}初始化，则可以直接通过函数的参数进行修改；缺点是无法在前端判断是否为{}
 
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
         
@@ -233,16 +233,21 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,cont,
         //activatedQueryValue:{parentBillType:['a','b']}
         deleteQueryValue:function(queryFiled,queryValue,activatedQueryValue){
             financeHelper.deleteQueryValue(queryFiled,queryValue,activatedQueryValue)
+            console.log(`after delete query value ${activatedQueryValue}`)
         },
         // $scope.addQueryValue=financeHelper.addQueryValue
         addQueryValue:function(queryFiled,queryValue,activatedQueryValue){
             console.log(`add query in`)
+            console.log(`activatedQueryValue length is ${Object.keys($scope.allData.activeQueryValue).length}`)
             financeHelper.addQueryValue(queryFiled,queryValue,activatedQueryValue)
+            console.log(`after add query value ${activatedQueryValue}`)
         },
         queryFieldChange:function(selectedQueryField){
             $scope.allData.selectedQueryFieldValue=''
         },
-
+        isActiveQueryValueEmpty:function(){
+            return Object.keys($scope.allData.activeQueryValue).length===0
+        },
         clickQueryFlag:function(){
             $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
         },

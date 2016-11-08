@@ -31,17 +31,18 @@ var ruleType={
     'enum':'enum',
 }
 var dataType={
-    int:Symbol('int'),
-    float:Symbol('float'),
-    string:Symbol('string'),
-    date:Symbol('date'),
-    array:Symbol('array'),
-    object:Symbol('object'),
-    file:Symbol('file'),
-    folder:Symbol('folder'),
-    number:Symbol('number'),
-    password:Symbol('string'),
-    objectId:Symbol('objectId'),//mongodb的id
+    'int':Symbol('int'),
+    'float':Symbol('float'),
+    'string':Symbol('string'),
+    // 'string':'string',
+    'date':Symbol('date'),
+    'array':Symbol('array'),
+    'object':Symbol('object'),
+    'file':Symbol('file'),
+    'folder':Symbol('folder'),
+    'number':Symbol('number'),
+    'password':Symbol('string'),
+    'objectId':Symbol('objectId'),//mongodb的id
     // format:Symbol('regex'),
 }
 
