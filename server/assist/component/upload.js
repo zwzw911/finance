@@ -4,7 +4,7 @@
  */
 'use strict'
 var multiparty = require('multiparty');
-var misc=require('../misc').func;
+var misc=require('../validateFunc').func;
 
 let error={
     parameterNotDefine:function(parameter){

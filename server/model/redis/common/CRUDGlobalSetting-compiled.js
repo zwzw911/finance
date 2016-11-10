@@ -11,9 +11,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 var defaultSetting = require('../../../config/global/globalSettingRule').defaultSetting;
 //use redis to save get golbalSetting
 var redisClient = require('../connection/redis_connection').ioredisClient;
-var dataTypeCheck = require('../../../assist/misc').func.dataTypeCheck;
+var dataTypeCheck = require('../../../assist/validateFunc').func.dataTypeCheck;
 var redisError = require('../../../define/error/redisError').redisError;
-var inputValid = require('../../../assist/misc').func.
+var inputValid = require('../../../assist/validateFunc').func.
 /*require('./redis_connections').redisClient1(function(err,result){
     redisClient=result
 })*/

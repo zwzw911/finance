@@ -21,12 +21,11 @@ var assistError={
         fileSizeEmpty:{rc:69608,msg:{client:'图片的大小为空',server:'图片的大小为空'}},
         invalidFileSizeInByte:{rc:69609,msg:{client:'无法读取图片文件的大小',server:'图片文件的大小转换成byte后，不正确'}}
     },
-
-    misc:{
-        validateInputRule:{
+    validateFunc:{
+        validateInputRuleFormat:{
             //以下是检查rule，所以错误只需在server端现实，因此只要msg:'error'的格式，而不要client/server
             unknownDataType:{rc:69800,msg:'未知数据类型'},
-
+            ruleMustBeObject:{rc:69801,msg:'rule定义必须是对象'},
             mandatoryFiledNotExist:{rc:69802,msg:'字段必需存在'},
             chineseNameNotString:{rc:68804,msg:'chineseName字段必须是字符串'},
             chineseNameEmpty:{rc:68806,msg:'chineseName字段不能为空'},
@@ -37,9 +36,9 @@ var assistError={
             needFormat:{rc:69815,msg:'type为objectId是，必须包含format属性'},
 
             ruleDefineNotRight:{rc:69816,msg:'rule的定义不正确'},
-/*            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
-            minLengthDefineNotInt:{rc:69820,msg:'minLength的定义不是整数'},
-            exactLengthDefineNotInt:{rc:69822,msg:'exactLengt的定义不是整数'},*/
+            /*            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
+             minLengthDefineNotInt:{rc:69820,msg:'minLength的定义不是整数'},
+             exactLengthDefineNotInt:{rc:69822,msg:'exactLengt的定义不是整数'},*/
             lengthDefineNotInt:{rc:69818,msg:'minLength的定义不是整数'},
             lengthDefineMustLargeThanZero:{rc:69823,msg:'length的定义必须大于0'},
             maxDefineNotInt:{rc:69824,msg:'max的定义不是整数'},
@@ -56,13 +55,13 @@ var assistError={
             defaultNotDefine:{rc:69837,msg:'default字段不存在'},
             //以下只需返回给server，因此只要msg:'error'的格式，而不要client/server
             /*              sanity rule             */
-            ruleDefineWrong:function(coll,field,rule){return {rc:69840,msg:`${coll}的字段${field}中的rule ${rule}的define值不正确`}},
+            ruleDefineWrong:function(collName,fieldName,ruleName){return {rc:69840,msg:`${collName}的字段${fieldName}中的rule ${ruleName}的define值不正确`}},
 
             rcFormatWrong:{rc:69842,msg:'错误代码格式不正确'},
 
 
         },
-        validateInputValue:{
+        validateInputFormat:{
             //rule chekc fail
             //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
             /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},
@@ -93,7 +92,7 @@ var assistError={
             inputValueFieldNumExceed:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
             inputValueHasDuplicateField:{rc:69726,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
         },
-        validateInputSearch:{
+        validateInputSearchFormat:{
             inputSearchNotObject:{rc:69500,msg:{client:`查询参数格式不正确`,server:`查询参数必须是对象`}},
             inputSearchCanNotEmpty:{rc:69502,msg:{client:`查询参数格式不正确`,server:`查询参数不能为空对象`}},
             inputSearchValueMustBeArray:{rc:69504,msg:{client:`查询参数格式不正确`,server:`查询参数的键值必须是数组`}},
@@ -105,6 +104,8 @@ var assistError={
             inputSearchNoRelatedRule:{rc:69514,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
             inputSearchValueElementMustBeStringNumberDate:{rc:69516,msg:{client:`查询字符不正确`,server:`查询参数中非外键的键值值，其中每个元素必须是字符数字日期`}},
         },
+    },
+    misc:{
         checkInterval:{
             sessionIdWrong:{rc:69900,msg:{client:'请求格式不正确',server:'session格式不正确'}},
             IPWrong:{rc:69902,msg:{client:'请求格式不正确',server:'IP格式不正确'}},
