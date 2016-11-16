@@ -243,7 +243,7 @@ router.delete('/billType/:id', function (req, res, next) {
 });
 //search
 router.post('/billType/search', function (req, res, next) {
-    //console.log(req.params)
+    console.log(req.body.values);
     billTypeController.search(req, res, next).then(function (v) {
         console.log("search result is " + JSON.stringify(v));
     }, function (e) {

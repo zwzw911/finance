@@ -44,7 +44,11 @@ var regex = {
     encodeHtmlChar: /[\s"&'<>]|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g, //把某些特殊字符转换成&xxx格式，传到client
 
     lua: {
-        paramsConvert: /([{,])"(\w+)"/g }
+        paramsConvert: /([{,])"(\w+)"/g },
+
+    //正则中的特殊字符+单双引号+反引号（因为要放在字符串中，不转义会造成字符串中断）
+    regSpecialChar: /([\'\"\`\.\|\[\]\~\\\*\?\+\^\$\(\)\=\>\<\!])/g,
+    regSpecialChar1: /(\\)/g
 };
 module.exports = {
     regex: regex

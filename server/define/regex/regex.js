@@ -47,7 +47,11 @@ var regex={
 
     lua:{
         paramsConvert:/([{,])"(\w+)"/g, //传入lua脚本的参数固定为一个JSON转换的字符；因为lua无法处理引号(双或者单)括起的key，所以需要通过正则替换。对象===>JSON.stringify()===>字符===>正则去除双引号（stringify都为双引号）转换后的字符
-    }
+    },
+
+    //正则中的特殊字符+单双引号+反引号（因为要放在字符串中，不转义会造成字符串中断）
+    regSpecialChar:/([\'\"\`\.\|\[\]\~\\\*\?\+\^\$\(\)\=\>\<\!])/g,
+    regSpecialChar1:/(\\)/g,
 }
 module.exports={
 	regex,

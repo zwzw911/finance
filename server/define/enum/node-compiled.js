@@ -27,11 +27,18 @@ var env = {
     'development': Symbol('development'),
     'production': Symbol('production')
 };
+
+var compOp = {
+    'eq': '$in',
+    'gt': '$gt',
+    'lt': '$lt'
+};
 exports.node = {
     randomStringType: randomStringType,
     userState: userState,
     coll: coll,
-    env: env
+    env: env,
+    compOp: compOp
 };
 
 //# sourceMappingURL=node-compiled.js.map

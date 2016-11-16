@@ -36,93 +36,57 @@ var common = function () {
 
 var sanityInput = function () {
     var _ref2 = _asyncToGenerator(regeneratorRuntime.mark(function _callee2(originalInputValue, inputRule, basedOnInputValue, maxFieldNum) {
-        var dataValidateResult, dataFormatResult, valueKeyResult, duplicateResult, checkResult, singleField;
+        var checkFormatResult, checkResult, singleField;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
             while (1) {
                 switch (_context2.prev = _context2.next) {
                     case 0:
                         _context2.next = 2;
-                        return miscFunc.validateInputValue.checkInputDataValidate(originalInputValue);
+                        return validateFunc.validateInputFormat(originalInputValue, inputRule, maxFieldNum);
 
                     case 2:
-                        dataValidateResult = _context2.sent;
+                        checkFormatResult = _context2.sent;
 
-                        if (!(dataValidateResult.rc > 0)) {
-                            _context2.next = 5;
+                        console.log('check format is ' + JSON.stringify(checkFormatResult));
+
+                        if (!(checkFormatResult.rc > 0)) {
+                            _context2.next = 6;
                             break;
                         }
 
-                        return _context2.abrupt('return', dataValidateResult);
+                        return _context2.abrupt('return', checkFormatResult);
 
-                    case 5:
-                        _context2.next = 7;
-                        return miscFunc.validateInputValue.checkInputDataFormat(originalInputValue);
+                    case 6:
+                        _context2.next = 8;
+                        return validateFunc.validateInputValue(originalInputValue, inputRule, basedOnInputValue);
 
-                    case 7:
-                        dataFormatResult = _context2.sent;
-
-                        if (!(dataFormatResult.rc > 0)) {
-                            _context2.next = 10;
-                            break;
-                        }
-
-                        return _context2.abrupt('return', dataFormatResult);
-
-                    case 10:
-                        //3 检查字段数量
-                        valueKeyResult = miscFunc.validateInputValue.checkInputValueKey(originalInputValue, maxFieldNum);
-                        // console.log(`key num result is ${JSON.stringify(valueKeyResult)}`)
-
-                        if (!(valueKeyResult.rc > 0)) {
-                            _context2.next = 13;
-                            break;
-                        }
-
-                        return _context2.abrupt('return', valueKeyResult);
-
-                    case 13:
-                        //4 检查是否有重复字段
-                        duplicateResult = miscFunc.validateInputValue.checkInputValueDuplicateKey(originalInputValue);
-                        // console.log(`dup check result is ${duplicateResult}`)
-
-                        if (!(duplicateResult.rc > 0)) {
-                            _context2.next = 16;
-                            break;
-                        }
-
-                        return _context2.abrupt('return', duplicateResult);
-
-                    case 16:
-                        _context2.next = 18;
-                        return miscFunc.validateInputValue.checkInput(originalInputValue, inputRule, basedOnInputValue);
-
-                    case 18:
+                    case 8:
                         checkResult = _context2.sent;
                         _context2.t0 = regeneratorRuntime.keys(checkResult);
 
-                    case 20:
+                    case 10:
                         if ((_context2.t1 = _context2.t0()).done) {
-                            _context2.next = 26;
+                            _context2.next = 16;
                             break;
                         }
 
                         singleField = _context2.t1.value;
 
                         if (!(checkResult[singleField].rc > 0)) {
-                            _context2.next = 24;
+                            _context2.next = 14;
                             break;
                         }
 
                         return _context2.abrupt('return', { rc: 99999, msg: checkResult });
 
-                    case 24:
-                        _context2.next = 20;
+                    case 14:
+                        _context2.next = 10;
                         break;
 
-                    case 26:
+                    case 16:
                         return _context2.abrupt('return', { rc: 0 });
 
-                    case 27:
+                    case 17:
                     case 'end':
                         return _context2.stop();
                 }
@@ -153,7 +117,7 @@ var sanitySearchInput = function () {
                 switch (_context3.prev = _context3.next) {
                     case 0:
                         _context3.next = 2;
-                        return miscFunc.validateInputValue.validateInputSearchFormat(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
+                        return validateFunc.validateInputSearchFormat(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
 
                     case 2:
                         formatCheckResult = _context3.sent;
@@ -167,7 +131,7 @@ var sanitySearchInput = function () {
 
                     case 5:
                         _context3.next = 7;
-                        return miscFunc.validateInputValue.validateInputSearch(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
+                        return validateFunc.validateInputSearch(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
 
                     case 7:
                         valueCheckResult = _context3.sent;
@@ -481,9 +445,10 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 var appSetting = require('../../config/global/appSetting');
 
 var inputRule = require('../../define/validateRule/inputRule').inputRule;
-var miscFunc = require('../../assist/misc-compiled').func;
-// var validate=miscFunc.validate
-var checkInterval = miscFunc.checkInterval;
+var validateFunc = require('../../assist/validateFunc').func;
+var miscFunc = require('../../assist/misc');
+// var validate=validateFunc.validate
+var checkInterval = require('../../assist/misc-compiled').checkInterval;
 
 /*                      error               */
 var pageError = require('../../define/error/pageError');
@@ -495,6 +460,8 @@ var billTypeDbOperation = require('../../model/mongo/billTypeModel');
 var billDbOperation = require('../../model/mongo/billModel');
 //var fkAdditionalFields=require('../../model/mongo/not_used_fkAdditionalFieldsModel')
 
+/*                      func                   */
+var populateSingleDoc = require('../../assist/misc-compiled').populateSingleDoc;
 /*                      regex               */
 var coll = require('../../define/enum/node').node.coll;
 /*                      enum                */
@@ -549,7 +516,7 @@ var fkAdditionalFieldsConfig = {
     }
 };function returnResult(rc) {
     if (envEnum.production === appSetting.env) {
-        return miscFunc.formatRc(rc);
+        return validateFunc.formatRc(rc);
     } else {
         return rc;
     }
@@ -704,9 +671,9 @@ department['create'] = function () {
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
                         //     console.log(`before sant ${sanitizedInputValue.msg}`)
-                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
+                        //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
 
-                        arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values));
+                        arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values));
 
                         //3 检查外键是否存在
                         _iteratorNormalCompletion2 = true;
@@ -789,7 +756,7 @@ department['create'] = function () {
                         for (_iterator3 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                             _doc = _step3.value;
 
-                            miscFunc.constructCreateCriteria(_doc);
+                            validateFunc.constructCreateCriteria(_doc);
                         }
                         //5. 对db执行操作
                         _context10.next = 48;
@@ -841,7 +808,7 @@ department['create'] = function () {
 
                     case 61:
                         _context10.next = 63;
-                        return miscFunc.populateSingleDoc(result.msg[0], populateOpt.department, populatedFields.department);
+                        return populateSingleDoc(result.msg[0], populateOpt.department, populatedFields.department);
 
                     case 63:
                         populateResult = _context10.sent;
@@ -883,7 +850,7 @@ department['remove'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
@@ -935,7 +902,7 @@ department['update'] = function () {
 
                         //2. 将client输入转换成server端的格式()
                         // console.log(`before convert ${JSON.stringify(req.body.values)}`)
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         // console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
@@ -943,7 +910,7 @@ department['update'] = function () {
 
                         delete convertedResult._id;
                         //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-                        miscFunc.constructUpdateCriteria(convertedResult);
+                        validateFunc.constructUpdateCriteria(convertedResult);
                         // console.log(`construct update is ${JSON.stringify(convertedResult)}`)
                         //5 上级不能设成自己
 
@@ -997,7 +964,7 @@ department['update'] = function () {
 
                     case 24:
                         _context12.next = 26;
-                        return miscFunc.populateSingleDoc(result.msg, populateOpt.department, populatedFields.department);
+                        return populateSingleDoc(result.msg, populateOpt.department, populatedFields.department);
 
                     case 26:
                         populateResult = _context12.sent;
@@ -1062,7 +1029,7 @@ department['readName'] = function () {
                         // console.log(`constructedValue is ${JSON.stringify(constructedValue)}`)
 
                         _context14.next = 5;
-                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.department);
+                        return validateFunc.checkSearchValue(constructedValue, inputRule.department);
 
                     case 5:
                         validateResult = _context14.sent;
@@ -1137,9 +1104,9 @@ employee['create'] = function () {
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
                         //     console.log(`before sant ${sanitizedInputValue.msg}`)
-                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
+                        //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
 
-                        arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values));
+                        arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values));
                         //3 检查外键是否存在
                         _iteratorNormalCompletion4 = true;
                         _didIteratorError4 = false;
@@ -1240,7 +1207,7 @@ employee['create'] = function () {
                         for (_iterator5 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
                             _doc2 = _step5.value;
 
-                            miscFunc.constructCreateCriteria(_doc2);
+                            validateFunc.constructCreateCriteria(_doc2);
                         }
                         //5. 对db执行操作
                         _context15.next = 54;
@@ -1292,7 +1259,7 @@ employee['create'] = function () {
 
                     case 67:
                         _context15.next = 69;
-                        return miscFunc.populateSingleDoc(result.msg[0], populateOpt.employee, populatedFields.employee);
+                        return populateSingleDoc(result.msg[0], populateOpt.employee, populatedFields.employee);
 
                     case 69:
                         populateResult = _context15.sent;
@@ -1334,7 +1301,7 @@ employee['remove'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
@@ -1385,14 +1352,14 @@ employee['update'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //3 提取数据
 
                         id = convertedResult._id;
 
                         delete convertedResult._id;
                         //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-                        miscFunc.constructUpdateCriteria(convertedResult);
+                        validateFunc.constructUpdateCriteria(convertedResult);
                         //5 上级不能设成自己
 
                         if (!(id === convertedResult.leader)) {
@@ -1464,7 +1431,7 @@ employee['update'] = function () {
 
                     case 30:
                         _context17.next = 32;
-                        return miscFunc.populateSingleDoc(result.msg, populateOpt.employee, populatedFields.employee);
+                        return populateSingleDoc(result.msg, populateOpt.employee, populatedFields.employee);
 
                     case 32:
                         populateResult = _context17.sent;
@@ -1527,7 +1494,7 @@ employee['readName'] = function () {
                         // console.log(`name is ${req.params.name}`)
                         constructedValue = { name: { value: req.params.name } };
                         _context19.next = 5;
-                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.employee);
+                        return validateFunc.checkSearchValue(constructedValue, inputRule.employee);
 
                     case 5:
                         validateResult = _context19.sent;
@@ -1600,9 +1567,9 @@ billType['create'] = function () {
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
                         /*    console.log(`before sant ${sanitizedInputValue.msg}`)
-                            console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)*/
+                            console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)*/
 
-                        arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values));
+                        arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values));
                         //3 检查外键是否存在
                         _iteratorNormalCompletion6 = true;
                         _didIteratorError6 = false;
@@ -1684,7 +1651,7 @@ billType['create'] = function () {
                         for (_iterator7 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
                             _doc4 = _step7.value;
 
-                            miscFunc.constructCreateCriteria(_doc4);
+                            validateFunc.constructCreateCriteria(_doc4);
                         }
 
                         // console.log(`arr`)
@@ -1769,7 +1736,7 @@ billType['create'] = function () {
 
                     case 72:
                         _context20.next = 74;
-                        return miscFunc.populateSingleDoc(result.msg[0], populateOpt.billType, populatedFields.billType);
+                        return populateSingleDoc(result.msg[0], populateOpt.billType, populatedFields.billType);
 
                     case 74:
                         populateResult = _context20.sent;
@@ -1812,7 +1779,7 @@ billType['update'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
@@ -1846,7 +1813,7 @@ billType['update'] = function () {
                         //console.log(`after get ${JSON.stringify(convertedResult)}`)
 
                         //5 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-                        miscFunc.constructUpdateCriteria(convertedResult);
+                        validateFunc.constructUpdateCriteria(convertedResult);
                         // console.log(`after check null field ${JSON.stringify(convertedResult)}`)
                         //6 检查外键是否存在
 
@@ -1895,7 +1862,7 @@ billType['update'] = function () {
 
                     case 30:
                         _context21.next = 32;
-                        return miscFunc.populateSingleDoc(result.msg, populateOpt.billType, populatedFields.billType);
+                        return populateSingleDoc(result.msg, populateOpt.billType, populatedFields.billType);
 
                     case 32:
                         populateResult = _context21.sent;
@@ -1916,33 +1883,46 @@ billType['update'] = function () {
 
 billType['remove'] = function () {
     var _ref22 = _asyncToGenerator(regeneratorRuntime.mark(function _callee22(req, res, next) {
-        var inputResult, sanitizedInputValue, convertedResult, id, result;
+        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
         return regeneratorRuntime.wrap(function _callee22$(_context22) {
             while (1) {
                 switch (_context22.prev = _context22.next) {
                     case 0:
-                        //对于delete，需要将参数转换成{field:{value:'val'}}
+                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
                         inputResult = {};
 
+                        console.log('delete params is ' + JSON.stringify(req.params.id));
+                        checkResult = validateFunc.validateDeleteInput(req.params.id);
+
+                        console.log('delete check result is ' + JSON.stringify(checkResult));
+
+                        if (!(checkResult.rc > 0)) {
+                            _context22.next = 6;
+                            break;
+                        }
+
+                        return _context22.abrupt('return', res.json(returnResult(checkResult)));
+
+                    case 6:
                         inputResult['_id'] = { value: req.params.id };
                         //1 检查输入的参数，并作转换（如果是字符串）
-                        _context22.next = 4;
+                        _context22.next = 9;
                         return sanityInput(inputResult, inputRule.billType, true, maxFieldNum.billType);
 
-                    case 4:
+                    case 9:
                         sanitizedInputValue = _context22.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context22.next = 7;
+                            _context22.next = 12;
                             break;
                         }
 
                         return _context22.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
-                    case 7:
+                    case 12:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(inputResult);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(inputResult);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3 提取数据
 
@@ -1950,14 +1930,14 @@ billType['remove'] = function () {
 
                         delete convertedResult._id;
                         // console.log(`id is ${id}`)
-                        _context22.next = 12;
+                        _context22.next = 17;
                         return billTypeDbOperation.remove(id);
 
-                    case 12:
+                    case 17:
                         result = _context22.sent;
                         return _context22.abrupt('return', res.json(returnResult(result)));
 
-                    case 14:
+                    case 19:
                     case 'end':
                         return _context22.stop();
                 }
@@ -2006,46 +1986,46 @@ billType['readName'] = function () {
                     case 0:
                         recorder = void 0;
 
+                        console.log('parems is ' + JSON.stringify(req.params.name));
+
                         if (!req.params.name) {
-                            _context24.next = 13;
+                            _context24.next = 14;
                             break;
                         }
 
-                        // console.log(`name is ${req.params.name}`)
+                        console.log('name is ' + req.params.name);
                         constructedValue = { name: { value: req.params.name } };
-                        _context24.next = 5;
-                        return miscFunc.validateInputValue.checkSearchValue(constructedValue, inputRule.billType);
+                        validateResult = validateFunc.checkSearchValue(constructedValue, inputRule.billType);
 
-                    case 5:
-                        validateResult = _context24.sent;
+                        console.log('search result check is ' + JSON.stringify(validateResult));
 
                         if (!(validateResult['name']['rc'] > 0)) {
-                            _context24.next = 8;
+                            _context24.next = 9;
                             break;
                         }
 
                         return _context24.abrupt('return', res.json(validateResult['name']));
 
-                    case 8:
-                        _context24.next = 10;
+                    case 9:
+                        _context24.next = 11;
                         return billTypeDbOperation.readName(req.params.name);
 
-                    case 10:
+                    case 11:
                         recorder = _context24.sent;
-                        _context24.next = 16;
+                        _context24.next = 17;
                         break;
 
-                    case 13:
-                        _context24.next = 15;
+                    case 14:
+                        _context24.next = 16;
                         return billTypeDbOperation.readName();
 
-                    case 15:
+                    case 16:
                         recorder = _context24.sent;
 
-                    case 16:
+                    case 17:
                         return _context24.abrupt('return', res.json(returnResult(recorder)));
 
-                    case 17:
+                    case 18:
                     case 'end':
                         return _context24.stop();
                 }
@@ -2060,29 +2040,36 @@ billType['readName'] = function () {
 
 billType['search'] = function () {
     var _ref25 = _asyncToGenerator(regeneratorRuntime.mark(function _callee25(req, res, next) {
-        var sanitizedInputValue;
+        var sanitizedInputValue, searchParams, recorder;
         return regeneratorRuntime.wrap(function _callee25$(_context25) {
             while (1) {
                 switch (_context25.prev = _context25.next) {
                     case 0:
-                        //let recorder
-                        console.log('search input is ' + JSON.stringify(req.body.values));
-                        _context25.next = 3;
+                        _context25.next = 2;
                         return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.billType, coll.billType, inputRule);
 
-                    case 3:
+                    case 2:
                         sanitizedInputValue = _context25.sent;
 
-                        console.log('santiy result is ' + sanitizedInputValue);
-
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context25.next = 7;
+                            _context25.next = 5;
                             break;
                         }
 
                         return _context25.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
-                    case 7:
+                    case 5:
+                        searchParams = validateFunc.convertClientSearchValueToServerFormat(req.body.values, fkAdditionalFieldsConfig.billType);
+
+                        console.log('convert search params id ' + JSON.stringify(searchParams));
+                        _context25.next = 9;
+                        return billType.search(searchParams);
+
+                    case 9:
+                        recorder = _context25.sent;
+                        return _context25.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 11:
                     case 'end':
                         return _context25.stop();
                 }
@@ -2125,9 +2112,9 @@ bill['create'] = function () {
                         arrayResult = [];
                         //从{name:{value:'11'}}====>{name:'11'}
                         //     console.log(`before sant ${sanitizedInputValue.msg}`)
-                        //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
+                        //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
 
-                        arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values));
+                        arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values));
                         //3 检查外键是否存在
                         _iteratorNormalCompletion8 = true;
                         _didIteratorError8 = false;
@@ -2217,7 +2204,7 @@ bill['create'] = function () {
                         for (_iterator9 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
                             _doc5 = _step9.value;
 
-                            miscFunc.constructCreateCriteria(_doc5);
+                            validateFunc.constructCreateCriteria(_doc5);
                         }
                         //5. 对db执行操作
                         _context26.next = 52;
@@ -2269,7 +2256,7 @@ bill['create'] = function () {
 
                     case 65:
                         _context26.next = 67;
-                        return miscFunc.populateSingleDoc(result.msg[0], populateOpt.bill, populatedFields.bill);
+                        return populateSingleDoc(result.msg[0], populateOpt.bill, populatedFields.bill);
 
                     case 67:
                         populateResult = _context26.sent;
@@ -2311,7 +2298,7 @@ bill['remove'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
                         //3， 提取数据并执行操作
 
@@ -2361,14 +2348,14 @@ bill['update'] = function () {
                     case 5:
 
                         //2. 将client输入转换成server端的格式
-                        convertedResult = miscFunc.convertClientValueToServerFormat(req.body.values);
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
                         //3， 提取数据并执行操作
 
                         id = convertedResult._id;
 
                         delete convertedResult._id;
                         //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-                        miscFunc.constructUpdateCriteria(convertedResult);
+                        validateFunc.constructUpdateCriteria(convertedResult);
                         //5. 检查可能的外键（billType/reimburser）
 
                         if (!convertedResult.billType) {
@@ -2432,7 +2419,7 @@ bill['update'] = function () {
 
                     case 28:
                         _context28.next = 30;
-                        return miscFunc.populateSingleDoc(result.msg, populateOpt.bill, populatedFields.bill);
+                        return populateSingleDoc(result.msg, populateOpt.bill, populatedFields.bill);
 
                     case 30:
                         populateResult = _context28.sent;
@@ -2484,7 +2471,7 @@ bill['readAll'] = function () {
     if(req.params.name){
         console.log(`name is ${req.params.name}`)
         let constructedValue={name:{value:req.params.name}}
-        let validateResult=await miscFunc.validate.checkSearchValue(constructedValue,inputRule.billType)
+        let validateResult=await validateFunc.validate.checkSearchValue(constructedValue,inputRule.billType)
         if(validateResult['name']['rc']>0){
             return res.json(validateResult['name'])
         }

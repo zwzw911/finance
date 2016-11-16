@@ -383,13 +383,28 @@ var valueTypeCheck=function(test){
 }
 
 var convertClientSearchValueToServerFormat=function(test){
-    test.expect(1)
+    test.expect(2)
     let func=testModule.convertClientSearchValueToServerFormat
+    var fkAdditionalFieldsConfig={
 
-    let value={field1:['val1','val2'],field2:['val3','val4']}
-    let result=func(value)
-    console.log(JSON.stringify(result))
-    test.equal(JSON.stringify(result),'{$or:[field1:{$in:["val1"]},field2:{$in:["val2"]}]}','format server msg failed')
+            //冗余字段（nested）的名称：具体冗余那几个字段
+            //parentBillType:此字段为外键，需要冗余字段
+            //relatedColl：外键对应的coll
+            //nestedPrefix： 冗余字段一般放在nested结构中
+            //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
+            parentBillType:{relatedColl:"billType",nestedPrefix:'parentBillTypeFields',forSelect:'name title',forSetValue:['name title']}
+
+    }
+    let value={name:['val1','val2'],parentBillType:[{name:'val3'},{name:'val4'}]}
+    let result=func(value,fkAdditionalFieldsConfig)
+    // console.log(JSON.stringify(result))
+    test.equal(JSON.stringify(result),'{"$or":[{"name":{"$in":["val1","val2"]}},{"parentBillType.name":{"$in":["val3","val4"]}}]}','format server msg failed')
+
+    value={name:['val1','val2'],parentBillType:[{name:'val3',title:'MIT'},{name:'val4'}]}
+    result=func(value,fkAdditionalFieldsConfig)
+    // console.log(JSON.stringify(result))
+    test.equal(JSON.stringify(result),'{"$or":[{"name":{"$in":["val1","val2"]}},{"parentBillType.name":{"$in":["val3","val4"]}},{"parentBillType.title":{"$in":["MIT"]}}]}','format server msg failed')
+
     test.done()
 }
 
@@ -397,10 +412,10 @@ var convertClientSearchValueToServerFormat=function(test){
 
 
 exports.validate={
-    dataTypeCheck,//数据类型检测
-    valueMatchRuleDefineCheck,
-    valueTypeCheck,
-    //convertClientSearchValueToServerFormat//只是用来查看结果
+    // dataTypeCheck,//数据类型检测
+    // valueMatchRuleDefineCheck,
+    // valueTypeCheck,
+    convertClientSearchValueToServerFormat//只是用来查看结果
 /*    _private:{
         valueTypeCheck,
     },

@@ -6,9 +6,10 @@
 var appSetting=require('../../config/global/appSetting')
 
 var inputRule=require('../../define/validateRule/inputRule').inputRule
-var miscFunc=require('../../assist/misc-compiled').func
-// var validate=miscFunc.validate
-var checkInterval=miscFunc.checkInterval
+var validateFunc=require('../../assist/validateFunc').func
+var miscFunc=require('../../assist/misc')
+// var validate=validateFunc.validate
+var checkInterval=require('../../assist/misc-compiled').checkInterval
 
 /*                      error               */
 var pageError=require('../../define/error/pageError')
@@ -20,6 +21,8 @@ var billTypeDbOperation=require('../../model/mongo/billTypeModel')
 var billDbOperation=require('../../model/mongo/billModel')
 //var fkAdditionalFields=require('../../model/mongo/not_used_fkAdditionalFieldsModel')
 
+/*                      func                   */
+var populateSingleDoc=require('../../assist/misc-compiled').populateSingleDoc
 /*                      regex               */
 var coll=require('../../define/enum/node').node.coll
 /*                      enum                */
@@ -90,33 +93,39 @@ async function common(req,res,next){
 async function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNum){
      //console.log(`input value type is ${typeof originalInputValue}`)
     //console.log(`input value is ${JSON.stringify( originalInputValue)}`)
-    //1. 检查post/put上来的数据是否为Object，返回{rc:0,msg:{values}}
-    let dataValidateResult=await miscFunc.validateInputValue.checkInputDataValidate(originalInputValue)
+    //1. 检查格式
+    let checkFormatResult=await validateFunc.validateInputFormat(originalInputValue,inputRule,maxFieldNum)
+    console.log(`check format is ${JSON.stringify(checkFormatResult)}`)
+    if(checkFormatResult.rc>0){
+        return checkFormatResult
+    }
+    /*//1. 检查post/put上来的数据是否为Object，返回{rc:0,msg:{values}}
+    let dataValidateResult=await validateFunc.validateInputValue.checkInputDataValidate(originalInputValue)
     // console.log(`validate result is ${JSON.stringify(dataValidateResult)}`)
     if(dataValidateResult.rc>0){
         //return res.json(returnResult(convertedInput))
             return dataValidateResult
     }
     //2  检查是否为{field:{value:'xxxx'},field2:{value:'yyyy'}}）
-    let dataFormatResult=await miscFunc.validateInputValue.checkInputDataFormat(originalInputValue)
+    let dataFormatResult=await validateFunc.validateInputValue.checkInputDataFormat(originalInputValue)
     // console.log(`format result is ${JSON.stringify(dataFormatResult)}`)
     if(dataFormatResult.rc>0){
         return dataFormatResult
     }
     //3 检查字段数量
-    let valueKeyResult=miscFunc.validateInputValue.checkInputValueKey(originalInputValue,maxFieldNum)
+    let valueKeyResult=validateFunc.validateInputValue.checkInputValueKey(originalInputValue,maxFieldNum)
     // console.log(`key num result is ${JSON.stringify(valueKeyResult)}`)
     if(valueKeyResult.rc>0){
         return valueKeyResult
     }
     //4 检查是否有重复字段
-    let duplicateResult=miscFunc.validateInputValue.checkInputValueDuplicateKey(originalInputValue)
+    let duplicateResult=validateFunc.validateInputValue.checkInputValueDuplicateKey(originalInputValue)
     // console.log(`dup check result is ${duplicateResult}`)
     if(duplicateResult.rc>0){
         return duplicateResult
-    }
+    }*/
     //5 检查输入值的内容是否正确
-    let checkResult=await miscFunc.validateInputValue.checkInput(originalInputValue,inputRule,basedOnInputValue)
+    let checkResult=await validateFunc.validateInputValue(originalInputValue,inputRule,basedOnInputValue)
     //check result 为每个field返回一个{rc,msg}
 /*    if(checkResult.rc>0){
         return checkResult
@@ -146,13 +155,13 @@ async function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFie
 async function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
     // console.log(   `sanitySearchInput in`)
     //1 检查输入格式
-    let formatCheckResult=await miscFunc.validateInputValue.validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    let formatCheckResult=await validateFunc.validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
     // console.log(   `format resuot is ${formatCheckResult}`)
     if(formatCheckResult.rc>0){
         return formatCheckResult
     }
     //2 检查搜索值是否正确
-    let valueCheckResult=await miscFunc.validateInputValue.validateInputSearch(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    let valueCheckResult=await validateFunc.validateInputSearch(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
     // console.log(   `value resuot is ${valueCheckResult}`)
     for(let singleFieldName in valueCheckResult){
         if(valueCheckResult[singleFieldName]['rc']>0){
@@ -165,7 +174,7 @@ async function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,i
 //对returnResult做包装，通过env的判断决定res.json输出的格式
 function returnResult(rc){
     if(envEnum.production===appSetting.env){
-        return miscFunc.formatRc(rc)
+        return validateFunc.formatRc(rc)
     }else{
         return rc
     }
@@ -339,8 +348,8 @@ department['create']=async function (req,res,next){
     let arrayResult=[]
     //从{name:{value:'11'}}====>{name:'11'}
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
-    //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
-    arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values))
+    //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
+    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
 
     //3 检查外键是否存在
     for(let doc of arrayResult){
@@ -355,7 +364,7 @@ department['create']=async function (req,res,next){
     }
     //4 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){
-        miscFunc.constructCreateCriteria(doc)
+        validateFunc.constructCreateCriteria(doc)
     }
     //5. 对db执行操作
     let result=await departmentDbOperation.create(arrayResult)
@@ -363,7 +372,7 @@ department['create']=async function (req,res,next){
             return res.json(result)
     }
     //6. 检查是否需要populate
-    let populateResult=await miscFunc.populateSingleDoc(result.msg[0],populateOpt.department,populatedFields.department)
+    let populateResult=await populateSingleDoc(result.msg[0],populateOpt.department,populatedFields.department)
 
     return res.json(returnResult(populateResult))
 }
@@ -380,7 +389,7 @@ department['remove']=async function (req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3， 提取数据并执行操作
     let id=convertedResult._id
@@ -404,13 +413,13 @@ department['update']=async function (req,res,next){
 
     //2. 将client输入转换成server端的格式()
     // console.log(`before convert ${JSON.stringify(req.body.values)}`)
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     // console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3， 提取数据并执行操作
     let id=convertedResult._id
     delete convertedResult._id
     //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    miscFunc.constructUpdateCriteria(convertedResult)
+    validateFunc.constructUpdateCriteria(convertedResult)
     // console.log(`construct update is ${JSON.stringify(convertedResult)}`)
     //5 上级不能设成自己
     if(id===convertedResult.parentDepartment){
@@ -438,7 +447,7 @@ department['update']=async function (req,res,next){
         return res.json(returnResult(pageError.department.departmentNotExists))
     }
     //8 执行可能的populate操作
-    let populateResult=await miscFunc.populateSingleDoc(result.msg,populateOpt.department,populatedFields.department)
+    let populateResult=await populateSingleDoc(result.msg,populateOpt.department,populatedFields.department)
     return res.json(returnResult(populateResult))
 }
 
@@ -455,7 +464,7 @@ department['readName']=async function (req,res,next){
         // console.log(`name is ${req.params.name}`)
         let constructedValue={name:{value:req.params.name}}
         // console.log(`constructedValue is ${JSON.stringify(constructedValue)}`)
-        let validateResult=await miscFunc.validateInputValue.checkSearchValue(constructedValue,inputRule.department)
+        let validateResult=await validateFunc.checkSearchValue(constructedValue,inputRule.department)
         // console.log(`validateResult value is ${validateResult}`)
         if(validateResult['name']['rc']>0){
             return res.json(validateResult['name'])
@@ -493,8 +502,8 @@ employee['create']=async function (req,res,next){
     let arrayResult=[]
     //从{name:{value:'11'}}====>{name:'11'}
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
-    //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
-    arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values))
+    //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
+    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
     //3 检查外键是否存在
     for(let doc of arrayResult){
         if(doc.department){
@@ -518,7 +527,7 @@ employee['create']=async function (req,res,next){
     }
     //4 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){
-        miscFunc.constructCreateCriteria(doc)
+        validateFunc.constructCreateCriteria(doc)
     }
     //5. 对db执行操作
     let result=await employeeDbOperation.create(arrayResult)
@@ -527,7 +536,7 @@ employee['create']=async function (req,res,next){
     }
 
     //6. 检查是否需要populate
-    let populateResult=await miscFunc.populateSingleDoc(result.msg[0],populateOpt.employee,populatedFields.employee)
+    let populateResult=await populateSingleDoc(result.msg[0],populateOpt.employee,populatedFields.employee)
 
     return res.json(returnResult(populateResult))
 }
@@ -542,7 +551,7 @@ employee['remove']=async function (req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3， 提取数据并执行操作
     let id=convertedResult._id
@@ -562,12 +571,12 @@ employee['update']=async function (req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //3 提取数据
     let id=convertedResult._id
     delete convertedResult._id
     //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    miscFunc.constructUpdateCriteria(convertedResult)
+    validateFunc.constructUpdateCriteria(convertedResult)
     //5 上级不能设成自己
     if(id===convertedResult.leader){
         return res.json(returnResult(pageError.employee.leaderCantBeSelf))
@@ -603,7 +612,7 @@ employee['update']=async function (req,res,next){
 
 // console.log(`employee update in`)
     //8 执行可能的populate操作
-    let populateResult=await miscFunc.populateSingleDoc(result.msg,populateOpt.employee,populatedFields.employee)
+    let populateResult=await populateSingleDoc(result.msg,populateOpt.employee,populatedFields.employee)
     return res.json(returnResult(populateResult))
 }
 
@@ -619,7 +628,7 @@ employee['readName']=async function (req,res,next){
     if(req.params.name){
         // console.log(`name is ${req.params.name}`)
         let constructedValue={name:{value:req.params.name}}
-        let validateResult=await miscFunc.validateInputValue.checkSearchValue(constructedValue,inputRule.employee)
+        let validateResult=await validateFunc.checkSearchValue(constructedValue,inputRule.employee)
         if(validateResult['name']['rc']>0){
             return res.json(validateResult['name'])
         }
@@ -643,15 +652,14 @@ billType['create']=async function(req,res,next){
     let sanitizedInputValue=await sanityInput(req.body.values,inputRule.billType,false,maxFieldNum.billType)
     //console.log(`1st san ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
-
         return res.json(returnResult(sanitizedInputValue))
     }
     //2. 数据加入数组，采用insertMany，所有输入必须是数组
     let arrayResult=[]
     //从{name:{value:'11'}}====>{name:'11'}
 /*    console.log(`before sant ${sanitizedInputValue.msg}`)
-    console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)*/
-    arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values))
+    console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)*/
+    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
     //3 检查外键是否存在
     for(let doc of arrayResult){
         if(doc.parentBillType){
@@ -665,7 +673,7 @@ billType['create']=async function(req,res,next){
     }
     //4 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){
-        miscFunc.constructCreateCriteria(doc)
+        validateFunc.constructCreateCriteria(doc)
     }
 
 // console.log(`arr`)
@@ -689,7 +697,7 @@ billType['create']=async function(req,res,next){
     }
 
     //6. 检查是否需要populate
-    let populateResult=await miscFunc.populateSingleDoc(result.msg[0],populateOpt.billType,populatedFields.billType)
+    let populateResult=await populateSingleDoc(result.msg[0],populateOpt.billType,populatedFields.billType)
 
     return res.json(returnResult(populateResult))
 }
@@ -703,7 +711,7 @@ billType['update']=async function(req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3， 提取数据并执行操作
     let id=convertedResult._id
@@ -723,7 +731,7 @@ billType['update']=async function(req,res,next){
     //console.log(`after get ${JSON.stringify(convertedResult)}`)
 
     //5 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    miscFunc.constructUpdateCriteria(convertedResult)
+    validateFunc.constructUpdateCriteria(convertedResult)
     // console.log(`after check null field ${JSON.stringify(convertedResult)}`)
     //6 检查外键是否存在
     if(null!==convertedResult.parentBillType && undefined!==convertedResult.parentBillType){
@@ -746,7 +754,7 @@ billType['update']=async function(req,res,next){
     }
     //8 执行可能的populate操作
     // console.log(`db update result is ${JSON.stringify(result)}`)
-    let populateResult=await miscFunc.populateSingleDoc(result.msg,populateOpt.billType,populatedFields.billType)
+    let populateResult=await populateSingleDoc(result.msg,populateOpt.billType,populatedFields.billType)
     return res.json(returnResult(populateResult))
 
     // return res.json(returnResult(result))
@@ -754,8 +762,14 @@ billType['update']=async function(req,res,next){
 
 
 billType['remove']=async function(req,res,next){
-    //对于delete，需要将参数转换成{field:{value:'val'}}
+    //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
     let inputResult={}
+    console.log(`delete params is ${JSON.stringify(req.params.id)}`)
+    let checkResult=validateFunc.validateDeleteInput(req.params.id)
+    console.log(`delete check result is ${JSON.stringify(checkResult)}`)
+    if(checkResult.rc>0){
+        return res.json(returnResult(checkResult))
+    }
     inputResult['_id']={value:req.params.id}
     //1 检查输入的参数，并作转换（如果是字符串）
     let sanitizedInputValue=await sanityInput(inputResult,inputRule.billType,true,maxFieldNum.billType)
@@ -767,7 +781,7 @@ billType['remove']=async function(req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(inputResult)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(inputResult)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3 提取数据
     let id=convertedResult._id
@@ -790,10 +804,12 @@ billType['readAll']=async function(req,res,next){
 
 billType['readName']=async function(req,res,next){
     let recorder
+    console.log(`parems is ${JSON.stringify(req.params.name)}`)
     if(req.params.name){
-        // console.log(`name is ${req.params.name}`)
+        console.log(`name is ${req.params.name}`)
         let constructedValue={name:{value:req.params.name}}
-        let validateResult=await miscFunc.validateInputValue.checkSearchValue(constructedValue,inputRule.billType)
+        let validateResult=validateFunc.checkSearchValue(constructedValue,inputRule.billType)
+        console.log(`search result check is ${JSON.stringify(validateResult)}`)
         if(validateResult['name']['rc']>0){
             return res.json(validateResult['name'])
         }
@@ -810,13 +826,25 @@ billType['readName']=async function(req,res,next){
 
 billType['search']=async function(req,res,next){
     //let recorder
-    console.log(`search input is ${JSON.stringify(req.body.values)}`)
+    // console.log(`search input is ${JSON.stringify(req.body.values)}`)
+/*    console.log(`escap result is ${miscFunc.escapeRegSpecialChar(req.body.values.name[0])}`)
+    let escapeChar=miscFunc.escapeRegSpecialChar(req.body.values.name[0])
+    let reg=new RegExp(escapeChar)
+    console.log(`reg is ${reg}`)
+    let str='123'
+    let matchRes=str.match(reg)
+    console.log(matchRes)*/
     let sanitizedInputValue=await sanitySearchInput(req.body.values,fkAdditionalFieldsConfig.billType,coll.billType,inputRule)
-    console.log(`santiy result is ${sanitizedInputValue}`)
+    // console.log(`santiy result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
         return res.json(returnResult(sanitizedInputValue))
     }
 
+    let searchParams=validateFunc.convertClientSearchValueToServerFormat(req.body.values,fkAdditionalFieldsConfig.billType)
+    console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    let recorder=await billType.search(searchParams)
+
+    return res.json(returnResult(recorder))
     //console.log(`db op result is ${JSON.stringify(result)}`)
 
     //return res.json(returnResult(recorder))
@@ -839,8 +867,8 @@ bill['create']=async function (req,res,next){
     let arrayResult=[]
     //从{name:{value:'11'}}====>{name:'11'}
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
-    //  console.log(`after sant ${miscFunc.convertClientValueToServerFormat(req.body.values)}`)
-    arrayResult.push(miscFunc.convertClientValueToServerFormat(req.body.values))
+    //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
+    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
     //3 检查外键是否存在
     for(let doc of arrayResult){
         /*        let fkReimburserResult=await employeeDbOperation.findById(doc.reimburser)
@@ -860,7 +888,7 @@ bill['create']=async function (req,res,next){
 
     //4 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){
-        miscFunc.constructCreateCriteria(doc)
+        validateFunc.constructCreateCriteria(doc)
     }
     //5. 对db执行操作
     let result=await billDbOperation.create(arrayResult)
@@ -869,7 +897,7 @@ bill['create']=async function (req,res,next){
     }
 
     //6. 检查是否需要populate
-    let populateResult=await miscFunc.populateSingleDoc(result.msg[0],populateOpt.bill,populatedFields.bill)
+    let populateResult=await populateSingleDoc(result.msg[0],populateOpt.bill,populatedFields.bill)
 
     return res.json(returnResult(populateResult))
 }
@@ -886,7 +914,7 @@ bill['remove']=async function (req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
     //3， 提取数据并执行操作
     let id=convertedResult._id
@@ -908,12 +936,12 @@ bill['update']=async function (req,res,next){
     }
 
     //2. 将client输入转换成server端的格式
-    let convertedResult=miscFunc.convertClientValueToServerFormat(req.body.values)
+    let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
     //3， 提取数据并执行操作
     let id=convertedResult._id
     delete convertedResult._id
     //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    miscFunc.constructUpdateCriteria(convertedResult)
+    validateFunc.constructUpdateCriteria(convertedResult)
     //5. 检查可能的外键（billType/reimburser）
     if(convertedResult.billType){
         let fkBillTypeResult=await checkIdExist(coll.billType,coll.bill,'billType',convertedResult.billType)
@@ -944,7 +972,7 @@ bill['update']=async function (req,res,next){
         return res.json(returnResult(pageError.bill.billNotExist))
     }
     //7 执行可能的populate操作
-    let populateResult=await miscFunc.populateSingleDoc(result.msg,populateOpt.bill,populatedFields.bill)
+    let populateResult=await populateSingleDoc(result.msg,populateOpt.bill,populatedFields.bill)
     return res.json(returnResult(populateResult))
 
     // return res.json(returnResult(result))
@@ -964,7 +992,7 @@ bill['readAll']=async function (req,res,next){
     if(req.params.name){
         console.log(`name is ${req.params.name}`)
         let constructedValue={name:{value:req.params.name}}
-        let validateResult=await miscFunc.validate.checkSearchValue(constructedValue,inputRule.billType)
+        let validateResult=await validateFunc.validate.checkSearchValue(constructedValue,inputRule.billType)
         if(validateResult['name']['rc']>0){
             return res.json(validateResult['name'])
         }

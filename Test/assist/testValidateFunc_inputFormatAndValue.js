@@ -54,7 +54,7 @@ var validateInputFormat=function(test){
     test.equal(result.rc,validateInputFormatError.inputValuesFormatWrong.rc,'value key value is undefined check fail')
     value={a:{value:null}}
     result=func(value,rules,maxFieldNum)
-    test.equal(result.rc,validateInputFormatError.inputValuesFormatWrong.rc,'value key value is undefined check fail')
+    test.equal(result.rc,validateInputFormatError.valueNotDefineWithRequireTrue.rc,'value key value is undefined check fail')
 
     //6. 键必须在rule中定义
     value={'notDefinedInRule':{value:''}}

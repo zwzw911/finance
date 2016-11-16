@@ -88,9 +88,12 @@ var assistError={
             inputValuesTypeWrong:{rc:69718,msg:{client:'参数格式不正确',server:'参数格式不正确，必须是JSON'}},
             // inputValuesParseFail:{rc:69720,msg:{client:'参数格式不正确',server:'参数无法解析成JSON'}},
             inputValuesFormatWrong:{rc:69722,msg:{client:'参数格式不正确',server:'参数格式必须是field:{value:val}'}},
+            //inputValuesFiledValueNotSet:{rc:69723,msg:{client:'参数格式不正确',server:'参数中字段的value没有定义'}},
 
             inputValueFieldNumExceed:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
             inputValueHasDuplicateField:{rc:69726,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
+
+            deleteFormatWrong:{rc:69728,msg:{client:"格式不正确，无法删除失败",server:"删除的参数必须在URL中"}},
         },
         validateInputSearchFormat:{
             inputSearchNotObject:{rc:69500,msg:{client:`查询参数格式不正确`,server:`查询参数必须是对象`}},
@@ -103,6 +106,12 @@ var assistError={
             inputSearchValueElementKeyNotDefined:{rc:69513,msg:{client:`查询字符不正确`,server:`查询参数的键值中的key没有在fkAdditionalConfig中定义`}},
             inputSearchNoRelatedRule:{rc:69514,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
             inputSearchValueElementMustBeStringNumberDate:{rc:69516,msg:{client:`查询字符不正确`,server:`查询参数中非外键的键值值，其中每个元素必须是字符数字日期`}},
+            inputSearchValueElementSpecialTypeShouldBeObject:{rc:69517,msg:{client:`查询字符格式不正确`,server:`查询参数为数字日期，值应该为对象`}},
+            inputSearchValueElementStringCantBeObject:{rc:69518,msg:{client:`查询字符格式不正确`,server:`查询参数的键值中的查询字符必须是对象`}},
+            inputSearchValueElementNeedCompOp:{rc:69519,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含操作符`}},
+            inputSearchValueElementCompOpWrong:{rc:69520,msg:{client:`查询字符格式不正确`,server:`查询参数中，操作符不是预定义的符号之一`}},
+            inputSearchValueElementNeedValue:{rc:69522,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含value`}},
+            inputSearchValueElementCantContainCompOp:{rc:69524,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为字符，不能为对象`}},
         },
     },
     misc:{

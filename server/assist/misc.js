@@ -370,6 +370,14 @@ var convertURLSearchString=function(searchString,cb){
         return cb(null,{rc:0,msg:curStr.trim()})
     })
 }
+
+//如果字符中有正则中用到的特殊字符，跳脱（防止此字符被用在正则中时，其中的特殊字符被reg处理）
+function escapeRegSpecialChar(str){
+    var reg=regex.regSpecialChar
+    //设置\\，实际打印为\，使用时会自动转义
+    return str.replace(reg,'\\$1')
+}
+
 module.exports={
     checkInterval,
     generateRandomString,
@@ -390,4 +398,6 @@ module.exports={
     formatRc,
 
     convertURLSearchString,
+    escapeRegSpecialChar,
+
 }

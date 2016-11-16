@@ -153,6 +153,19 @@ function findById(id) {
     });
 }
 
+function search(searchParams) {
+    return new Promise(function (resolve, reject) {
+        billTypeModel.find(searchParams, function (err, result) {
+            if (err) {
+                console.log("db err is " + JSON.stringify(err));
+                resolve(mongooseErrorHandler(err));
+            }
+            console.log("billType find result is " + JSON.stringify(result));
+            resolve({ rc: 0, msg: result });
+        });
+    });
+}
+
 module.exports = {
     create: create,
     update: update,
@@ -160,8 +173,8 @@ module.exports = {
     removeAll: removeAll,
     readAll: readAll,
     readName: readName,
-    findById: findById
-
+    findById: findById,
+    search: search
 };
 
 //# sourceMappingURL=billTypeModel-compiled.js.map

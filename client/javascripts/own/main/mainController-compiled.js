@@ -227,7 +227,7 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
             console.log('add query in');
             console.log('activatedQueryValue length is ' + Object.keys($scope.allData.activeQueryValue).length);
             financeHelper.addQueryValue(queryFiled, queryValue, activatedQueryValue);
-            console.log('after add query value ' + activatedQueryValue);
+            console.log('after add query value ' + JSON.stringify(activatedQueryValue));
         },
         queryFieldChange: function queryFieldChange(selectedQueryField) {
             $scope.allData.selectedQueryFieldValue = '';

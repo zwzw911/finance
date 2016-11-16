@@ -27,9 +27,16 @@ var env={
     'development':Symbol('development'),
     'production':Symbol('production')
 }
+
+var compOp={
+    'eq':'$in',
+    'gt':'$gt',
+    'lt':'$lt'
+}
 exports.node={
     randomStringType:randomStringType,
     userState:userState,
     coll,
     env,
+    compOp,
 }

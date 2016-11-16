@@ -157,14 +157,30 @@ var formatRc=function(test){
     test.done()
 }
 
+function escapeRegSpecialChar(test){
+    test.expect(1)
+    let func=testModule.escapeRegSpecialChar
+    let value,result
 
+    value='\\!'
+    result=func(value)
+    console.log(result)
+    test.equal(result,'\\a\\!','escape special char failed')
+
+    value='\\as`"()[]<>?+=*^$'
+    console.log(value)
+    result=func(value)
+    //显示'\\'，console.log打印为\
+    test.equal(result,'\\\\as\\`\\"\\(\\)\\[\\]\\<\\>\\?\\+\\=\\*\\^\\$','escape special char failed')
+    test.done()
+}
 exports.all={
-     generateRandomString:generateRandomString,
-     parseGmFileSize:parseGmFileSize,
-     convertImageFileSizeToByte:convertImageFileSizeToByte,
-     encodeHtml,
-     formatRc,
-
+     //generateRandomString:generateRandomString,
+     //parseGmFileSize:parseGmFileSize,
+     //convertImageFileSizeToByte:convertImageFileSizeToByte,
+     //encodeHtml,
+     //formatRc,
+    escapeRegSpecialChar,
 }
 
 //console.log(testModule.generateRandomString(10,randomStringTypeEnum.complicated))
