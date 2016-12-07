@@ -131,7 +131,7 @@ var sanitySearchInput = function () {
 
                     case 5:
                         _context3.next = 7;
-                        return validateFunc.validateInputSearch(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
+                        return validateFunc.validateInputSearchValue(inputSearch, fkAdditionalFieldsConfig, collName, inputRules);
 
                     case 7:
                         valueCheckResult = _context3.sent;
@@ -312,7 +312,7 @@ var getAdditionalFields = function () {
 //
 //
 /*
-* 说明：根据外键，设置对应的冗余字段
+* 说明：根据外键，查找到对应的记录，并把记录中的字段保存到冗余字段中
 * 输入参数：
 * 1.singleDoc：当前要操作的doc（create或者update，从client输入的数据）
 * 2. fkFieldsName：要添加冗余字段的外键名。数组（可能有多个fk）

@@ -14,7 +14,7 @@ var dataType=require('../../server/define/enum/validEnum').enum.dataType
 var moment=require('moment')
 /*          数据类型的检测         */
 var dataTypeCheck=function(test){
-    test.expect(46);
+    test.expect(55);
 
     let func=testModule.dataTypeCheck
     let result,value,tmp
@@ -31,7 +31,7 @@ var dataTypeCheck=function(test){
      result=func.isEmpty(a)
      test.equal(result,true,'isEmpty: check not exist variant failed')*/
 
-    //string
+    //isEmpty
     value=''
     result=func.isEmpty(value)
     test.equal(result,true,'isEmpty: check empty string failed')
@@ -50,6 +50,7 @@ var dataTypeCheck=function(test){
     value={a:1}
     result=func.isEmpty(value)
     test.equal(result,false,'isEmpty: check not empty object failed')
+
     //isString
     value=''
     result=func.isString(value)
@@ -66,6 +67,12 @@ var dataTypeCheck=function(test){
     value={}
     result=func.isString(value)
     test.equal(result,false,'isString: check object failed')
+    value=null
+    result=func.isString(value)
+    test.equal(result,false,'isString: check null failed')
+    value=undefined
+    result=func.isString(value)
+    test.equal(result,false,'isString: check undefined failed')
     //isArray
     value={}
     result=func.isArray(value)
@@ -73,6 +80,19 @@ var dataTypeCheck=function(test){
     value=[]
     result=func.isArray(value)
     test.equal(result,true,'isArray: check array failed')
+    value=[null]
+    result=func.isArray(value)
+    test.equal(result,true,'isArray: check [null] failed')
+    value=[undefined]
+    result=func.isArray(value)
+    test.equal(result,true,'isArray: check [undefined] failed')
+    value=null
+    result=func.isArray(value)
+    test.equal(result,false,'isArray: check null failed')
+    value=undefined
+    result=func.isArray(value)
+    test.equal(result,false,'isArray: check undefined failed')
+
     //isObject
     value={}
     result=func.isObject(value)
@@ -80,6 +100,17 @@ var dataTypeCheck=function(test){
     value=[]    //array和object严格区分（js中，array是object）
     result=func.isObject(value)
     test.equal(result,false,'isObject: check object(array) failed')
+    value=1
+    result=func.isObject(value)
+    test.equal(result,false,'isObject: check int 1 failed')
+    value=null
+    result=func.isObject(value)
+    test.equal(result,false,'isObject: check null failed')
+    value=undefined
+    result=func.isObject(value)
+    test.equal(result,false,'isObject: check undefined failed')
+
+
     //isDate
     value='2016'        //转换成2016-01-01
     result=func.isDate(value)
@@ -412,10 +443,10 @@ var convertClientSearchValueToServerFormat=function(test){
 
 
 exports.validate={
-    // dataTypeCheck,//数据类型检测
+     dataTypeCheck,//数据类型检测
     // valueMatchRuleDefineCheck,
     // valueTypeCheck,
-    convertClientSearchValueToServerFormat//只是用来查看结果
+    //convertClientSearchValueToServerFormat//只是用来查看结果
 /*    _private:{
         valueTypeCheck,
     },

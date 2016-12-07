@@ -29,9 +29,9 @@ var env = {
 };
 
 var compOp = {
-    'eq': '$in',
-    'gt': '$gt',
-    'lt': '$lt'
+    'eq': 'eq',
+    'gt': 'gt',
+    'lt': 'lt'
 };
 exports.node = {
     randomStringType: randomStringType,
