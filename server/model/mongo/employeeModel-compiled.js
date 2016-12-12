@@ -146,6 +146,19 @@ function findById(id) {
         });
     });
 }
+function search(searchParams) {
+    return new Promise(function (resolve, reject) {
+        console.log('employee search in with params ' + searchParams);
+        employeeModel.find(searchParams, function (err, result) {
+            if (err) {
+                console.log('db err is ' + JSON.stringify(err));
+                resolve(mongooseErrorHandler(err));
+            }
+            console.log('billType find result is ' + JSON.stringify(result));
+            resolve({ rc: 0, msg: result });
+        });
+    });
+}
 module.exports = {
     create: create,
     update: update,
@@ -153,7 +166,8 @@ module.exports = {
     removeAll: removeAll,
     readAll: readAll,
     readName: readName,
-    findById: findById
+    findById: findById,
+    search: search
 };
 
 //# sourceMappingURL=employeeModel-compiled.js.map

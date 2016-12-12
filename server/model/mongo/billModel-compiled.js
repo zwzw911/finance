@@ -3,7 +3,10 @@
  */
 'use strict';
 
-var billModel = require('./common/structure-compiled').billModel;
+require("babel-polyfill");
+require("babel-core/register");
+
+var billTypeModel = require('./common/structure-compiled').billTypeModel;
 var mongooseErrorHandler = require('../../define/error/mongoError').mongooseErrorHandler;
 
 var pageSetting = require('../../config/global/globalSettingRule').pageSetting;
@@ -84,7 +87,7 @@ function removeAll() {
     return new Promise(function (resolve, reject) {
         billModel.remove({}, function (err, result) {
             if (err) {
-                console.log('bill removeAll err is ' + err);
+                console.log("bill removeAll err is " + err);
                 resolve(mongooseErrorHandler(err));
             }
             //console.log(`success result is ${result}`)
@@ -145,6 +148,21 @@ function findById(id) {
         });
     });
 }
+
+function search(searchParams) {
+    return new Promise(function (resolve, reject) {
+        console.log("billType search in with params " + searchParams);
+        billModel.find(searchParams, function (err, result) {
+            if (err) {
+                console.log("db err is " + JSON.stringify(err));
+                resolve(mongooseErrorHandler(err));
+            }
+            console.log("bill find result is " + JSON.stringify(result));
+            resolve({ rc: 0, msg: result });
+        });
+    });
+}
+
 module.exports = {
     create: create,
     update: update,
@@ -152,7 +170,8 @@ module.exports = {
     removeAll: removeAll,
     readAll: readAll,
     // readName,
-    findById: findById
+    findById: findById,
+    search: search
 };
 
 //# sourceMappingURL=billModel-compiled.js.map

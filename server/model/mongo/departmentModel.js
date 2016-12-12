@@ -153,20 +153,25 @@ function findById(id,selectedFields='-cDate -uDate -dDate'){
                 resolve( mongooseErrorHandler(err))
             }
             // console.log(`department find by Id ${result}`)
-            // console.log(`original type is  ${typeof result}`)
-            // let convert=result.toJSON()
-            // console.log(`after toJSON type is  ${typeof convert}`)
-            // delete result['_id']
-            // console.log(`after delete is ${convert['_id']}`)
-            // console.log(`after delete type is ${typeof result['_id']}`)
-            // result['_id']=convert
-            // console.log(`type of   ${typeof result['_id']}`)
-            resolve({rc:0,msg:result})
+	    resolve({rc:0,msg:result})
 
         })
     })
 }
-module.exports={
+
+function  search(searchParams) {
+    return new Promise(function(resolve,reject){
+        console.log(`billType search in with params ${searchParams}`)
+        departmentModel.find(searchParams,function(err,result){
+            if(err){
+                console.log(`db err is ${JSON.stringify(err)}`)
+                resolve( mongooseErrorHandler(err))
+            }
+            console.log(`department find result is ${JSON.stringify(result)}`)
+            resolve({rc:0,msg:result})
+        })
+    })
+}module.exports={
     create,
     update,
     remove,
@@ -174,4 +179,5 @@ module.exports={
     readAll,
     readName,
     findById,
+    search,
 }

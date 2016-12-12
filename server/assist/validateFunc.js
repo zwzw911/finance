@@ -736,9 +736,10 @@ function validateInputFormat(values,rules,maxFieldNum){
         if(undefined===values[singleField]['value']){
             return validateInputFormatError.inputValuesFormatWrong
         }
-        if(null===values[singleField]['value']){
+        //null值表示update的时候，要删除这个field，所以是valid的值
+/*        if(null===values[singleField]['value']){
             return validateInputFormatError.valueNotDefineWithRequireTrue
-        }
+        }*/
     }
     //6 inputValue中所有field，是否为rule中定义的（阻止传入额外字段）
     for(let singleFieldName in values){
@@ -1418,6 +1419,11 @@ function checkSingleSearchValue(chineseName,singleSearchString,singleFieldRule){
 *
 * */
 function validateDeleteInput(values){
+/*    console.log(`values isj ${values}`)
+    console.log(`type is ${typeof values}`)
+    console.log(`isSetValue ${dataTypeCheck.isSetValue(values)}`)
+    console.log(`isEmpty ${dataTypeCheck.isEmpty(values)}`)*/
+    //null和undefine无法通过软件模拟：null被当成字符传入，undefine无法找到对应的route
     if(false===dataTypeCheck.isSetValue(values) || true===dataTypeCheck.isEmpty(values)){
         return validateInputFormatError.deleteFormatWrong
     }

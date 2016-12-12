@@ -147,6 +147,19 @@ function findById(id,selectedFields='-cDate -uDate -dDate'){
         })
     })
 }
+function  search(searchParams) {
+    return new Promise(function(resolve,reject){
+        console.log(`employee search in with params ${searchParams}`)
+        employeeModel.find(searchParams,function(err,result){
+            if(err){
+                console.log(`db err is ${JSON.stringify(err)}`)
+                resolve( mongooseErrorHandler(err))
+            }
+            console.log(`billType find result is ${JSON.stringify(result)}`)
+            resolve({rc:0,msg:result})
+        })
+    })
+}
 module.exports={
     create,
     update,
@@ -154,5 +167,6 @@ module.exports={
     removeAll,
     readAll,
     readName,
-    findById
+    findById,
+    search,
 }

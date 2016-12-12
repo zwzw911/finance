@@ -137,6 +137,15 @@ router.delete('/employee', function (req, res, next) {
         return console.log("delete fail " + JSON.stringify(e));
     });
 });
+//search
+router.post('/employee/search', function (req, res, next) {
+    console.log(req.body.values);
+    employeeController.search(req, res, next).then(function (v) {
+        console.log("search result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("search fail " + JSON.stringify(e));
+    });
+});
 
 /*************************       department     *************************/
 //create
@@ -189,7 +198,15 @@ router.delete('/department', function (req, res, next) {
         return console.log("delete fail " + JSON.stringify(e));
     });
 });
-
+//search
+router.post('/department/search', function (req, res, next) {
+    console.log(req.body.values);
+    departmentController.search(req, res, next).then(function (v) {
+        console.log("search result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("search fail " + JSON.stringify(e));
+    });
+});
 /*************************       billType     *************************/
 //create
 router.post('/billType', function (req, res, next) {
@@ -300,6 +317,15 @@ router.delete('/bill', function (req, res, next) {
         console.log("delete result is " + JSON.stringify(v));
     }, function (e) {
         return console.log("delete fail " + JSON.stringify(e));
+    });
+});
+//search
+router.post('/bill/search', function (req, res, next) {
+    console.log(req.body.values);
+    billController.search(req, res, next).then(function (v) {
+        console.log("search result is " + JSON.stringify(v));
+    }, function (e) {
+        return console.log("search fail " + JSON.stringify(e));
     });
 });
 

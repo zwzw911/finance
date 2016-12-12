@@ -20,7 +20,7 @@ var validateInputFormat=function(test){
     let func=testModule.validateInputFormat
     let value,rules,result
     let maxFieldNum=5
-    test.expect(10)
+    test.expect(9)
     rules={field1:{}}//只是为了检测是否有对应的rule存在
 
     //1 输入的参数没有定义
@@ -52,9 +52,10 @@ var validateInputFormat=function(test){
     value={a:{value:undefined}}
     result=func(value,rules,maxFieldNum)
     test.equal(result.rc,validateInputFormatError.inputValuesFormatWrong.rc,'value key value is undefined check fail')
-    value={a:{value:null}}
+    //null值表示update的时候，要删除这个field
+/*    value={a:{value:null}}
     result=func(value,rules,maxFieldNum)
-    test.equal(result.rc,validateInputFormatError.valueNotDefineWithRequireTrue.rc,'value key value is undefined check fail')
+    test.equal(result.rc,validateInputFormatError.valueNotDefineWithRequireTrue.rc,'value key value is undefined check fail')*/
 
     //6. 键必须在rule中定义
     value={'notDefinedInRule':{value:''}}
@@ -306,7 +307,7 @@ var checkInputAdditional=function(test){
 }
 
 exports.validate={
-    //validateInputFormat,
+    validateInputFormat,
     validateInputValue,
     checkInputAdditional,
 }

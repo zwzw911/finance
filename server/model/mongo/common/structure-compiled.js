@@ -65,7 +65,11 @@ var fieldDefine = {
         parentDepartment: { type: mongoose.Schema.Types.ObjectId, ref: "departments" },
         cDate: { type: Date, default: Date.now },
         uDate: { type: Date, default: Date.now },
-        dDate: { type: Date }
+        dDate: { type: Date },
+        //外键字段
+        parentDepartmentFields: {
+            name: { type: String }
+        }
     },
     employee: {
         name: { type: String, unique: true },
@@ -76,7 +80,14 @@ var fieldDefine = {
         onBoardDate: { type: Date },
         cDate: { type: Date, default: Date.now },
         uDate: { type: Date, default: Date.now },
-        dDate: { type: Date }
+        dDate: { type: Date },
+        //外键冗余字段
+        leaderFields: {
+            name: { type: String }
+        },
+        departmentFields: {
+            name: { type: String }
+        }
     },
     billType: {
         name: { type: String, unique: true },
@@ -99,7 +110,14 @@ var fieldDefine = {
         reimburser: { type: mongoose.Schema.Types.ObjectId, ref: "employees" },
         cDate: { type: Date, default: Date.now },
         uDate: { type: Date, default: Date.now },
-        dDate: { type: Date }
+        dDate: { type: Date },
+        //外键冗余字段
+        billTypeFields: {
+            name: { type: String }
+        },
+        reimburserFields: {
+            name: { type: String }
+        }
     }
 };
 

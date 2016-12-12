@@ -17,7 +17,7 @@ var userState = {
 };
 
 var coll = {
-    department: 'department', //不用symbol，而用字符。因为需要作为error的key使用
+    department: 'department', //不用symbol，而用字符。因为需要作为error已经unifiedRouterController的key使用
     employee: 'employee',
     billType: 'billType',
     bill: 'bill'

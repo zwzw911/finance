@@ -116,7 +116,11 @@ router.put('/employee',function(req,res,next){
 router.delete('/employee',function(req,res,next){
     employeeController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
-
+//search
+router.post('/employee/search',function(req,res,next){
+    console.log(req.body.values)
+    employeeController.search(req,res,next).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+})
 
 /*************************       department     *************************/
 //create
@@ -145,7 +149,11 @@ router.put('/department',function(req,res,next){
 router.delete('/department',function(req,res,next){
     departmentController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
-
+//search
+router.post('/department/search',function(req,res,next){
+    console.log(req.body.values)
+    departmentController.search(req,res,next).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+})
 /*************************       billType     *************************/
 //create
 router.post('/billType',function(req,res,next){
@@ -206,6 +214,10 @@ router.put('/bill',function(req,res,next){
 router.delete('/bill',function(req,res,next){
     billController.remove(req,res,next).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
 })
-
+//search
+router.post('/bill/search',function(req,res,next){
+    console.log(req.body.values)
+    billController.search(req,res,next).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+})
 
 module.exports = router;

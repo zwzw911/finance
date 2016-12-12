@@ -53,11 +53,14 @@ var errorDefine = {
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
             console.log(errmsg);
-            /*            let regex=/.*error\s+index:(.*)\s+dup.+/
+            /*            let regex=/E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
                         let match=errmsg.match(regex)
                         let matchResult=match[1]
                         let tmp=matchResult.split('.')
-                        let [db,coll,field]=tmp*/
+                        let [db,coll,field]=tmp
+                        field=field.split("_")[0].replace("$","") //$name_1===>$name
+                        let dupValue=matchResult[2]*/
+
             var regex = /.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/;
             var matchResult = errmsg.match(regex);
 

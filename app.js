@@ -8,8 +8,8 @@ var bodyParser = require('body-parser');
 var lessMiddleware = require('less-middleware');
 /*var routes = require('./routes/index');
 var users = require('./routes/users');*/
-var main= require('./server/controller/main/main')
-
+// var main= require('./server/controller/main/main')
+var main= require('./server/controller/main/unifiedMain-compiled')
 
 var app = express();
 

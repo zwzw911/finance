@@ -506,6 +506,13 @@ var populateOpt = {
 
 //每个外键需要的冗余字段
 var fkAdditionalFieldsConfig = {
+    department: {
+        parentDepartment: { relatedColl: coll.department, nestedPrefix: 'departmentFields', forSelect: 'name', forSetValue: ['name'] }
+    },
+    employee: {
+        leader: { relatedColl: coll.employee, nestedPrefix: 'leaderFields', forSelect: 'name', forSetValue: ['name'] },
+        department: { relatedColl: coll.department, nestedPrefix: 'departmentFields', forSelect: 'name', forSetValue: ['name'] }
+    },
     billType: {
         //冗余字段（nested）的名称：具体冗余那几个字段
         //parentBillType:此字段为外键，需要冗余字段
@@ -513,6 +520,11 @@ var fkAdditionalFieldsConfig = {
         //nestedPrefix： 冗余字段一般放在nested结构中
         //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
         parentBillType: { relatedColl: coll.billType, nestedPrefix: 'parentBillTypeFields', forSelect: 'name', forSetValue: ['name'] }
+    },
+    bill: {
+        billType: { relatedColl: coll.billType, nestedPrefix: 'billTypeFields', forSelect: 'name', forSetValue: ['name'] },
+        reimburser: { relatedColl: coll.employee, nestedPrefix: 'reimburserFields', forSelect: 'name', forSetValue: ['name'] }
+
     }
 };function returnResult(rc) {
     if (envEnum.production === appSetting.env) {
@@ -647,7 +659,7 @@ user['update'] = function () {
 var department = {};
 department['create'] = function () {
     var _ref10 = _asyncToGenerator(regeneratorRuntime.mark(function _callee10(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, doc, _result, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _doc, result, populateResult;
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, _doc, _result, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _doc2, idx, doc, getFkResult, result, populateResult;
 
         return regeneratorRuntime.wrap(function _callee10$(_context10) {
             while (1) {
@@ -688,15 +700,15 @@ department['create'] = function () {
                             break;
                         }
 
-                        doc = _step2.value;
+                        _doc = _step2.value;
 
-                        if (!doc.parentDepartment) {
+                        if (!_doc.parentDepartment) {
                             _context10.next = 20;
                             break;
                         }
 
                         _context10.next = 17;
-                        return checkIdExist(coll.department, coll.department, 'parentDepartment', doc.parentDepartment);
+                        return checkIdExist(coll.department, coll.department, 'parentDepartment', _doc.parentDepartment);
 
                     case 17:
                         _result = _context10.sent;
@@ -754,11 +766,12 @@ department['create'] = function () {
                         _iteratorError3 = undefined;
                         _context10.prev = 40;
                         for (_iterator3 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                            _doc = _step3.value;
+                            _doc2 = _step3.value;
 
-                            validateFunc.constructCreateCriteria(_doc);
+                            validateFunc.constructCreateCriteria(_doc2);
                         }
-                        //5. 对db执行操作
+                        //4.5 如果外键存在，获得外键的额外字段
+                        // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.department)}`)
                         _context10.next = 48;
                         break;
 
@@ -793,28 +806,58 @@ department['create'] = function () {
                         return _context10.finish(48);
 
                     case 56:
-                        _context10.next = 58;
+                        _context10.t2 = regeneratorRuntime.keys(arrayResult);
+
+                    case 57:
+                        if ((_context10.t3 = _context10.t2()).done) {
+                            _context10.next = 67;
+                            break;
+                        }
+
+                        idx = _context10.t3.value;
+
+                        // console.log(`idx is ${idx}`)
+                        doc = arrayResult[idx];
+                        _context10.next = 62;
+                        return getFkAdditionalFields(doc, fkAdditionalFieldsConfig.department);
+
+                    case 62:
+                        getFkResult = _context10.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context10.next = 65;
+                            break;
+                        }
+
+                        return _context10.abrupt('return', res.json(getFkResult));
+
+                    case 65:
+                        _context10.next = 57;
+                        break;
+
+                    case 67:
+                        _context10.next = 69;
                         return departmentDbOperation.create(arrayResult);
 
-                    case 58:
+                    case 69:
                         result = _context10.sent;
 
                         if (!(result.rc > 0)) {
-                            _context10.next = 61;
+                            _context10.next = 72;
                             break;
                         }
 
                         return _context10.abrupt('return', res.json(result));
 
-                    case 61:
-                        _context10.next = 63;
+                    case 72:
+                        _context10.next = 74;
                         return populateSingleDoc(result.msg[0], populateOpt.department, populatedFields.department);
 
-                    case 63:
+                    case 74:
                         populateResult = _context10.sent;
                         return _context10.abrupt('return', res.json(returnResult(populateResult)));
 
-                    case 65:
+                    case 76:
                     case 'end':
                         return _context10.stop();
                 }
@@ -827,9 +870,10 @@ department['create'] = function () {
     };
 }();
 
-department['remove'] = function () {
+department['update'] = function () {
     var _ref11 = _asyncToGenerator(regeneratorRuntime.mark(function _callee11(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, result;
+        var sanitizedInputValue, convertedResult, id, getFkResult, _result2, result, populateResult;
+
         return regeneratorRuntime.wrap(function _callee11$(_context11) {
             while (1) {
                 switch (_context11.prev = _context11.next) {
@@ -849,57 +893,6 @@ department['remove'] = function () {
 
                     case 5:
 
-                        //2. 将client输入转换成server端的格式
-                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
-                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
-                        //3， 提取数据并执行操作
-
-                        id = convertedResult._id;
-                        //console.log(`id is ${id}`)
-
-                        _context11.next = 9;
-                        return departmentDbOperation.remove(id);
-
-                    case 9:
-                        result = _context11.sent;
-                        return _context11.abrupt('return', res.json(returnResult(result)));
-
-                    case 11:
-                    case 'end':
-                        return _context11.stop();
-                }
-            }
-        }, _callee11, this);
-    }));
-
-    return function (_x34, _x35, _x36) {
-        return _ref11.apply(this, arguments);
-    };
-}();
-
-department['update'] = function () {
-    var _ref12 = _asyncToGenerator(regeneratorRuntime.mark(function _callee12(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, _result2, result, populateResult;
-
-        return regeneratorRuntime.wrap(function _callee12$(_context12) {
-            while (1) {
-                switch (_context12.prev = _context12.next) {
-                    case 0:
-                        _context12.next = 2;
-                        return sanityInput(req.body.values, inputRule.department, true, maxFieldNum.department);
-
-                    case 2:
-                        sanitizedInputValue = _context12.sent;
-
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context12.next = 5;
-                            break;
-                        }
-
-                        return _context12.abrupt('return', res.json(returnResult(sanitizedInputValue)));
-
-                    case 5:
-
                         //2. 将client输入转换成server端的格式()
                         // console.log(`before convert ${JSON.stringify(req.body.values)}`)
                         convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
@@ -915,62 +908,145 @@ department['update'] = function () {
                         //5 上级不能设成自己
 
                         if (!(id === convertedResult.parentDepartment)) {
-                            _context12.next = 11;
+                            _context11.next = 11;
                             break;
                         }
 
-                        return _context12.abrupt('return', res.json(returnResult(pageError.department.parentCantBeSelf)));
+                        return _context11.abrupt('return', res.json(returnResult(pageError.department.parentCantBeSelf)));
 
                     case 11:
-                        if (!(null !== convertedResult.parentDepartment && undefined !== convertedResult.parentDepartment)) {
-                            _context12.next = 17;
+                        _context11.next = 13;
+                        return getFkAdditionalFields(convertedResult, fkAdditionalFieldsConfig.department);
+
+                    case 13:
+                        getFkResult = _context11.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context11.next = 16;
                             break;
                         }
 
-                        _context12.next = 14;
+                        return _context11.abrupt('return', res.json(getFkResult));
+
+                    case 16:
+                        if (!(null !== convertedResult.parentDepartment && undefined !== convertedResult.parentDepartment)) {
+                            _context11.next = 22;
+                            break;
+                        }
+
+                        _context11.next = 19;
                         return checkIdExist(coll.department, coll.department, 'parentDepartment', convertedResult.parentDepartment);
 
-                    case 14:
-                        _result2 = _context12.sent;
+                    case 19:
+                        _result2 = _context11.sent;
 
                         if (!(0 < _result2.rc)) {
-                            _context12.next = 17;
+                            _context11.next = 22;
                             break;
                         }
 
-                        return _context12.abrupt('return', res.json(returnResult(_result2)));
-
-                    case 17:
-                        _context12.next = 19;
-                        return departmentDbOperation.update(id, convertedResult);
-
-                    case 19:
-                        result = _context12.sent;
-
-                        if (!(result.rc > 0)) {
-                            _context12.next = 22;
-                            break;
-                        }
-
-                        return _context12.abrupt('return', res.json(returnResult(result)));
+                        return _context11.abrupt('return', res.json(returnResult(_result2)));
 
                     case 22:
-                        if (!(null === result.msg)) {
-                            _context12.next = 24;
+                        _context11.next = 24;
+                        return departmentDbOperation.update(id, convertedResult);
+
+                    case 24:
+                        result = _context11.sent;
+
+                        if (!(result.rc > 0)) {
+                            _context11.next = 27;
                             break;
                         }
 
-                        return _context12.abrupt('return', res.json(returnResult(pageError.department.departmentNotExists)));
+                        return _context11.abrupt('return', res.json(returnResult(result)));
 
-                    case 24:
-                        _context12.next = 26;
+                    case 27:
+                        if (!(null === result.msg)) {
+                            _context11.next = 29;
+                            break;
+                        }
+
+                        return _context11.abrupt('return', res.json(returnResult(pageError.department.departmentNotExists)));
+
+                    case 29:
+                        _context11.next = 31;
                         return populateSingleDoc(result.msg, populateOpt.department, populatedFields.department);
 
-                    case 26:
-                        populateResult = _context12.sent;
-                        return _context12.abrupt('return', res.json(returnResult(populateResult)));
+                    case 31:
+                        populateResult = _context11.sent;
+                        return _context11.abrupt('return', res.json(returnResult(populateResult)));
 
-                    case 28:
+                    case 33:
+                    case 'end':
+                        return _context11.stop();
+                }
+            }
+        }, _callee11, this);
+    }));
+
+    return function (_x34, _x35, _x36) {
+        return _ref11.apply(this, arguments);
+    };
+}();
+
+department['remove'] = function () {
+    var _ref12 = _asyncToGenerator(regeneratorRuntime.mark(function _callee12(req, res, next) {
+        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee12$(_context12) {
+            while (1) {
+                switch (_context12.prev = _context12.next) {
+                    case 0:
+                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
+                        inputResult = {};
+
+                        console.log('delete params is ' + JSON.stringify(req.params.id));
+                        checkResult = validateFunc.validateDeleteInput(req.params.id);
+
+                        console.log('delete check result is ' + JSON.stringify(checkResult));
+
+                        if (!(checkResult.rc > 0)) {
+                            _context12.next = 6;
+                            break;
+                        }
+
+                        return _context12.abrupt('return', res.json(returnResult(checkResult)));
+
+                    case 6:
+                        inputResult['_id'] = { value: req.params.id };
+                        //1 检查输入的参数，并作转换（如果是字符串）
+                        //console.log(`sanity result is ${JSON.stringify(req.body.values)}`)
+                        _context12.next = 9;
+                        return sanityInput(inputResult, inputRule.department, true, maxFieldNum.department);
+
+                    case 9:
+                        sanitizedInputValue = _context12.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context12.next = 12;
+                            break;
+                        }
+
+                        return _context12.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 12:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = validateFunc.convertClientValueToServerFormat(inputResult);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+                        //console.log(`id is ${id}`)
+
+                        _context12.next = 16;
+                        return departmentDbOperation.remove(id);
+
+                    case 16:
+                        result = _context12.sent;
+                        return _context12.abrupt('return', res.json(returnResult(result)));
+
+                    case 18:
                     case 'end':
                         return _context12.stop();
                 }
@@ -1073,20 +1149,15 @@ department['readName'] = function () {
     };
 }();
 
-/*********************  employee  ******************************
- * 员工
- * */
-var employee = {};
-employee['create'] = function () {
+department['search'] = function () {
     var _ref15 = _asyncToGenerator(regeneratorRuntime.mark(function _callee15(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, doc, _result3, _result4, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, _doc2, result, populateResult;
-
+        var sanitizedInputValue, searchParams, recorder;
         return regeneratorRuntime.wrap(function _callee15$(_context15) {
             while (1) {
                 switch (_context15.prev = _context15.next) {
                     case 0:
                         _context15.next = 2;
-                        return sanityInput(req.body.values, inputRule.employee, false, maxFieldNum.employee);
+                        return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.department, coll.department, inputRule);
 
                     case 2:
                         sanitizedInputValue = _context15.sent;
@@ -1097,6 +1168,55 @@ employee['create'] = function () {
                         }
 
                         return _context15.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 5:
+                        searchParams = validateFunc.genNativeSearchCondition(req.body.values, coll.department, fkAdditionalFieldsConfig.department, inputRule);
+
+                        console.log('convert search params id ' + JSON.stringify(searchParams));
+                        _context15.next = 9;
+                        return departmentDbOperation.search(searchParams);
+
+                    case 9:
+                        recorder = _context15.sent;
+                        return _context15.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 11:
+                    case 'end':
+                        return _context15.stop();
+                }
+            }
+        }, _callee15, this);
+    }));
+
+    return function (_x46, _x47, _x48) {
+        return _ref15.apply(this, arguments);
+    };
+}();
+
+/*********************  employee  ******************************
+ * 员工
+ * */
+var employee = {};
+employee['create'] = function () {
+    var _ref16 = _asyncToGenerator(regeneratorRuntime.mark(function _callee16(req, res, next) {
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, _doc3, _result3, _result4, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, _doc4, idx, doc, getFkResult, result, populateResult;
+
+        return regeneratorRuntime.wrap(function _callee16$(_context16) {
+            while (1) {
+                switch (_context16.prev = _context16.next) {
+                    case 0:
+                        _context16.next = 2;
+                        return sanityInput(req.body.values, inputRule.employee, false, maxFieldNum.employee);
+
+                    case 2:
+                        sanitizedInputValue = _context16.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context16.next = 5;
+                            break;
+                        }
+
+                        return _context16.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1111,216 +1231,197 @@ employee['create'] = function () {
                         _iteratorNormalCompletion4 = true;
                         _didIteratorError4 = false;
                         _iteratorError4 = undefined;
-                        _context15.prev = 10;
+                        _context16.prev = 10;
                         _iterator4 = arrayResult[Symbol.iterator]();
 
                     case 12:
                         if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                            _context15.next = 29;
+                            _context16.next = 29;
                             break;
                         }
 
-                        doc = _step4.value;
+                        _doc3 = _step4.value;
 
-                        if (!doc.department) {
-                            _context15.next = 20;
+                        if (!_doc3.department) {
+                            _context16.next = 20;
                             break;
                         }
 
-                        _context15.next = 17;
-                        return checkIdExist(coll.department, coll.employee, 'department', doc.department);
+                        _context16.next = 17;
+                        return checkIdExist(coll.department, coll.employee, 'department', _doc3.department);
 
                     case 17:
-                        _result3 = _context15.sent;
+                        _result3 = _context16.sent;
 
                         if (!(0 < _result3.rc)) {
-                            _context15.next = 20;
+                            _context16.next = 20;
                             break;
                         }
 
-                        return _context15.abrupt('return', res.json(returnResult(_result3)));
+                        return _context16.abrupt('return', res.json(returnResult(_result3)));
 
                     case 20:
-                        if (!doc.leader) {
-                            _context15.next = 26;
+                        if (!_doc3.leader) {
+                            _context16.next = 26;
                             break;
                         }
 
-                        _context15.next = 23;
-                        return checkIdExist(coll.employee, coll.employee, 'leader', doc.leader);
+                        _context16.next = 23;
+                        return checkIdExist(coll.employee, coll.employee, 'leader', _doc3.leader);
 
                     case 23:
-                        _result4 = _context15.sent;
+                        _result4 = _context16.sent;
 
                         if (!(0 < _result4.rc)) {
-                            _context15.next = 26;
+                            _context16.next = 26;
                             break;
                         }
 
-                        return _context15.abrupt('return', res.json(returnResult(_result4)));
+                        return _context16.abrupt('return', res.json(returnResult(_result4)));
 
                     case 26:
                         _iteratorNormalCompletion4 = true;
-                        _context15.next = 12;
+                        _context16.next = 12;
                         break;
 
                     case 29:
-                        _context15.next = 35;
+                        _context16.next = 35;
                         break;
 
                     case 31:
-                        _context15.prev = 31;
-                        _context15.t0 = _context15['catch'](10);
+                        _context16.prev = 31;
+                        _context16.t0 = _context16['catch'](10);
                         _didIteratorError4 = true;
-                        _iteratorError4 = _context15.t0;
+                        _iteratorError4 = _context16.t0;
 
                     case 35:
-                        _context15.prev = 35;
-                        _context15.prev = 36;
+                        _context16.prev = 35;
+                        _context16.prev = 36;
 
                         if (!_iteratorNormalCompletion4 && _iterator4.return) {
                             _iterator4.return();
                         }
 
                     case 38:
-                        _context15.prev = 38;
+                        _context16.prev = 38;
 
                         if (!_didIteratorError4) {
-                            _context15.next = 41;
+                            _context16.next = 41;
                             break;
                         }
 
                         throw _iteratorError4;
 
                     case 41:
-                        return _context15.finish(38);
+                        return _context16.finish(38);
 
                     case 42:
-                        return _context15.finish(35);
+                        return _context16.finish(35);
 
                     case 43:
                         //4 删除null的字段（null说明字段为空，所以无需传入db
                         _iteratorNormalCompletion5 = true;
                         _didIteratorError5 = false;
                         _iteratorError5 = undefined;
-                        _context15.prev = 46;
+                        _context16.prev = 46;
                         for (_iterator5 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                            _doc2 = _step5.value;
+                            _doc4 = _step5.value;
 
-                            validateFunc.constructCreateCriteria(_doc2);
+                            validateFunc.constructCreateCriteria(_doc4);
                         }
-                        //5. 对db执行操作
-                        _context15.next = 54;
+                        //4.5 如果外键存在，获得外键的额外字段
+                        // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.employee)}`)
+                        _context16.next = 54;
                         break;
 
                     case 50:
-                        _context15.prev = 50;
-                        _context15.t1 = _context15['catch'](46);
+                        _context16.prev = 50;
+                        _context16.t1 = _context16['catch'](46);
                         _didIteratorError5 = true;
-                        _iteratorError5 = _context15.t1;
+                        _iteratorError5 = _context16.t1;
 
                     case 54:
-                        _context15.prev = 54;
-                        _context15.prev = 55;
+                        _context16.prev = 54;
+                        _context16.prev = 55;
 
                         if (!_iteratorNormalCompletion5 && _iterator5.return) {
                             _iterator5.return();
                         }
 
                     case 57:
-                        _context15.prev = 57;
+                        _context16.prev = 57;
 
                         if (!_didIteratorError5) {
-                            _context15.next = 60;
+                            _context16.next = 60;
                             break;
                         }
 
                         throw _iteratorError5;
 
                     case 60:
-                        return _context15.finish(57);
+                        return _context16.finish(57);
 
                     case 61:
-                        return _context15.finish(54);
+                        return _context16.finish(54);
 
                     case 62:
-                        _context15.next = 64;
-                        return employeeDbOperation.create(arrayResult);
+                        _context16.t2 = regeneratorRuntime.keys(arrayResult);
 
-                    case 64:
-                        result = _context15.sent;
-
-                        if (!(result.rc > 0)) {
-                            _context15.next = 67;
+                    case 63:
+                        if ((_context16.t3 = _context16.t2()).done) {
+                            _context16.next = 73;
                             break;
                         }
 
-                        return _context15.abrupt('return', res.json(result));
+                        idx = _context16.t3.value;
 
-                    case 67:
-                        _context15.next = 69;
-                        return populateSingleDoc(result.msg[0], populateOpt.employee, populatedFields.employee);
+                        // console.log(`idx is ${idx}`)
+                        doc = arrayResult[idx];
+                        _context16.next = 68;
+                        return getFkAdditionalFields(doc, fkAdditionalFieldsConfig.employee);
 
-                    case 69:
-                        populateResult = _context15.sent;
-                        return _context15.abrupt('return', res.json(returnResult(populateResult)));
+                    case 68:
+                        getFkResult = _context16.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context16.next = 71;
+                            break;
+                        }
+
+                        return _context16.abrupt('return', res.json(getFkResult));
 
                     case 71:
-                    case 'end':
-                        return _context15.stop();
-                }
-            }
-        }, _callee15, this, [[10, 31, 35, 43], [36,, 38, 42], [46, 50, 54, 62], [55,, 57, 61]]);
-    }));
+                        _context16.next = 63;
+                        break;
 
-    return function (_x46, _x47, _x48) {
-        return _ref15.apply(this, arguments);
-    };
-}();
+                    case 73:
+                        _context16.next = 75;
+                        return employeeDbOperation.create(arrayResult);
 
-employee['remove'] = function () {
-    var _ref16 = _asyncToGenerator(regeneratorRuntime.mark(function _callee16(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, result;
-        return regeneratorRuntime.wrap(function _callee16$(_context16) {
-            while (1) {
-                switch (_context16.prev = _context16.next) {
-                    case 0:
-                        _context16.next = 2;
-                        return sanityInput(req.body.values, inputRule.employee, true, maxFieldNum.employee);
+                    case 75:
+                        result = _context16.sent;
 
-                    case 2:
-                        sanitizedInputValue = _context16.sent;
-
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context16.next = 5;
+                        if (!(result.rc > 0)) {
+                            _context16.next = 78;
                             break;
                         }
 
-                        return _context16.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        return _context16.abrupt('return', res.json(result));
 
-                    case 5:
+                    case 78:
+                        _context16.next = 80;
+                        return populateSingleDoc(result.msg[0], populateOpt.employee, populatedFields.employee);
 
-                        //2. 将client输入转换成server端的格式
-                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
-                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
-                        //3， 提取数据并执行操作
+                    case 80:
+                        populateResult = _context16.sent;
+                        return _context16.abrupt('return', res.json(returnResult(populateResult)));
 
-                        id = convertedResult._id;
-                        // console.log(`id is ${id}`)
-
-                        _context16.next = 9;
-                        return employeeDbOperation.remove(id);
-
-                    case 9:
-                        result = _context16.sent;
-                        return _context16.abrupt('return', res.json(returnResult(result)));
-
-                    case 11:
+                    case 82:
                     case 'end':
                         return _context16.stop();
                 }
             }
-        }, _callee16, this);
+        }, _callee16, this, [[10, 31, 35, 43], [36,, 38, 42], [46, 50, 54, 62], [55,, 57, 61]]);
     }));
 
     return function (_x49, _x50, _x51) {
@@ -1450,21 +1551,63 @@ employee['update'] = function () {
     };
 }();
 
-employee['readAll'] = function () {
+employee['remove'] = function () {
     var _ref18 = _asyncToGenerator(regeneratorRuntime.mark(function _callee18(req, res, next) {
-        var result;
+        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
         return regeneratorRuntime.wrap(function _callee18$(_context18) {
             while (1) {
                 switch (_context18.prev = _context18.next) {
                     case 0:
-                        _context18.next = 2;
-                        return employeeDbOperation.readAll(populateOpt.employee);
+                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
+                        inputResult = {};
 
-                    case 2:
+                        console.log('delete params is ' + JSON.stringify(req.params.id));
+                        checkResult = validateFunc.validateDeleteInput(req.params.id);
+
+                        console.log('delete check result is ' + JSON.stringify(checkResult));
+
+                        if (!(checkResult.rc > 0)) {
+                            _context18.next = 6;
+                            break;
+                        }
+
+                        return _context18.abrupt('return', res.json(returnResult(checkResult)));
+
+                    case 6:
+                        inputResult['_id'] = { value: req.params.id };
+                        //1 检查输入的参数，并作转换（如果是字符串）
+                        _context18.next = 9;
+                        return sanityInput(inputResult, inputRule.employee, true, maxFieldNum.employee);
+
+                    case 9:
+                        sanitizedInputValue = _context18.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context18.next = 12;
+                            break;
+                        }
+
+                        return _context18.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 12:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+
+                        delete convertedResult._id;
+                        // console.log(`id is ${id}`)
+                        _context18.next = 17;
+                        return employeeDbOperation.remove(id);
+
+                    case 17:
                         result = _context18.sent;
                         return _context18.abrupt('return', res.json(returnResult(result)));
 
-                    case 4:
+                    case 19:
                     case 'end':
                         return _context18.stop();
                 }
@@ -1477,55 +1620,21 @@ employee['readAll'] = function () {
     };
 }();
 
-employee['readName'] = function () {
+employee['readAll'] = function () {
     var _ref19 = _asyncToGenerator(regeneratorRuntime.mark(function _callee19(req, res, next) {
-        var recorder, constructedValue, validateResult;
+        var result;
         return regeneratorRuntime.wrap(function _callee19$(_context19) {
             while (1) {
                 switch (_context19.prev = _context19.next) {
                     case 0:
-                        recorder = void 0;
+                        _context19.next = 2;
+                        return employeeDbOperation.readAll(populateOpt.employee);
 
-                        if (!req.params.name) {
-                            _context19.next = 13;
-                            break;
-                        }
+                    case 2:
+                        result = _context19.sent;
+                        return _context19.abrupt('return', res.json(returnResult(result)));
 
-                        // console.log(`name is ${req.params.name}`)
-                        constructedValue = { name: { value: req.params.name } };
-                        _context19.next = 5;
-                        return validateFunc.checkSearchValue(constructedValue, inputRule.employee);
-
-                    case 5:
-                        validateResult = _context19.sent;
-
-                        if (!(validateResult['name']['rc'] > 0)) {
-                            _context19.next = 8;
-                            break;
-                        }
-
-                        return _context19.abrupt('return', res.json(validateResult['name']));
-
-                    case 8:
-                        _context19.next = 10;
-                        return employeeDbOperation.readName(req.params.name);
-
-                    case 10:
-                        recorder = _context19.sent;
-                        _context19.next = 16;
-                        break;
-
-                    case 13:
-                        _context19.next = 15;
-                        return employeeDbOperation.readName();
-
-                    case 15:
-                        recorder = _context19.sent;
-
-                    case 16:
-                        return _context19.abrupt('return', res.json(returnResult(recorder)));
-
-                    case 17:
+                    case 4:
                     case 'end':
                         return _context19.stop();
                 }
@@ -1538,29 +1647,134 @@ employee['readName'] = function () {
     };
 }();
 
-/*********************  billType  *******************************/
-var billType = {};
-
-billType['create'] = function () {
+employee['readName'] = function () {
     var _ref20 = _asyncToGenerator(regeneratorRuntime.mark(function _callee20(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _doc3, _result7, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, _doc4, idx, doc, getFkResult, result, populateResult;
-
+        var recorder, constructedValue, validateResult;
         return regeneratorRuntime.wrap(function _callee20$(_context20) {
             while (1) {
                 switch (_context20.prev = _context20.next) {
                     case 0:
-                        _context20.next = 2;
-                        return sanityInput(req.body.values, inputRule.billType, false, maxFieldNum.billType);
+                        recorder = void 0;
 
-                    case 2:
-                        sanitizedInputValue = _context20.sent;
-
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context20.next = 5;
+                        if (!req.params.name) {
+                            _context20.next = 13;
                             break;
                         }
 
-                        return _context20.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        // console.log(`name is ${req.params.name}`)
+                        constructedValue = { name: { value: req.params.name } };
+                        _context20.next = 5;
+                        return validateFunc.checkSearchValue(constructedValue, inputRule.employee);
+
+                    case 5:
+                        validateResult = _context20.sent;
+
+                        if (!(validateResult['name']['rc'] > 0)) {
+                            _context20.next = 8;
+                            break;
+                        }
+
+                        return _context20.abrupt('return', res.json(validateResult['name']));
+
+                    case 8:
+                        _context20.next = 10;
+                        return employeeDbOperation.readName(req.params.name);
+
+                    case 10:
+                        recorder = _context20.sent;
+                        _context20.next = 16;
+                        break;
+
+                    case 13:
+                        _context20.next = 15;
+                        return employeeDbOperation.readName();
+
+                    case 15:
+                        recorder = _context20.sent;
+
+                    case 16:
+                        return _context20.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 17:
+                    case 'end':
+                        return _context20.stop();
+                }
+            }
+        }, _callee20, this);
+    }));
+
+    return function (_x61, _x62, _x63) {
+        return _ref20.apply(this, arguments);
+    };
+}();
+
+employee['search'] = function () {
+    var _ref21 = _asyncToGenerator(regeneratorRuntime.mark(function _callee21(req, res, next) {
+        var sanitizedInputValue, searchParams, recorder;
+        return regeneratorRuntime.wrap(function _callee21$(_context21) {
+            while (1) {
+                switch (_context21.prev = _context21.next) {
+                    case 0:
+                        _context21.next = 2;
+                        return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.employee, coll.employee, inputRule);
+
+                    case 2:
+                        sanitizedInputValue = _context21.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context21.next = 5;
+                            break;
+                        }
+
+                        return _context21.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 5:
+                        searchParams = validateFunc.genNativeSearchCondition(req.body.values, coll.employee, fkAdditionalFieldsConfig.employee, inputRule);
+
+                        console.log('convert search params id ' + JSON.stringify(searchParams));
+                        _context21.next = 9;
+                        return employeeDbOperation.search(searchParams);
+
+                    case 9:
+                        recorder = _context21.sent;
+                        return _context21.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 11:
+                    case 'end':
+                        return _context21.stop();
+                }
+            }
+        }, _callee21, this);
+    }));
+
+    return function (_x64, _x65, _x66) {
+        return _ref21.apply(this, arguments);
+    };
+}();
+
+/*********************  billType  *******************************/
+var billType = {};
+
+billType['create'] = function () {
+    var _ref22 = _asyncToGenerator(regeneratorRuntime.mark(function _callee22(req, res, next) {
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _doc5, _result7, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, _doc6, idx, doc, getFkResult, result, populateResult;
+
+        return regeneratorRuntime.wrap(function _callee22$(_context22) {
+            while (1) {
+                switch (_context22.prev = _context22.next) {
+                    case 0:
+                        _context22.next = 2;
+                        return sanityInput(req.body.values, inputRule.billType, false, maxFieldNum.billType);
+
+                    case 2:
+                        sanitizedInputValue = _context22.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context22.next = 5;
+                            break;
+                        }
+
+                        return _context22.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
                         //2. 数据加入数组，采用insertMany，所有输入必须是数组
@@ -1574,207 +1788,207 @@ billType['create'] = function () {
                         _iteratorNormalCompletion6 = true;
                         _didIteratorError6 = false;
                         _iteratorError6 = undefined;
-                        _context20.prev = 10;
+                        _context22.prev = 10;
                         _iterator6 = arrayResult[Symbol.iterator]();
 
                     case 12:
                         if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
-                            _context20.next = 23;
+                            _context22.next = 23;
                             break;
                         }
 
-                        _doc3 = _step6.value;
+                        _doc5 = _step6.value;
 
-                        if (!_doc3.parentBillType) {
-                            _context20.next = 20;
+                        if (!_doc5.parentBillType) {
+                            _context22.next = 20;
                             break;
                         }
 
-                        _context20.next = 17;
-                        return checkIdExist(coll.billType, coll.billType, 'parentBillType', _doc3.parentBillType);
+                        _context22.next = 17;
+                        return checkIdExist(coll.billType, coll.billType, 'parentBillType', _doc5.parentBillType);
 
                     case 17:
-                        _result7 = _context20.sent;
+                        _result7 = _context22.sent;
 
                         if (!(0 < _result7.rc)) {
-                            _context20.next = 20;
+                            _context22.next = 20;
                             break;
                         }
 
-                        return _context20.abrupt('return', res.json(returnResult(_result7)));
+                        return _context22.abrupt('return', res.json(returnResult(_result7)));
 
                     case 20:
                         _iteratorNormalCompletion6 = true;
-                        _context20.next = 12;
+                        _context22.next = 12;
                         break;
 
                     case 23:
-                        _context20.next = 29;
+                        _context22.next = 29;
                         break;
 
                     case 25:
-                        _context20.prev = 25;
-                        _context20.t0 = _context20['catch'](10);
+                        _context22.prev = 25;
+                        _context22.t0 = _context22['catch'](10);
                         _didIteratorError6 = true;
-                        _iteratorError6 = _context20.t0;
+                        _iteratorError6 = _context22.t0;
 
                     case 29:
-                        _context20.prev = 29;
-                        _context20.prev = 30;
+                        _context22.prev = 29;
+                        _context22.prev = 30;
 
                         if (!_iteratorNormalCompletion6 && _iterator6.return) {
                             _iterator6.return();
                         }
 
                     case 32:
-                        _context20.prev = 32;
+                        _context22.prev = 32;
 
                         if (!_didIteratorError6) {
-                            _context20.next = 35;
+                            _context22.next = 35;
                             break;
                         }
 
                         throw _iteratorError6;
 
                     case 35:
-                        return _context20.finish(32);
+                        return _context22.finish(32);
 
                     case 36:
-                        return _context20.finish(29);
+                        return _context22.finish(29);
 
                     case 37:
                         //4 删除null的字段（null说明字段为空，所以无需传入db
                         _iteratorNormalCompletion7 = true;
                         _didIteratorError7 = false;
                         _iteratorError7 = undefined;
-                        _context20.prev = 40;
+                        _context22.prev = 40;
                         for (_iterator7 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                            _doc4 = _step7.value;
+                            _doc6 = _step7.value;
 
-                            validateFunc.constructCreateCriteria(_doc4);
+                            validateFunc.constructCreateCriteria(_doc6);
                         }
 
                         // console.log(`arr`)
                         //4.5 如果外键存在，获得外键的额外字段
                         // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.billType)}`)
-                        _context20.next = 48;
+                        _context22.next = 48;
                         break;
 
                     case 44:
-                        _context20.prev = 44;
-                        _context20.t1 = _context20['catch'](40);
+                        _context22.prev = 44;
+                        _context22.t1 = _context22['catch'](40);
                         _didIteratorError7 = true;
-                        _iteratorError7 = _context20.t1;
+                        _iteratorError7 = _context22.t1;
 
                     case 48:
-                        _context20.prev = 48;
-                        _context20.prev = 49;
+                        _context22.prev = 48;
+                        _context22.prev = 49;
 
                         if (!_iteratorNormalCompletion7 && _iterator7.return) {
                             _iterator7.return();
                         }
 
                     case 51:
-                        _context20.prev = 51;
+                        _context22.prev = 51;
 
                         if (!_didIteratorError7) {
-                            _context20.next = 54;
+                            _context22.next = 54;
                             break;
                         }
 
                         throw _iteratorError7;
 
                     case 54:
-                        return _context20.finish(51);
+                        return _context22.finish(51);
 
                     case 55:
-                        return _context20.finish(48);
+                        return _context22.finish(48);
 
                     case 56:
-                        _context20.t2 = regeneratorRuntime.keys(arrayResult);
+                        _context22.t2 = regeneratorRuntime.keys(arrayResult);
 
                     case 57:
-                        if ((_context20.t3 = _context20.t2()).done) {
-                            _context20.next = 67;
+                        if ((_context22.t3 = _context22.t2()).done) {
+                            _context22.next = 67;
                             break;
                         }
 
-                        idx = _context20.t3.value;
+                        idx = _context22.t3.value;
 
                         // console.log(`idx is ${idx}`)
                         doc = arrayResult[idx];
-                        _context20.next = 62;
+                        _context22.next = 62;
                         return getFkAdditionalFields(doc, fkAdditionalFieldsConfig.billType);
 
                     case 62:
-                        getFkResult = _context20.sent;
+                        getFkResult = _context22.sent;
 
                         if (!(getFkResult.rc > 0)) {
-                            _context20.next = 65;
+                            _context22.next = 65;
                             break;
                         }
 
-                        return _context20.abrupt('return', res.json(getFkResult));
+                        return _context22.abrupt('return', res.json(getFkResult));
 
                     case 65:
-                        _context20.next = 57;
+                        _context22.next = 57;
                         break;
 
                     case 67:
-                        _context20.next = 69;
+                        _context22.next = 69;
                         return billTypeDbOperation.create(arrayResult);
 
                     case 69:
-                        result = _context20.sent;
+                        result = _context22.sent;
 
                         if (!(result.rc > 0)) {
-                            _context20.next = 72;
+                            _context22.next = 72;
                             break;
                         }
 
-                        return _context20.abrupt('return', res.json(result));
+                        return _context22.abrupt('return', res.json(result));
 
                     case 72:
-                        _context20.next = 74;
+                        _context22.next = 74;
                         return populateSingleDoc(result.msg[0], populateOpt.billType, populatedFields.billType);
 
                     case 74:
-                        populateResult = _context20.sent;
-                        return _context20.abrupt('return', res.json(returnResult(populateResult)));
+                        populateResult = _context22.sent;
+                        return _context22.abrupt('return', res.json(returnResult(populateResult)));
 
                     case 76:
                     case 'end':
-                        return _context20.stop();
+                        return _context22.stop();
                 }
             }
-        }, _callee20, this, [[10, 25, 29, 37], [30,, 32, 36], [40, 44, 48, 56], [49,, 51, 55]]);
+        }, _callee22, this, [[10, 25, 29, 37], [30,, 32, 36], [40, 44, 48, 56], [49,, 51, 55]]);
     }));
 
-    return function (_x61, _x62, _x63) {
-        return _ref20.apply(this, arguments);
+    return function (_x67, _x68, _x69) {
+        return _ref22.apply(this, arguments);
     };
 }();
 
 billType['update'] = function () {
-    var _ref21 = _asyncToGenerator(regeneratorRuntime.mark(function _callee21(req, res, next) {
+    var _ref23 = _asyncToGenerator(regeneratorRuntime.mark(function _callee23(req, res, next) {
         var sanitizedInputValue, convertedResult, id, getFkResult, _result8, result, populateResult;
 
-        return regeneratorRuntime.wrap(function _callee21$(_context21) {
+        return regeneratorRuntime.wrap(function _callee23$(_context23) {
             while (1) {
-                switch (_context21.prev = _context21.next) {
+                switch (_context23.prev = _context23.next) {
                     case 0:
-                        _context21.next = 2;
+                        _context23.next = 2;
                         return sanityInput(req.body.values, inputRule.billType, true, maxFieldNum.billType);
 
                     case 2:
-                        sanitizedInputValue = _context21.sent;
+                        sanitizedInputValue = _context23.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context21.next = 5;
+                            _context23.next = 5;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        return _context23.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -1786,28 +2000,29 @@ billType['update'] = function () {
                         id = convertedResult._id;
 
                         delete convertedResult._id;
+
                         //4 上级不能设成自己
 
                         if (!(id === convertedResult.parentBillType)) {
-                            _context21.next = 10;
+                            _context23.next = 10;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(returnResult(pageError.billType.parentCantBeSelf)));
+                        return _context23.abrupt('return', res.json(returnResult(pageError.billType.parentCantBeSelf)));
 
                     case 10:
-                        _context21.next = 12;
+                        _context23.next = 12;
                         return getFkAdditionalFields(convertedResult, fkAdditionalFieldsConfig.billType);
 
                     case 12:
-                        getFkResult = _context21.sent;
+                        getFkResult = _context23.sent;
 
                         if (!(getFkResult.rc > 0)) {
-                            _context21.next = 15;
+                            _context23.next = 15;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(getFkResult));
+                        return _context23.abrupt('return', res.json(getFkResult));
 
                     case 15:
                         //console.log(`after get ${JSON.stringify(convertedResult)}`)
@@ -1818,153 +2033,57 @@ billType['update'] = function () {
                         //6 检查外键是否存在
 
                         if (!(null !== convertedResult.parentBillType && undefined !== convertedResult.parentBillType)) {
-                            _context21.next = 22;
+                            _context23.next = 22;
                             break;
                         }
 
-                        _context21.next = 19;
+                        _context23.next = 19;
                         return checkIdExist(coll.billType, coll.billType, 'parentBillType', convertedResult.parentBillType);
 
                     case 19:
-                        _result8 = _context21.sent;
+                        _result8 = _context23.sent;
 
                         if (!(0 < _result8.rc)) {
-                            _context21.next = 22;
+                            _context23.next = 22;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(returnResult(_result8)));
+                        return _context23.abrupt('return', res.json(returnResult(_result8)));
 
                     case 22:
-                        _context21.next = 24;
+                        _context23.next = 24;
                         return billTypeDbOperation.update(id, convertedResult);
 
                     case 24:
-                        result = _context21.sent;
+                        result = _context23.sent;
 
                         if (!(result.rc > 0)) {
-                            _context21.next = 27;
+                            _context23.next = 27;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(returnResult(result)));
+                        return _context23.abrupt('return', res.json(returnResult(result)));
 
                     case 27:
                         //null说明没有执行任何更新
                         console.log('billtype update is ' + JSON.stringify(result));
 
                         if (!(null === result.msg)) {
-                            _context21.next = 30;
+                            _context23.next = 30;
                             break;
                         }
 
-                        return _context21.abrupt('return', res.json(returnResult(pageError.billType.billTypeNotExists)));
+                        return _context23.abrupt('return', res.json(returnResult(pageError.billType.billTypeNotExists)));
 
                     case 30:
-                        _context21.next = 32;
+                        _context23.next = 32;
                         return populateSingleDoc(result.msg, populateOpt.billType, populatedFields.billType);
 
                     case 32:
-                        populateResult = _context21.sent;
-                        return _context21.abrupt('return', res.json(returnResult(populateResult)));
+                        populateResult = _context23.sent;
+                        return _context23.abrupt('return', res.json(returnResult(populateResult)));
 
                     case 34:
-                    case 'end':
-                        return _context21.stop();
-                }
-            }
-        }, _callee21, this);
-    }));
-
-    return function (_x64, _x65, _x66) {
-        return _ref21.apply(this, arguments);
-    };
-}();
-
-billType['remove'] = function () {
-    var _ref22 = _asyncToGenerator(regeneratorRuntime.mark(function _callee22(req, res, next) {
-        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
-        return regeneratorRuntime.wrap(function _callee22$(_context22) {
-            while (1) {
-                switch (_context22.prev = _context22.next) {
-                    case 0:
-                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
-                        inputResult = {};
-
-                        console.log('delete params is ' + JSON.stringify(req.params.id));
-                        checkResult = validateFunc.validateDeleteInput(req.params.id);
-
-                        console.log('delete check result is ' + JSON.stringify(checkResult));
-
-                        if (!(checkResult.rc > 0)) {
-                            _context22.next = 6;
-                            break;
-                        }
-
-                        return _context22.abrupt('return', res.json(returnResult(checkResult)));
-
-                    case 6:
-                        inputResult['_id'] = { value: req.params.id };
-                        //1 检查输入的参数，并作转换（如果是字符串）
-                        _context22.next = 9;
-                        return sanityInput(inputResult, inputRule.billType, true, maxFieldNum.billType);
-
-                    case 9:
-                        sanitizedInputValue = _context22.sent;
-
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context22.next = 12;
-                            break;
-                        }
-
-                        return _context22.abrupt('return', res.json(returnResult(sanitizedInputValue)));
-
-                    case 12:
-
-                        //2. 将client输入转换成server端的格式
-                        convertedResult = validateFunc.convertClientValueToServerFormat(inputResult);
-                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
-                        //3 提取数据
-
-                        id = convertedResult._id;
-
-                        delete convertedResult._id;
-                        // console.log(`id is ${id}`)
-                        _context22.next = 17;
-                        return billTypeDbOperation.remove(id);
-
-                    case 17:
-                        result = _context22.sent;
-                        return _context22.abrupt('return', res.json(returnResult(result)));
-
-                    case 19:
-                    case 'end':
-                        return _context22.stop();
-                }
-            }
-        }, _callee22, this);
-    }));
-
-    return function (_x67, _x68, _x69) {
-        return _ref22.apply(this, arguments);
-    };
-}();
-
-billType['readAll'] = function () {
-    var _ref23 = _asyncToGenerator(regeneratorRuntime.mark(function _callee23(req, res, next) {
-        var result;
-        return regeneratorRuntime.wrap(function _callee23$(_context23) {
-            while (1) {
-                switch (_context23.prev = _context23.next) {
-                    case 0:
-                        _context23.next = 2;
-                        return billTypeDbOperation.readAll(populateOpt.billType);
-
-                    case 2:
-                        result = _context23.sent;
-                        return _context23.abrupt('return', res.json(returnResult(result)));
-
-                    case 4:
                     case 'end':
                         return _context23.stop();
                 }
@@ -1977,55 +2096,63 @@ billType['readAll'] = function () {
     };
 }();
 
-billType['readName'] = function () {
+billType['remove'] = function () {
     var _ref24 = _asyncToGenerator(regeneratorRuntime.mark(function _callee24(req, res, next) {
-        var recorder, constructedValue, validateResult;
+        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
         return regeneratorRuntime.wrap(function _callee24$(_context24) {
             while (1) {
                 switch (_context24.prev = _context24.next) {
                     case 0:
-                        recorder = void 0;
+                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
+                        inputResult = {};
 
-                        console.log('parems is ' + JSON.stringify(req.params.name));
+                        console.log('delete params is ' + JSON.stringify(req.params.id));
+                        checkResult = validateFunc.validateDeleteInput(req.params.id);
 
-                        if (!req.params.name) {
-                            _context24.next = 14;
+                        console.log('delete check result is ' + JSON.stringify(checkResult));
+
+                        if (!(checkResult.rc > 0)) {
+                            _context24.next = 6;
                             break;
                         }
 
-                        console.log('name is ' + req.params.name);
-                        constructedValue = { name: { value: req.params.name } };
-                        validateResult = validateFunc.checkSearchValue(constructedValue, inputRule.billType);
+                        return _context24.abrupt('return', res.json(returnResult(checkResult)));
 
-                        console.log('search result check is ' + JSON.stringify(validateResult));
-
-                        if (!(validateResult['name']['rc'] > 0)) {
-                            _context24.next = 9;
-                            break;
-                        }
-
-                        return _context24.abrupt('return', res.json(validateResult['name']));
+                    case 6:
+                        inputResult['_id'] = { value: req.params.id };
+                        //1 检查输入的参数，并作转换（如果是字符串）
+                        _context24.next = 9;
+                        return sanityInput(inputResult, inputRule.billType, true, maxFieldNum.billType);
 
                     case 9:
-                        _context24.next = 11;
-                        return billTypeDbOperation.readName(req.params.name);
+                        sanitizedInputValue = _context24.sent;
 
-                    case 11:
-                        recorder = _context24.sent;
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context24.next = 12;
+                            break;
+                        }
+
+                        return _context24.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 12:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = validateFunc.convertClientValueToServerFormat(inputResult);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3 提取数据
+
+                        id = convertedResult._id;
+
+                        delete convertedResult._id;
+                        // console.log(`id is ${id}`)
                         _context24.next = 17;
-                        break;
-
-                    case 14:
-                        _context24.next = 16;
-                        return billTypeDbOperation.readName();
-
-                    case 16:
-                        recorder = _context24.sent;
+                        return billTypeDbOperation.remove(id);
 
                     case 17:
-                        return _context24.abrupt('return', res.json(returnResult(recorder)));
+                        result = _context24.sent;
+                        return _context24.abrupt('return', res.json(returnResult(result)));
 
-                    case 18:
+                    case 19:
                     case 'end':
                         return _context24.stop();
                 }
@@ -2038,38 +2165,21 @@ billType['readName'] = function () {
     };
 }();
 
-billType['search'] = function () {
+billType['readAll'] = function () {
     var _ref25 = _asyncToGenerator(regeneratorRuntime.mark(function _callee25(req, res, next) {
-        var sanitizedInputValue, searchParams, recorder;
+        var result;
         return regeneratorRuntime.wrap(function _callee25$(_context25) {
             while (1) {
                 switch (_context25.prev = _context25.next) {
                     case 0:
                         _context25.next = 2;
-                        return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.billType, coll.billType, inputRule);
+                        return billTypeDbOperation.readAll(populateOpt.billType);
 
                     case 2:
-                        sanitizedInputValue = _context25.sent;
+                        result = _context25.sent;
+                        return _context25.abrupt('return', res.json(returnResult(result)));
 
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context25.next = 5;
-                            break;
-                        }
-
-                        return _context25.abrupt('return', res.json(returnResult(sanitizedInputValue)));
-
-                    case 5:
-                        searchParams = validateFunc.convertClientSearchValueToServerFormat(req.body.values, fkAdditionalFieldsConfig.billType);
-
-                        console.log('convert search params id ' + JSON.stringify(searchParams));
-                        _context25.next = 9;
-                        return billType.search(searchParams);
-
-                    case 9:
-                        recorder = _context25.sent;
-                        return _context25.abrupt('return', res.json(returnResult(recorder)));
-
-                    case 11:
+                    case 4:
                     case 'end':
                         return _context25.stop();
                 }
@@ -2082,30 +2192,135 @@ billType['search'] = function () {
     };
 }();
 
+billType['readName'] = function () {
+    var _ref26 = _asyncToGenerator(regeneratorRuntime.mark(function _callee26(req, res, next) {
+        var recorder, constructedValue, validateResult;
+        return regeneratorRuntime.wrap(function _callee26$(_context26) {
+            while (1) {
+                switch (_context26.prev = _context26.next) {
+                    case 0:
+                        recorder = void 0;
+
+                        console.log('parems is ' + JSON.stringify(req.params.name));
+
+                        if (!req.params.name) {
+                            _context26.next = 14;
+                            break;
+                        }
+
+                        console.log('name is ' + req.params.name);
+                        constructedValue = { name: { value: req.params.name } };
+                        validateResult = validateFunc.checkSearchValue(constructedValue, inputRule.billType);
+
+                        console.log('search result check is ' + JSON.stringify(validateResult));
+
+                        if (!(validateResult['name']['rc'] > 0)) {
+                            _context26.next = 9;
+                            break;
+                        }
+
+                        return _context26.abrupt('return', res.json(validateResult['name']));
+
+                    case 9:
+                        _context26.next = 11;
+                        return billTypeDbOperation.readName(req.params.name);
+
+                    case 11:
+                        recorder = _context26.sent;
+                        _context26.next = 17;
+                        break;
+
+                    case 14:
+                        _context26.next = 16;
+                        return billTypeDbOperation.readName();
+
+                    case 16:
+                        recorder = _context26.sent;
+
+                    case 17:
+                        return _context26.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 18:
+                    case 'end':
+                        return _context26.stop();
+                }
+            }
+        }, _callee26, this);
+    }));
+
+    return function (_x79, _x80, _x81) {
+        return _ref26.apply(this, arguments);
+    };
+}();
+
+billType['search'] = function () {
+    var _ref27 = _asyncToGenerator(regeneratorRuntime.mark(function _callee27(req, res, next) {
+        var sanitizedInputValue, searchParams, recorder;
+        return regeneratorRuntime.wrap(function _callee27$(_context27) {
+            while (1) {
+                switch (_context27.prev = _context27.next) {
+                    case 0:
+                        _context27.next = 2;
+                        return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.billType, coll.billType, inputRule);
+
+                    case 2:
+                        sanitizedInputValue = _context27.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context27.next = 5;
+                            break;
+                        }
+
+                        return _context27.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 5:
+                        searchParams = validateFunc.genNativeSearchCondition(req.body.values, coll.billType, fkAdditionalFieldsConfig.billType, inputRule);
+
+                        console.log('convert search params id ' + JSON.stringify(searchParams));
+                        _context27.next = 9;
+                        return billTypeDbOperation.search(searchParams);
+
+                    case 9:
+                        recorder = _context27.sent;
+                        return _context27.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 11:
+                    case 'end':
+                        return _context27.stop();
+                }
+            }
+        }, _callee27, this);
+    }));
+
+    return function (_x82, _x83, _x84) {
+        return _ref27.apply(this, arguments);
+    };
+}();
+
 /*********************  bill  ******************************
  * 部门
  * */
 var bill = {};
 bill['create'] = function () {
-    var _ref26 = _asyncToGenerator(regeneratorRuntime.mark(function _callee26(req, res, next) {
-        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, doc, _ref27, _ref28, fkReimburserResult, fkBillTypeResult, _iteratorNormalCompletion9, _didIteratorError9, _iteratorError9, _iterator9, _step9, _doc5, result, populateResult;
+    var _ref28 = _asyncToGenerator(regeneratorRuntime.mark(function _callee28(req, res, next) {
+        var sanitizedInputValue, arrayResult, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, _doc7, _ref29, _ref30, fkReimburserResult, fkBillTypeResult, _iteratorNormalCompletion9, _didIteratorError9, _iteratorError9, _iterator9, _step9, _doc8, idx, doc, getFkResult, result, populateResult;
 
-        return regeneratorRuntime.wrap(function _callee26$(_context26) {
+        return regeneratorRuntime.wrap(function _callee28$(_context28) {
             while (1) {
-                switch (_context26.prev = _context26.next) {
+                switch (_context28.prev = _context28.next) {
                     case 0:
-                        _context26.next = 2;
+                        _context28.next = 2;
                         return sanityInput(req.body.values, inputRule.bill, false, maxFieldNum.bill);
 
                     case 2:
-                        sanitizedInputValue = _context26.sent;
+                        sanitizedInputValue = _context28.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context26.next = 5;
+                            _context28.next = 5;
                             break;
                         }
 
-                        return _context26.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        return _context28.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
                         //2 采用insertMany，所有输入必须是数组
@@ -2119,80 +2334,80 @@ bill['create'] = function () {
                         _iteratorNormalCompletion8 = true;
                         _didIteratorError8 = false;
                         _iteratorError8 = undefined;
-                        _context26.prev = 10;
+                        _context28.prev = 10;
                         _iterator8 = arrayResult[Symbol.iterator]();
 
                     case 12:
                         if (_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done) {
-                            _context26.next = 27;
+                            _context28.next = 27;
                             break;
                         }
 
-                        doc = _step8.value;
-                        _context26.next = 16;
-                        return Promise.all([checkIdExist(coll.employee, coll.bill, 'reimburser', doc.reimburser), checkIdExist(coll.billType, coll.bill, 'billType', doc.billType)]);
+                        _doc7 = _step8.value;
+                        _context28.next = 16;
+                        return Promise.all([checkIdExist(coll.employee, coll.bill, 'reimburser', _doc7.reimburser), checkIdExist(coll.billType, coll.bill, 'billType', _doc7.billType)]);
 
                     case 16:
-                        _ref27 = _context26.sent;
-                        _ref28 = _slicedToArray(_ref27, 2);
-                        fkReimburserResult = _ref28[0];
-                        fkBillTypeResult = _ref28[1];
+                        _ref29 = _context28.sent;
+                        _ref30 = _slicedToArray(_ref29, 2);
+                        fkReimburserResult = _ref30[0];
+                        fkBillTypeResult = _ref30[1];
                         //console.log(`fkReimburserResult result is ${JSON.stringify(fkReimburserResult)}`)
                         //        console.log(`fkBillTypeResult result is ${JSON.stringify(fkBillTypeResult)}`)
 
                         if (!(fkReimburserResult.rc > 0)) {
-                            _context26.next = 22;
+                            _context28.next = 22;
                             break;
                         }
 
-                        return _context26.abrupt('return', res.json(returnResult(fkReimburserResult)));
+                        return _context28.abrupt('return', res.json(returnResult(fkReimburserResult)));
 
                     case 22:
                         if (!(fkBillTypeResult.rc > 0)) {
-                            _context26.next = 24;
+                            _context28.next = 24;
                             break;
                         }
 
-                        return _context26.abrupt('return', res.json(returnResult(fkBillTypeResult)));
+                        return _context28.abrupt('return', res.json(returnResult(fkBillTypeResult)));
 
                     case 24:
                         _iteratorNormalCompletion8 = true;
-                        _context26.next = 12;
+                        _context28.next = 12;
                         break;
 
                     case 27:
-                        _context26.next = 33;
+                        _context28.next = 33;
                         break;
 
                     case 29:
-                        _context26.prev = 29;
-                        _context26.t0 = _context26['catch'](10);
+                        _context28.prev = 29;
+                        _context28.t0 = _context28['catch'](10);
                         _didIteratorError8 = true;
-                        _iteratorError8 = _context26.t0;
+                        _iteratorError8 = _context28.t0;
 
                     case 33:
-                        _context26.prev = 33;
-                        _context26.prev = 34;
+                        _context28.prev = 33;
+                        _context28.prev = 34;
 
                         if (!_iteratorNormalCompletion8 && _iterator8.return) {
                             _iterator8.return();
                         }
 
                     case 36:
-                        _context26.prev = 36;
+                        _context28.prev = 36;
 
                         if (!_didIteratorError8) {
-                            _context26.next = 39;
+                            _context28.next = 39;
                             break;
                         }
 
                         throw _iteratorError8;
 
                     case 39:
-                        return _context26.finish(36);
+                        return _context28.finish(36);
 
                     case 40:
-                        return _context26.finish(33);
+                        return _context28.finish(33);
 
                     case 41:
 
@@ -2200,150 +2415,131 @@ bill['create'] = function () {
                         _iteratorNormalCompletion9 = true;
                         _didIteratorError9 = false;
                         _iteratorError9 = undefined;
-                        _context26.prev = 44;
+                        _context28.prev = 44;
                         for (_iterator9 = arrayResult[Symbol.iterator](); !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-                            _doc5 = _step9.value;
+                            _doc8 = _step9.value;
 
-                            validateFunc.constructCreateCriteria(_doc5);
+                            validateFunc.constructCreateCriteria(_doc8);
                         }
-                        //5. 对db执行操作
-                        _context26.next = 52;
+                        //4.5 如果外键存在，获得外键的额外字段
+                        // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.billType)}`)
+                        _context28.next = 52;
                         break;
 
                     case 48:
-                        _context26.prev = 48;
-                        _context26.t1 = _context26['catch'](44);
+                        _context28.prev = 48;
+                        _context28.t1 = _context28['catch'](44);
                         _didIteratorError9 = true;
-                        _iteratorError9 = _context26.t1;
+                        _iteratorError9 = _context28.t1;
 
                     case 52:
-                        _context26.prev = 52;
-                        _context26.prev = 53;
+                        _context28.prev = 52;
+                        _context28.prev = 53;
 
                         if (!_iteratorNormalCompletion9 && _iterator9.return) {
                             _iterator9.return();
                         }
 
                     case 55:
-                        _context26.prev = 55;
+                        _context28.prev = 55;
 
                         if (!_didIteratorError9) {
-                            _context26.next = 58;
+                            _context28.next = 58;
                             break;
                         }
 
                         throw _iteratorError9;
 
                     case 58:
-                        return _context26.finish(55);
+                        return _context28.finish(55);
 
                     case 59:
-                        return _context26.finish(52);
+                        return _context28.finish(52);
 
                     case 60:
-                        _context26.next = 62;
-                        return billDbOperation.create(arrayResult);
+                        _context28.t2 = regeneratorRuntime.keys(arrayResult);
 
-                    case 62:
-                        result = _context26.sent;
-
-                        if (!(result.rc > 0)) {
-                            _context26.next = 65;
+                    case 61:
+                        if ((_context28.t3 = _context28.t2()).done) {
+                            _context28.next = 71;
                             break;
                         }
 
-                        return _context26.abrupt('return', res.json(result));
+                        idx = _context28.t3.value;
 
-                    case 65:
-                        _context26.next = 67;
-                        return populateSingleDoc(result.msg[0], populateOpt.bill, populatedFields.bill);
+                        // console.log(`idx is ${idx}`)
+                        doc = arrayResult[idx];
+                        _context28.next = 66;
+                        return getFkAdditionalFields(doc, fkAdditionalFieldsConfig.bill);
 
-                    case 67:
-                        populateResult = _context26.sent;
-                        return _context26.abrupt('return', res.json(returnResult(populateResult)));
+                    case 66:
+                        getFkResult = _context28.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context28.next = 69;
+                            break;
+                        }
+
+                        return _context28.abrupt('return', res.json(getFkResult));
 
                     case 69:
-                    case 'end':
-                        return _context26.stop();
-                }
-            }
-        }, _callee26, this, [[10, 29, 33, 41], [34,, 36, 40], [44, 48, 52, 60], [53,, 55, 59]]);
-    }));
+                        _context28.next = 61;
+                        break;
 
-    return function (_x79, _x80, _x81) {
-        return _ref26.apply(this, arguments);
-    };
-}();
+                    case 71:
+                        _context28.next = 73;
+                        return billDbOperation.create(arrayResult);
 
-bill['remove'] = function () {
-    var _ref29 = _asyncToGenerator(regeneratorRuntime.mark(function _callee27(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, result;
-        return regeneratorRuntime.wrap(function _callee27$(_context27) {
-            while (1) {
-                switch (_context27.prev = _context27.next) {
-                    case 0:
-                        _context27.next = 2;
-                        return sanityInput(req.body.values, inputRule.bill, true, maxFieldNum.bill);
+                    case 73:
+                        result = _context28.sent;
 
-                    case 2:
-                        sanitizedInputValue = _context27.sent;
-
-                        if (!(sanitizedInputValue.rc > 0)) {
-                            _context27.next = 5;
+                        if (!(result.rc > 0)) {
+                            _context28.next = 76;
                             break;
                         }
 
-                        return _context27.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        return _context28.abrupt('return', res.json(result));
 
-                    case 5:
+                    case 76:
+                        _context28.next = 78;
+                        return populateSingleDoc(result.msg[0], populateOpt.bill, populatedFields.bill);
 
-                        //2. 将client输入转换成server端的格式
-                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
-                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
-                        //3， 提取数据并执行操作
+                    case 78:
+                        populateResult = _context28.sent;
+                        return _context28.abrupt('return', res.json(returnResult(populateResult)));
 
-                        id = convertedResult._id;
-                        //console.log(`id is ${id}`)
-
-                        _context27.next = 9;
-                        return billDbOperation.remove(id);
-
-                    case 9:
-                        result = _context27.sent;
-                        return _context27.abrupt('return', res.json(returnResult(result)));
-
-                    case 11:
+                    case 80:
                     case 'end':
-                        return _context27.stop();
+                        return _context28.stop();
                 }
             }
-        }, _callee27, this);
+        }, _callee28, this, [[10, 29, 33, 41], [34,, 36, 40], [44, 48, 52, 60], [53,, 55, 59]]);
     }));
 
-    return function (_x82, _x83, _x84) {
-        return _ref29.apply(this, arguments);
+    return function (_x85, _x86, _x87) {
+        return _ref28.apply(this, arguments);
     };
 }();
 
 bill['update'] = function () {
-    var _ref30 = _asyncToGenerator(regeneratorRuntime.mark(function _callee28(req, res, next) {
-        var sanitizedInputValue, convertedResult, id, fkBillTypeResult, fkReimburserResult, result, populateResult;
-        return regeneratorRuntime.wrap(function _callee28$(_context28) {
+    var _ref31 = _asyncToGenerator(regeneratorRuntime.mark(function _callee29(req, res, next) {
+        var sanitizedInputValue, convertedResult, id, fkBillTypeResult, getFkResult, fkReimburserResult, result, populateResult;
+        return regeneratorRuntime.wrap(function _callee29$(_context29) {
             while (1) {
-                switch (_context28.prev = _context28.next) {
+                switch (_context29.prev = _context29.next) {
                     case 0:
-                        _context28.next = 2;
+                        _context29.next = 2;
                         return sanityInput(req.body.values, inputRule.bill, true, maxFieldNum.bill);
 
                     case 2:
-                        sanitizedInputValue = _context28.sent;
+                        sanitizedInputValue = _context29.sent;
 
                         if (!(sanitizedInputValue.rc > 0)) {
-                            _context28.next = 5;
+                            _context29.next = 5;
                             break;
                         }
 
-                        return _context28.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+                        return _context29.abrupt('return', res.json(returnResult(sanitizedInputValue)));
 
                     case 5:
 
@@ -2359,100 +2555,92 @@ bill['update'] = function () {
                         //5. 检查可能的外键（billType/reimburser）
 
                         if (!convertedResult.billType) {
-                            _context28.next = 15;
+                            _context29.next = 38;
                             break;
                         }
 
-                        _context28.next = 12;
+                        _context29.next = 12;
                         return checkIdExist(coll.billType, coll.bill, 'billType', convertedResult.billType);
 
                     case 12:
-                        fkBillTypeResult = _context28.sent;
+                        fkBillTypeResult = _context29.sent;
 
                         if (!(fkBillTypeResult.rc > 0)) {
-                            _context28.next = 15;
+                            _context29.next = 15;
                             break;
                         }
 
-                        return _context28.abrupt('return', res.json(returnResult(fkBillTypeResult)));
+                        return _context29.abrupt('return', res.json(returnResult(fkBillTypeResult)));
 
                     case 15:
-                        if (!(null !== convertedResult.reimburser && undefined !== convertedResult.reimburser)) {
-                            _context28.next = 21;
+                        _context29.next = 17;
+                        return getFkAdditionalFields(convertedResult, fkAdditionalFieldsConfig.bill);
+
+                    case 17:
+                        getFkResult = _context29.sent;
+
+                        if (!(getFkResult.rc > 0)) {
+                            _context29.next = 20;
                             break;
                         }
 
-                        _context28.next = 18;
+                        return _context29.abrupt('return', res.json(getFkResult));
+
+                    case 20:
+                        //console.log(`after get ${JSON.stringify(convertedResult)}`)
+
+                        //5 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
+                        validateFunc.constructUpdateCriteria(convertedResult);
+
+                        if (!(null !== convertedResult.reimburser && undefined !== convertedResult.reimburser)) {
+                            _context29.next = 27;
+                            break;
+                        }
+
+                        _context29.next = 24;
                         return checkIdExist(coll.employee, coll.bill, 'reimburser', convertedResult.reimburser);
 
-                    case 18:
-                        fkReimburserResult = _context28.sent;
+                    case 24:
+                        fkReimburserResult = _context29.sent;
 
                         if (!(fkReimburserResult.rc > 0)) {
-                            _context28.next = 21;
+                            _context29.next = 27;
                             break;
                         }
 
-                        return _context28.abrupt('return', res.json(returnResult(fkReimburserResult)));
+                        return _context29.abrupt('return', res.json(returnResult(fkReimburserResult)));
 
-                    case 21:
-                        _context28.next = 23;
+                    case 27:
+                        _context29.next = 29;
                         return billDbOperation.update(id, convertedResult);
 
-                    case 23:
-                        result = _context28.sent;
+                    case 29:
+                        result = _context29.sent;
 
                         if (!(result.rc > 0)) {
-                            _context28.next = 26;
+                            _context29.next = 32;
                             break;
                         }
 
-                        return _context28.abrupt('return', res.json(returnResult(result)));
-
-                    case 26:
-                        if (!(null === result.msg)) {
-                            _context28.next = 28;
-                            break;
-                        }
-
-                        return _context28.abrupt('return', res.json(returnResult(pageError.bill.billNotExist)));
-
-                    case 28:
-                        _context28.next = 30;
-                        return populateSingleDoc(result.msg, populateOpt.bill, populatedFields.bill);
-
-                    case 30:
-                        populateResult = _context28.sent;
-                        return _context28.abrupt('return', res.json(returnResult(populateResult)));
-
-                    case 32:
-                    case 'end':
-                        return _context28.stop();
-                }
-            }
-        }, _callee28, this);
-    }));
-
-    return function (_x85, _x86, _x87) {
-        return _ref30.apply(this, arguments);
-    };
-}();
-
-bill['readAll'] = function () {
-    var _ref31 = _asyncToGenerator(regeneratorRuntime.mark(function _callee29(req, res, next) {
-        var result;
-        return regeneratorRuntime.wrap(function _callee29$(_context29) {
-            while (1) {
-                switch (_context29.prev = _context29.next) {
-                    case 0:
-                        _context29.next = 2;
-                        return billDbOperation.readAll(populateOpt.bill);
-
-                    case 2:
-                        result = _context29.sent;
                         return _context29.abrupt('return', res.json(returnResult(result)));
 
-                    case 4:
+                    case 32:
+                        if (!(null === result.msg)) {
+                            _context29.next = 34;
+                            break;
+                        }
+
+                        return _context29.abrupt('return', res.json(returnResult(pageError.bill.billNotExist)));
+
+                    case 34:
+                        _context29.next = 36;
+                        return populateSingleDoc(result.msg, populateOpt.bill, populatedFields.bill);
+
+                    case 36:
+                        populateResult = _context29.sent;
+                        return _context29.abrupt('return', res.json(returnResult(populateResult)));
+
+                    case 38:
                     case 'end':
                         return _context29.stop();
                 }
@@ -2465,25 +2653,143 @@ bill['readAll'] = function () {
     };
 }();
 
-//bill无需提供title
-/*bill['readName']=async function (req,res,next){
-    let recorder
-    if(req.params.name){
-        console.log(`name is ${req.params.name}`)
-        let constructedValue={name:{value:req.params.name}}
-        let validateResult=await validateFunc.validate.checkSearchValue(constructedValue,inputRule.billType)
-        if(validateResult['name']['rc']>0){
-            return res.json(validateResult['name'])
-        }
-        recorder=await billTypeDbOperation.readName(req.params.name)
-    }else{
-        recorder=await billTypeDbOperation.readName()
-    }
+bill['remove'] = function () {
+    var _ref32 = _asyncToGenerator(regeneratorRuntime.mark(function _callee30(req, res, next) {
+        var inputResult, checkResult, sanitizedInputValue, convertedResult, id, result;
+        return regeneratorRuntime.wrap(function _callee30$(_context30) {
+            while (1) {
+                switch (_context30.prev = _context30.next) {
+                    case 0:
+                        //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
+                        inputResult = {};
 
-    //console.log(`db op result is ${JSON.stringify(result)}`)
+                        console.log('delete params is ' + JSON.stringify(req.params.id));
+                        checkResult = validateFunc.validateDeleteInput(req.params.id);
+                        //console.log(`delete check result is ${JSON.stringify(checkResult)}`)
 
-    return res.json(returnResult(recorder))
-}*/
+                        if (!(checkResult.rc > 0)) {
+                            _context30.next = 5;
+                            break;
+                        }
+
+                        return _context30.abrupt('return', res.json(returnResult(checkResult)));
+
+                    case 5:
+                        inputResult['_id'] = { value: req.params.id };
+                        //1 检查输入的参数，并作转换（如果是字符串）
+                        //console.log(`sanity result is ${JSON.stringify(req.body.values)}`)
+                        _context30.next = 8;
+                        return sanityInput(inputResult, inputRule.bill, true, maxFieldNum.bill);
+
+                    case 8:
+                        sanitizedInputValue = _context30.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context30.next = 11;
+                            break;
+                        }
+
+                        return _context30.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 11:
+
+                        //2. 将client输入转换成server端的格式
+                        convertedResult = validateFunc.convertClientValueToServerFormat(req.body.values);
+                        //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+                        //3， 提取数据并执行操作
+
+                        id = convertedResult._id;
+                        //console.log(`id is ${id}`)
+
+                        _context30.next = 15;
+                        return billDbOperation.remove(id);
+
+                    case 15:
+                        result = _context30.sent;
+                        return _context30.abrupt('return', res.json(returnResult(result)));
+
+                    case 17:
+                    case 'end':
+                        return _context30.stop();
+                }
+            }
+        }, _callee30, this);
+    }));
+
+    return function (_x91, _x92, _x93) {
+        return _ref32.apply(this, arguments);
+    };
+}();
+
+bill['readAll'] = function () {
+    var _ref33 = _asyncToGenerator(regeneratorRuntime.mark(function _callee31(req, res, next) {
+        var result;
+        return regeneratorRuntime.wrap(function _callee31$(_context31) {
+            while (1) {
+                switch (_context31.prev = _context31.next) {
+                    case 0:
+                        _context31.next = 2;
+                        return billDbOperation.readAll(populateOpt.bill);
+
+                    case 2:
+                        result = _context31.sent;
+                        return _context31.abrupt('return', res.json(returnResult(result)));
+
+                    case 4:
+                    case 'end':
+                        return _context31.stop();
+                }
+            }
+        }, _callee31, this);
+    }));
+
+    return function (_x94, _x95, _x96) {
+        return _ref33.apply(this, arguments);
+    };
+}();
+bill['search'] = function () {
+    var _ref34 = _asyncToGenerator(regeneratorRuntime.mark(function _callee32(req, res, next) {
+        var sanitizedInputValue, searchParams, recorder;
+        return regeneratorRuntime.wrap(function _callee32$(_context32) {
+            while (1) {
+                switch (_context32.prev = _context32.next) {
+                    case 0:
+                        _context32.next = 2;
+                        return sanitySearchInput(req.body.values, fkAdditionalFieldsConfig.billType, coll.billType, inputRule);
+
+                    case 2:
+                        sanitizedInputValue = _context32.sent;
+
+                        if (!(sanitizedInputValue.rc > 0)) {
+                            _context32.next = 5;
+                            break;
+                        }
+
+                        return _context32.abrupt('return', res.json(returnResult(sanitizedInputValue)));
+
+                    case 5:
+                        searchParams = validateFunc.genNativeSearchCondition(req.body.values, coll.billType, fkAdditionalFieldsConfig.billType, inputRule);
+
+                        console.log('convert search params id ' + JSON.stringify(searchParams));
+                        _context32.next = 9;
+                        return billDbOperation.search(searchParams);
+
+                    case 9:
+                        recorder = _context32.sent;
+                        return _context32.abrupt('return', res.json(returnResult(recorder)));
+
+                    case 11:
+                    case 'end':
+                        return _context32.stop();
+                }
+            }
+        }, _callee32, this);
+    }));
+
+    return function (_x97, _x98, _x99) {
+        return _ref34.apply(this, arguments);
+    };
+}();
 
 module.exports = {
     common: common,

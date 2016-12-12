@@ -155,6 +155,7 @@ function findById(id) {
 
 function search(searchParams) {
     return new Promise(function (resolve, reject) {
+        console.log("billType search in with params " + searchParams);
         billTypeModel.find(searchParams, function (err, result) {
             if (err) {
                 console.log("db err is " + JSON.stringify(err));
