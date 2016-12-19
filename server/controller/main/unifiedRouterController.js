@@ -8,6 +8,7 @@
 require("babel-polyfill");
 require("babel-core/register")
 
+
 var appSetting=require('../../config/global/appSetting')
 var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 
@@ -165,17 +166,24 @@ user['update']=async function (req,res,next){
 
 }
 
+
+/*process.on('unhandledRejection', (reason, p) => {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+    // application specific logging, throwing an error, or other logic here
+});*/
+
 /*********************   unified function  ******************************/
 //coll: enum
 var create=async function ({eCurrentColl,req,res}){
     // console.log(`chinese is 中文`)
     //  console.log(`before san ${JSON.stringify(req.body.values)}`)
+    //try{
     //1. 对输入进行检查，确保是合格的输入
-    let sanitizedInputValue=await unifiedHelper.sanityInput(req.body.values,inputRule[eCurrentColl],false,maxFieldNum[eCurrentColl])
+    let sanitizedInputValue=unifiedHelper.sanityInput(req.body.values,inputRule[eCurrentColl],false,maxFieldNum[eCurrentColl])
     // console.log(`1st san ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
         // returnResult(sanitizedInputValue)
-        return res.json(unifiedHelper.returnResult(sanitizedInputValue))
+        return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
     //2. 数据加入数组采用insertMany，所有输入必须是数组
     let arrayResult=[]
@@ -183,59 +191,59 @@ var create=async function ({eCurrentColl,req,res}){
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
     //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
     arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
-
+    let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     //3 检查外键是否存在
     //遍历所有记录
     for(let doc of arrayResult){
         //遍历所有的外键配置
-        for(let singleFKFiled in fkAdditionalFieldsConfig[eCurrentColl]){
+        for(let singleFKFiled in fkConfig){
             //当前doc中，对应的外键有值，则需要获得此外键对应的额外冗余字段
             if(true===singleFKFiled in doc){
-                let fkColl=fkAdditionalFieldsConfig[eCurrentColl][singleFKFiled].relatedColl
+                let fkColl=fkConfig[singleFKFiled].relatedColl
                 let fkId=doc[singleFKFiled]
-/*                let params={'dbModel':dbModel[fkColl],eCurrentColl:fkColl,fkFieldName:singleFKFiled,id:fkId}
-                //dbModel,eCurrentColl,fkFieldName,id
-                let result=await unifiedHelper.checkIdExist(params)*/
+                /*                let params={'dbModel':dbModel[fkColl],eCurrentColl:fkColl,fkFieldName:singleFKFiled,id:fkId}
+                 //dbModel,eCurrentColl,fkFieldName,id
+                 let result=await unifiedHelper.checkIdExist(params)*/
 
                 let idExistResult=await unifiedModel.findById({'dbModel':dbModel[fkColl],'id':fkId})
-                console.log(`id exist result is ${JSON.stringify(idExistResult)}`)
+                //console.log(`id exist result is ${JSON.stringify(idExistResult)}`)
                 if(null===idExistResult.msg) {
-                    return pageError[eCurrentColl][singleFKFiled + 'NotExist']
+                    return Promise.reject(pageError[eCurrentColl][singleFKFiled + 'NotExist'])
                 }
-                // console.log(`fk result is ${JSON.stringify(result)}`)
-/*                if(0<result.rc){
-                    // console.log('department fail')
-                    return res.json(unifiedHelper.returnResult(result))
-                }*/
+
             }
         }
     }
+
     //4 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){
         validateFunc.constructCreateCriteria(doc)
     }
     //4.5 如果外键存在，获得外键的额外字段
-    console.log(`before get additional is ${JSON.stringify(arrayResult)}`)
+    //console.log(`before get additional is ${JSON.stringify(arrayResult)}`)
     for(let idx in arrayResult) {
         // console.log(`idx is ${idx}`)
         let doc = arrayResult[idx]
-        let getFkResult=await unifiedHelper.getFkAdditionalFields(doc,fkAdditionalFieldsConfig[eCurrentColl],dbModel)
+        let getFkResult=await unifiedHelper.getFkAdditionalFields(doc,fkConfig,dbModel)
         if(getFkResult.rc>0){
-            return res.json(unifiedHelper.returnResult(getFkResult))
+            return Promise.reject(unifiedHelper.returnResult(getFkResult))
             //return res.json(getFkResult)
         }
     }
-    console.log(`after get additional is ${JSON.stringify(arrayResult)}`)
+    console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
+    //console.log(`after get additional is ${JSON.stringify(arrayResult)}`)
     //5. 对db执行操作
     let result=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
-    if(result.rc>0){
-        return res.json(unifiedHelper.returnResult(result))
-        //return res.json(result)
-    }
-    //6. 检查是否需要populate
-    let populateResult=await populateSingleDoc(result.msg[0],populateOpt[eCurrentColl],populatedFields[eCurrentColl])
 
-    return res.json(unifiedHelper.returnResult(populateResult))
+    //console.log(`create result is ${JSON.stringify(result)}`)
+    //6. 检查是否需要populate
+     let populateResult=await populateSingleDoc(result.msg[0],populateOpt[eCurrentColl],populatedFields[eCurrentColl])
+
+//console.log(`pop type is ${typeof populateResult.msg}`)
+    //delete populateResult.msg.name
+     //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+     return Promise.resolve( unifiedHelper.returnResult(populateResult))
+
 }
 
 
@@ -246,37 +254,38 @@ var update=async function ({eCurrentColl,req,res}){
     //console.log(`sanity result is ${JSON.stringify(sanitizedInputValue)}`)
     //console.log(`update sanity result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
-        return res.json(unifiedHelper.returnResult(sanitizedInputValue))
+        return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
 
     //2. 将client输入转换成server端的格式()
     // console.log(`before convert ${JSON.stringify(req.body.values)}`)
     let convertedResult=validateFunc.convertClientValueToServerFormat(req.body.values)
-    // console.log(`convert result is ${JSON.stringify(convertedResult)}`)
+     //console.log(`convert result is ${JSON.stringify(convertedResult)}`)
 
     //3， 提取数据并执行操作
     let id=convertedResult._id
     delete convertedResult._id
     //3.5 检查是否出了id之外，就没有其他的字段了；如果是，不做操作，直接退出
     if(0===Object.keys(convertedResult).length){
-        return res.json(unifiedHelper.returnResult(pageError.common.noFieldToBeUpdate))
+        return Promise.reject(unifiedHelper.returnResult(pageError.common.noFieldToBeUpdate))
     }
 
+    let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     //console.log(`after deleter id ${JSON.stringify(convertedResult)}`)
     //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    validateFunc.constructUpdateCriteria(convertedResult)
-    console.log(`construct update is ${JSON.stringify(convertedResult)}`)
+    validateFunc.constructUpdateCriteria(convertedResult,fkConfig)
+    //console.log(`construct update is ${JSON.stringify(convertedResult)}`)
 
-    let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
-    console.log(`fkconfig is ${JSON.stringify(fkConfig)}`)
+
+    //console.log(`fkconfig is ${JSON.stringify(fkConfig)}`)
     //5 上级不能设成自己，且在对应的coll中必须有记录存在
     //遍历当前coll的外键
     for(let singleFK in fkConfig){
         //如果外键对应的coll还是当前coll，那么此外键的值不能等于当前记录的ObjectId（如果是自联接，那么外键的值不能等于自己的objectId）
         if(eCurrentColl===fkConfig[singleFK].relatedColl){
             if(id===convertedResult[singleFK]){
-                console.log(`fial filed is ${singleFK}CantBeSelf}`)
-                return res.json(unifiedHelper.returnResult(pageError[eCurrentColl][`${singleFK}CantBeSelf`]))
+                //console.log(`fial filed is ${singleFK}CantBeSelf}`)
+                return Promise.reject(unifiedHelper.returnResult(pageError[eCurrentColl][`${singleFK}CantBeSelf`]))
             }
         }
 
@@ -288,7 +297,7 @@ var update=async function ({eCurrentColl,req,res}){
             let fkId=convertedResult[singleFK]
             let idExistResult=await unifiedModel.findById({'dbModel':dbModel[fkColl],'id':fkId})
             if(null===idExistResult.msg) {
-                return pageError[eCurrentColl][singleFK + 'NotExist']
+                return Promise.reject(pageError[eCurrentColl][singleFK + 'NotExist'])
             }
             // console.log(`fk result is ${JSON.stringify(result)}`)
 /*            if(0<result.rc){
@@ -297,26 +306,27 @@ var update=async function ({eCurrentColl,req,res}){
             }*/
         }
     }
-
+    //console.log(`fk exist check doen`)
     //7 如果外键存在，获得外键的额外字段
     // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.department)}`)
-    let getFkResult=await unifiedHelper.getFkAdditionalFields(convertedResult,fkConfig,dbModel)
+    let getFkResult=unifiedHelper.getFkAdditionalFields(convertedResult,fkConfig,dbModel)
     if(getFkResult.rc>0){
-        return res.json(getFkResult)
+        return Promise.reject(getFkResult)
     }
-
+    //console.log(`pass to update is ${JSON.stringify(convertedResult)}`)
     //7 执行update操作
     let result=await unifiedModel.update({'dbModel':dbModel[eCurrentColl],updateOptions:updateOpt[eCurrentColl],'id':id,values:convertedResult})
-    if(result.rc>0){
+/*    if(result.rc>0){
         return res.json(unifiedHelper.returnResult(result))
-    }
+    }*/
     //null说明没有执行任何更新
     if(null===result.msg){
-        return res.json(unifiedHelper.returnResult(pageError[eCurrentColl][`${eCurrentColl}NotExists`]))
+        return Promise.reject(unifiedHelper.returnResult(pageError[eCurrentColl][`${eCurrentColl}NotExists`]))
     }
     //8 执行可能的populate操作
     let populateResult=await populateSingleDoc(result.msg,populateOpt[eCurrentColl],populatedFields[eCurrentColl])
-    return res.json(unifiedHelper.returnResult(populateResult))
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(populateResult))
 }
 
 var remove=async function  ({eCurrentColl,req,res}){
@@ -324,18 +334,18 @@ var remove=async function  ({eCurrentColl,req,res}){
     let inputResult={}
     //console.log(`delete params is ${JSON.stringify(req.params.id)}`)
     let checkResult=validateFunc.validateDeleteInput(req.params.id)
-    console.log(`delete check result is ${JSON.stringify(checkResult)}`)
+    //console.log(`delete check result is ${JSON.stringify(checkResult)}`)
     if(checkResult.rc>0){
-        return res.json(unifiedHelper.returnResult(checkResult))
+        return Promise.reject(unifiedHelper.returnResult(checkResult))
     }
     inputResult['_id']={value:req.params.id}
     //1 检查输入的参数，并作转换（如果是字符串）
     //console.log(`sanity result is ${JSON.stringify(req.body.values)}`)
-    let sanitizedInputValue=await unifiedHelper.sanityInput(inputResult,inputRule[eCurrentColl],true,maxFieldNum[eCurrentColl])
+    let sanitizedInputValue=unifiedHelper.sanityInput(inputResult,inputRule[eCurrentColl],true,maxFieldNum[eCurrentColl])
     //console.log(`sanity result is ${JSON.stringify(sanitizedInputValue)}`)
     //console.log(`update sanity result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
-        return res.json( unifiedHelper.returnResult(sanitizedInputValue))
+        return Promise.reject( unifiedHelper.returnResult(sanitizedInputValue))
     }
 
     //2. 将client输入转换成server端的格式
@@ -346,15 +356,15 @@ var remove=async function  ({eCurrentColl,req,res}){
     //console.log(`id is ${id}`)
     let result=await unifiedModel.remove({'dbModel':dbModel[eCurrentColl],updateOptions:updateOpt[eCurrentColl],'id':id})
     //console.log(`db op result is ${result}`)
-
-    return res.json(unifiedHelper.returnResult(result))
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(result))
 }
 
 var readAll=async function ({eCurrentColl,req,res}){
     let result=await unifiedModel.readAll({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],recorderLimit:pageSetting[eCurrentColl]['limit']})
     //console.log(`db op result is ${JSON.stringify(result)}`)
-
-    return res.json(unifiedHelper.returnResult(result))
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(result))
 }
 
 var readName=async function  ({eCurrentColl,req,res}){
@@ -368,56 +378,66 @@ var readName=async function  ({eCurrentColl,req,res}){
 
 
         // console.log(`constructedValue is ${JSON.stringify(constructedValue)}`)
-        let validateResult=await validateFunc.checkSearchValue(constructedValue,inputRule[eCurrentColl])
+        let validateResult= validateFunc.checkSearchValue(constructedValue,inputRule[eCurrentColl])
         // console.log(`validateResult value is ${validateResult}`)
         if(validateResult[nameField]['rc']>0){
-            return res.json(validateResult[nameField])
+            return Promise.reject(validateResult[nameField])
         }
-        console.log(`read name converted search value is ${JSON.stringify(constructedValue)}`)
+        //console.log(`read name converted search value is ${JSON.stringify(constructedValue)}`)
         recorder=await unifiedModel.readName({'dbModel':dbModel[eCurrentColl],nameToBeSearched:constructedValue[nameField].value,recorderLimit:pageSetting[eCurrentColl]['limit'],'readNameField':nameField})
     }else{
         recorder=await unifiedModel.readName({'dbModel':dbModel[eCurrentColl],recorderLimit:pageSetting[eCurrentColl]['limit'],'readNameField':nameField})
     }
 
     //console.log(`db op result is ${JSON.stringify(result)}`)
-
-    return res.json(unifiedHelper.returnResult(recorder))
+//async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(recorder))
     //return JSON.stringify(result)
 }
 
 var search=async function ({eCurrentColl,req,res}){
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
-    let sanitizedInputValue=await unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
+    let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
     // console.log(`santiy result is ${sanitizedInputValue}`)
     if(sanitizedInputValue.rc>0){
-        return res.json(unifiedHelper.returnResult(sanitizedInputValue))
+        return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
 
     let searchParams=validateFunc.genNativeSearchCondition(req.body.values,eCurrentColl,fkConfig,inputRule)
-    console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    //console.log(`convert search params id ${JSON.stringify(searchParams)}`)
     let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],'searchParams':searchParams})
 
-    return res.json(unifiedHelper.returnResult(recorder))
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(recorder))
 }
 
 //alldbModel:传入所有的dbModel，以便删除所有coll中的数据
 var removeAll=async function ({req,res}){
-    console.log(`in`)
-    console.log(`req is ${req}`)
-// console.log(`req is ${JSON.stringify(req)}`)
-    try{
-        for(let singleDbModel in dbModel){
-            console.log(`singleDbModel is ${JSON.stringify(singleDbModel)}`)
+/*    console.log(`in`)
+    console.log(`req is ${req}`)*/
+    for(let singleDbModel in dbModel){
+        //console.log(`singleDbModel is ${JSON.stringify(singleDbModel)}`)
+        let result=await unifiedModel.removeAll({'dbModel':dbModel[singleDbModel]})
+/*        try{
             let result=await unifiedModel.removeAll({'dbModel':dbModel[singleDbModel]})
-            console.log(`result is ${JSON.stringify(result)}`)
-            if(result.rc>0){
-                return res.json(unifiedHelper.returnResult(result))
-            }
         }
-        return res.json({rc:0})
-    }catch(e){
-        console.log(e)
+        catch(e){
+            console.log(`remove all err is ${JSON.stringify(e)}`)
+        }*/
+
+        //console.log(`result is ${JSON.stringify(result)}`)
+/*        if(result.rc>0){
+            return res.json(unifiedHelper.returnResult(result))
+        }*/
     }
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve({rc:0})
+// console.log(`req is ${JSON.stringify(req)}`)
+/*    try{
+
+    }catch(e){
+        console.log(`remove all err is ${JSON.stringify(e)}`)
+    }*/
 
 }
 

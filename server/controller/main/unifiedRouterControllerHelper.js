@@ -44,18 +44,18 @@ async function common(req,res,next){
 
 //对create/update方法输入的value进行检查和转换（字符串的话）
 //create:false     update:true
-async function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNum){
+function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNum){
      //console.log(`input value type is ${typeof originalInputValue}`)
     //console.log(`input value is ${JSON.stringify( originalInputValue)}`)
     //1. 检查格式
-    let checkFormatResult=await validateFunc.validateInputFormat(originalInputValue,inputRule,maxFieldNum)
-    console.log(`check format is ${JSON.stringify(checkFormatResult)}`)
+    let checkFormatResult=validateFunc.validateInputFormat(originalInputValue,inputRule,maxFieldNum)
+    //console.log(`check format is ${JSON.stringify(checkFormatResult)}`)
     if(checkFormatResult.rc>0){
         return checkFormatResult
     }
 
     //2 检查输入值的内容是否正确
-    let checkResult=await validateFunc.validateInputValue(originalInputValue,inputRule,basedOnInputValue)
+    let checkResult=validateFunc.validateInputValue(originalInputValue,inputRule,basedOnInputValue)
      // console.log(`check input  result is ${JSON.stringify(checkResult)}`)
     for(let singleField in checkResult){
         if(checkResult[singleField].rc>0){
@@ -77,16 +77,16 @@ async function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFie
 *       4.  inputRules：整个个inputRules，因为可能有字段是外键字段，此时需要检查外键对应的coll/field
 *
 * */
-async function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
+function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
     // console.log(   `sanitySearchInput in`)
     //1 检查输入格式
-    let formatCheckResult=await validateFunc.validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    let formatCheckResult=validateFunc.validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
     // console.log(   `format resuot is ${formatCheckResult}`)
     if(formatCheckResult.rc>0){
         return formatCheckResult
     }
     //2 检查搜索值是否正确
-    let valueCheckResult=await validateFunc.validateInputSearchValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    let valueCheckResult=validateFunc.validateInputSearchValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
     // console.log(   `value resuot is ${valueCheckResult}`)
     for(let singleFieldName in valueCheckResult){
         if(valueCheckResult[singleFieldName]['rc']>0){
@@ -214,7 +214,7 @@ async function getFkAdditionalFields(doc,fkAdditionalConfig,dbModel){
                 }
 
                 //let fkAdditionalFields=await getAdditionalFields(fkFieldName,doc[fkFieldName],fkAdditionalConfig[fkFieldName]['relatedColl'],fkAdditionalConfig[fkFieldName].forSelect)
-                 console.log(`get fk doc ${JSON.stringify(fkAdditionalFieldsResult)}`)
+                // console.log(`get fk doc ${JSON.stringify(fkAdditionalFieldsResult)}`)
 /*                if(fkAdditionalFields.rc>0){
                     return fkAdditionalFields
                 }*/

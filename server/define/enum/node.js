@@ -33,10 +33,23 @@ var compOp={
     'gt':'gt',
     'lt':'lt'
 }
+
+var mongooseOp={
+    'insertMany':'insertMany',
+    'findById':'findById',
+    'findByIdAndUpdate':'findByIdAndUpdate',
+    'remove':'remove',
+    'readAll':'readAll',
+    'readName':'readName',
+    'search':'search',
+}
+
+
 exports.node={
     randomStringType:randomStringType,
     userState:userState,
     coll,
     env,
     compOp,
+    mongooseOp,
 }

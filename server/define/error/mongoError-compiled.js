@@ -1,30 +1,37 @@
-'use strict';
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 /**
  * Created by wzhan039 on 2016-10-04.
  *
  * 定义mogoose操作错误
  */
+'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+require("babel-polyfill");
+require("babel-core/register");
 //用来或侧chineseName，以便返回错误给client
 var inputRule = require('../validateRule/inputRule').inputRule;
+var mongooseOpEnum = require('../enum/node').node.mongooseOp;
 
 /*
 * mongoose操作错误（不包含validator的错误？？）
 * err:mongo返回的错误
 * fieldName：如果是validto人返回的错误，需要fieldName来获得err中的errormsg
 * */
-var mongooseErrorHandler = function mongooseErrorHandler(err) {
-    //普通mongo错误
-    if (err.code) {
-        switch (err.code) {
-            case 11000:
+var mongooseErrorHandler = function mongooseErrorHandler(mongooseOp) {
+    var err = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    //对特殊的操作做pre操作，如果有具体的error code，返回对应的error
+    switch (mongooseOp) {
+        case mongooseOpEnum.insertMany:
+            if (err.code && 11000 === err.code) {
                 return errorDefine.common.duplicate(err.errmsg);
-            default:
+            }
+            break;
+        default:
+            if (err.code) {
                 return errorDefine.common.unknownErrorType(err);
-        }
+            }
     }
     //mongo validator错误。将错误 "错误代码20046:父类别不能为空" 转换成{rc:20046,msg:‘父类别不能为空’}
     if (err.errors) {
@@ -41,38 +48,41 @@ var mongooseErrorHandler = function mongooseErrorHandler(err) {
         }
         //return err['errors'][fieldName]['message']
     }
+
+    //具体操作祥光的error
+    console.log("common err is " + JSON.stringify(mongooseOp));
+    return errorDefine['common'][mongooseOp]();
 };
 
 //常见错误
 var errorDefine = {
     common: {
         unknownErrorType: function unknownErrorType(err) {
-            return { rc: 30000, msg: { client: '未知数据操作错误', server: '' + JSON.stringify(err) } };
+            return { rc: 30000, msg: { client: "未知数据操作错误", server: "" + JSON.stringify(err) } };
         },
         duplicate: function duplicate(errmsg) {
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
-            console.log(errmsg);
-            /*            let regex=/E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
-                        let match=errmsg.match(regex)
-                        let matchResult=match[1]
-                        let tmp=matchResult.split('.')
-                        let [db,coll,field]=tmp
-                        field=field.split("_")[0].replace("$","") //$name_1===>$name
-                        let dupValue=matchResult[2]*/
+            console.log("mongoError->errorDefine: " + errmsg);
+            var regex = /E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/;
+            var match = errmsg.match(regex);
+            var matchResult = match[1];
+            var tmp = matchResult.split('.');
 
-            var regex = /.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/;
-            var matchResult = errmsg.match(regex);
+            var _tmp = _slicedToArray(tmp, 3);
 
-            var _matchResult$1$split = matchResult[1].split(".");
+            var db = _tmp[0];
+            var coll = _tmp[1];
+            var field = _tmp[2];
 
-            var _matchResult$1$split2 = _slicedToArray(_matchResult$1$split, 2);
+            field = field.split("_")[0].replace("$", ""); //$name_1===>$name
+            var dupValue = matchResult[2];
 
-            var db = _matchResult$1$split2[0];
-            var coll = _matchResult$1$split2[1];
-
-            var field = matchResult[2].split("_")[0];
-            var dupValue = matchResult[3];
+            /*            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
+                        let matchResult=errmsg.match(regex)
+                        let [db,coll]=matchResult[1].split(".")
+                        let field=matchResult[2].split("_")[0]
+                        let dupValue=matchResult[3]*/
             // console.log(`db is ${db},coll is ${coll}, field is ${field}, dup is ${dupValue}`)
             //mongoose自动将coll的名称加上s，为了和inputRule匹配，删除s
             //let trueCollName
@@ -94,8 +104,26 @@ var errorDefine = {
                     chineseName = inputRule[singleColl][field]['chineseName'];
                 }
             }
-
-            return { rc: 30002, msg: { client: chineseName + '的值已经存在', server: '集合' + coll + '的字段' + field + '的值' + dupValue + '重复' } };
+            console.log("ready to return mongooseErrorHandler");
+            return { rc: 30002, msg: { client: chineseName + "的值已经存在", server: "集合" + coll + "的字段" + field + "的值" + dupValue + "重复" } };
+        },
+        findById: function findById(err) {
+            return { rc: 30004, msg: { client: "数据库错误，请联系管理员", server: "findById err is " + err } };
+        },
+        findByIdAndUpdate: function findByIdAndUpdate(err) {
+            return { rc: 30006, msg: { client: "数据库错误，请联系管理员", server: "findByIdAndUpdate err is " + err } };
+        },
+        remove: function remove(err) {
+            return { rc: 30008, msg: { client: "数据库错误，请联系管理员", server: "remove err is " + err } };
+        },
+        readAll: function readAll(err) {
+            return { rc: 30010, msg: { client: "数据库错误，请联系管理员", server: "read all err is " + err } };
+        },
+        readName: function readName(err) {
+            return { rc: 30012, msg: { client: "数据库错误，请联系管理员", server: "read name err is " + err } };
+        },
+        search: function search(err) {
+            return { rc: 30014, msg: { client: "数据库错误，请联系管理员", server: "search err is " + err } };
         }
     }
 };

@@ -1574,18 +1574,28 @@ var constructCreateCriteria=function(formattedValues){
 
 }
 
-//对update传入的参数进行检测，如果设置为null，就认为对应的field是要删除的，放入$unset中
+//对update传入的参数进行检测，如果设置为null，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
 //formattedValues: 经过convertClientValueToServerFormat处理的输入条件
-var constructUpdateCriteria=function(formattedValues){
+var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
+    //console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
     for(let key in formattedValues){
         if(formattedValues[key]===null){
+            //当前键设为$undefine
             if(undefined===formattedValues['$unset']){
                 formattedValues['$unset']={}
             }
-            formattedValues['$unset'][key]=formattedValues[key]
+            //formattedValues['$unset'][key]=formattedValues[key]
+            //$unset的话，字段后的值就无所谓了
+            formattedValues['$unset'][key]=1
             delete formattedValues[key]
+            //检查当前键是否有对应的外键设置，有的话删除对应的冗余字段
+            if(true=== key in singleCollFKConfig){
+                let redundancyField=singleCollFKConfig[key]['nestedPrefix']
+                formattedValues['$unset'][redundancyField]=1
+            }
         }
     }
+    //console.log(`constructUpdateCriteria result is ${JSON.stringify(formattedValues)}`)
 
 }
 

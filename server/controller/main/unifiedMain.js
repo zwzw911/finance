@@ -87,141 +87,397 @@ router.get('/', function(req,res,next){
 
 router.delete("/",function(req,res,next){
     if('development'===app.get('env')){
-        unifiedRouterController.removeAll({'req':req,'res':res}).then((v)=>{console.log(`remove all result is ${JSON.stringify(v)}`)},(e)=>console.log(`remove all fail ${JSON.stringify(e)}`))
+        unifiedRouterController.removeAll({'req':req,'res':res}).then(
+            //(v)=>{console.log(`remove all result is ${JSON.stringify(v)}`)}
+            (v)=>{
+                console.log('delete all resolve')
+                return res.json(v)
+            }
+        ).catch(
+            (e)=>{
+                console.log(`remove all fail ${JSON.stringify(e)}`)
+                return res.json(e)
+            }
+        )
     }
 })
 /*************************       employee     *************************/
 //create
+/*router.post('/employee',function(req,res,next){
+ unifiedRouterController.create({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+ })*/
 router.post('/employee',function(req,res,next){
-    //employeeController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
-    // console.log(`employee in `)
-    unifiedRouterController.create({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} post result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} post fail ${JSON.stringify(e)}`))
+    unifiedRouterController.create({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        function(v){
+            console.log(`create employee success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        }
+    ).catch(
+        function(err){
+            console.log(`create employee fail: ${JSON.stringify(err)}`)
+            return res.json(err)
+        }
+    )
 })
 //read
 router.get('/employee',function(req,res,next){
-    unifiedRouterController.readAll({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} read all result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} read all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readAll({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all employee success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all employee fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //read single field
 router.get('/employee/name',function(req,res,next){
     console.log('get no name ')
-    unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all employee name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all employee name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 router.get('/employee/name/:name',function(req,res,next){
     console.log('get name ')
-    unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read employee name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read employee name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //update
 router.put('/employee',function(req,res,next){
-    unifiedRouterController.update({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} put result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} put fail ${JSON.stringify(e)}`))
+    unifiedRouterController.update({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`update employee success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`update employee fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        }
+    )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/employee/:id',function(req,res,next){
-    unifiedRouterController.remove({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`${coll.employee} delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`${coll.employee} delete fail ${JSON.stringify(e)}`))
+    //console.log(req.params)
+    unifiedRouterController.remove({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`delete employee success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`delete employee fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //search
 router.post('/employee/search',function(req,res,next){
     console.log(req.body.values)
-    unifiedRouterController.search({eCurrentColl:coll.employee, 'req':req,'res':res}).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+    unifiedRouterController.search({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`search employee success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`search employee fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 
 /*************************       department     *************************/
 //create
+/*router.post('/department',function(req,res,next){
+ unifiedRouterController.create({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+ })*/
 router.post('/department',function(req,res,next){
-    //departmentController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
-    unifiedRouterController.create({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    unifiedRouterController.create({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        function(v){
+            console.log(`create department success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        }
+    ).catch(
+        function(err){
+            console.log(`create department fail: ${JSON.stringify(err)}`)
+            return res.json(err)
+        }
+    )
 })
 //read
 router.get('/department',function(req,res,next){
-    unifiedRouterController.readAll({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`read all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readAll({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all department success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all department fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //read single field
 router.get('/department/name',function(req,res,next){
     console.log('get no name ')
-    unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all department name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all department name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 router.get('/department/name/:name',function(req,res,next){
     console.log('get name ')
-    unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read department name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read department name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //update
 router.put('/department',function(req,res,next){
-    unifiedRouterController.update({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
+    unifiedRouterController.update({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`update department success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`update department fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        }
+    )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/department/:id',function(req,res,next){
-    unifiedRouterController.remove({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
+    //console.log(req.params)
+    unifiedRouterController.remove({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`delete department success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`delete department fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //search
 router.post('/department/search',function(req,res,next){
     console.log(req.body.values)
-    unifiedRouterController.search({eCurrentColl:coll.department, 'req':req,'res':res}).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+    unifiedRouterController.search({eCurrentColl:coll.department, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`search department success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`search department fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 /*************************       billType     *************************/
 //create
-router.post('/billType',function(req,res,next){
+/*router.post('/billType',function(req,res,next){
     unifiedRouterController.create({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+})*/
+router.post('/billType',function(req,res,next){
+    unifiedRouterController.create({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        function(v){
+            console.log(`create billType success, result:  ${JSON.stringify(v)}`)
+             return res.json(v)
+        }
+    ).catch(
+        function(err){
+            console.log(`create billType fail: ${JSON.stringify(err)}`)
+            return res.json(err)
+        }
+    )
 })
 //read
 router.get('/billType',function(req,res,next){
-    unifiedRouterController.readAll({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`read all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readAll({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all billType success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all billType fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //read single field
 router.get('/billType/name',function(req,res,next){
     console.log('get no name ')
-    unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all billType name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all billType name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 router.get('/billType/name/:name',function(req,res,next){
     console.log('get name ')
-    unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read billType name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read billType name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //update
 router.put('/billType',function(req,res,next){
-    unifiedRouterController.update({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
+    unifiedRouterController.update({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`update billType success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`update billType fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        }
+    )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/billType/:id',function(req,res,next){
     //console.log(req.params)
-    unifiedRouterController.remove({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
+    unifiedRouterController.remove({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`delete billType success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`delete billType fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //search
 router.post('/billType/search',function(req,res,next){
     console.log(req.body.values)
-    unifiedRouterController.search({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+    unifiedRouterController.search({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`search billType success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`search billType fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 
 /*************************       bill     *************************/
 //create
+/*router.post('/bill',function(req,res,next){
+ unifiedRouterController.create({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+ })*/
 router.post('/bill',function(req,res,next){
-    //unifiedRouterController.create(req,res,next).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)}).catch((e)=>console.log(`post fail ${JSON.stringify(e)}`))
-    unifiedRouterController.create({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
+    unifiedRouterController.create({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        function(v){
+            console.log(`create bill success, result:  ${JSON.stringify(v)}`)
+            return res.json(v)
+        }
+    ).catch(
+        function(err){
+            console.log(`create bill fail: ${JSON.stringify(err)}`)
+            return res.json(err)
+        }
+    )
 })
 //read
 router.get('/bill',function(req,res,next){
-    unifiedRouterController.readAll({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`read all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readAll({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all bill success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all bill fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //read single field
 router.get('/bill/name',function(req,res,next){
     console.log('get no name ')
-    unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read all bill name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read all bill name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
-
-//bill中，使用体统了而不是name
 router.get('/bill/name/:title',function(req,res,next){
     console.log('get name ')
-    unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`read anme all result is ${JSON.stringify(v)}`)},(e)=>console.log(`read name all fail ${JSON.stringify(e)}`))
+    unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`read bill name success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`read bill name fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //update
 router.put('/bill',function(req,res,next){
-    unifiedRouterController.update({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`put result is ${JSON.stringify(v)}`)},(e)=>console.log(`put fail ${JSON.stringify(e)}`))
+    unifiedRouterController.update({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`update bill success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`update bill fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        }
+    )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
 router.delete('/bill/:id',function(req,res,next){
-    unifiedRouterController.remove({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`delete result is ${JSON.stringify(v)}`)},(e)=>console.log(`delete fail ${JSON.stringify(e)}`))
+    //console.log(req.params)
+    unifiedRouterController.remove({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`delete bill success, result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`delete bill fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 //search
 router.post('/bill/search',function(req,res,next){
     console.log(req.body.values)
-    unifiedRouterController.search({eCurrentColl:coll.bill, 'req':req,'res':res}).then((v)=>{console.log(`search result is ${JSON.stringify(v)}`)},(e)=>console.log(`search fail ${JSON.stringify(e)}`))
+    unifiedRouterController.search({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
+        (v)=>{
+            console.log(`search bill success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`search bill fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
 })
 
 module.exports = router;

@@ -300,7 +300,9 @@ var populateSingleDoc=function(singleDoc,populateOpt,populatedFields){
         }
         // console.log(`department insert result is ${JSON.stringify(result)}`)
         if(populateFlag){
+            //populate无需使用promise方式返回
             singleDoc.populate(populateOpt,function(populateErr,populateResult){
+            //    singleDoc.populate(null,function(populateErr,populateResult){
                 //console.log('create populate')
                 if(populateErr){
                     //console.log(`department create fail: ${JSON.stringify(populateErr)}`)

@@ -3,24 +3,30 @@
  *
  * 定义mogoose操作错误
  */
-
+'use strict'
+require("babel-polyfill");
+require("babel-core/register")
     //用来或侧chineseName，以便返回错误给client
 var inputRule=require('../validateRule/inputRule').inputRule
+var mongooseOpEnum=require('../enum/node').node.mongooseOp
 
 /*
 * mongoose操作错误（不包含validator的错误？？）
 * err:mongo返回的错误
 * fieldName：如果是validto人返回的错误，需要fieldName来获得err中的errormsg
 * */
-var mongooseErrorHandler=function(err){
-    //普通mongo错误
-    if(err.code){
-        switch (err.code){
-            case 11000:
+var mongooseErrorHandler=function(mongooseOp,err={}){
+    //对特殊的操作做pre操作，如果有具体的error code，返回对应的error
+    switch (mongooseOp){
+        case mongooseOpEnum.insertMany:
+            if(err.code && 11000===err.code){
                 return errorDefine.common.duplicate(err.errmsg)
-            default:
+            }
+            break;
+        default:
+            if(err.code ){
                 return errorDefine.common.unknownErrorType(err)
-        }
+            }
     }
     //mongo validator错误。将错误 "错误代码20046:父类别不能为空" 转换成{rc:20046,msg:‘父类别不能为空’}
     if(err.errors){
@@ -37,6 +43,10 @@ var mongooseErrorHandler=function(err){
         }
         //return err['errors'][fieldName]['message']
     }
+
+    //具体操作祥光的error
+    console.log(`common err is ${JSON.stringify(mongooseOp)}`)
+    return errorDefine['common'][mongooseOp]()
 }
 
 //常见错误
@@ -48,20 +58,20 @@ var errorDefine={
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
-            console.log(errmsg)
-/*            let regex=/E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
+            console.log(`mongoError->errorDefine: ${errmsg}`)
+            let regex=/E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
             let match=errmsg.match(regex)
             let matchResult=match[1]
             let tmp=matchResult.split('.')
             let [db,coll,field]=tmp
             field=field.split("_")[0].replace("$","") //$name_1===>$name
-            let dupValue=matchResult[2]*/
+            let dupValue=matchResult[2]
 
-            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
+/*            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
             let matchResult=errmsg.match(regex)
             let [db,coll]=matchResult[1].split(".")
             let field=matchResult[2].split("_")[0]
-            let dupValue=matchResult[3]
+            let dupValue=matchResult[3]*/
             // console.log(`db is ${db},coll is ${coll}, field is ${field}, dup is ${dupValue}`)
             //mongoose自动将coll的名称加上s，为了和inputRule匹配，删除s
             //let trueCollName
@@ -83,9 +93,27 @@ var errorDefine={
                     chineseName=inputRule[singleColl][field]['chineseName']
                 }
             }
-
+            console.log(`ready to return mongooseErrorHandler`)
             return {rc:30002,msg:{client:`${chineseName}的值已经存在`,server:`集合${coll}的字段${field}的值${dupValue}重复`}}
-        }
+        },
+        findById:function(err){
+            return {rc:30004,msg:{client:`数据库错误，请联系管理员`,server:`findById err is ${err}`}}
+        },
+        findByIdAndUpdate:function(err){
+            return {rc:30006,msg:{client:`数据库错误，请联系管理员`,server:`findByIdAndUpdate err is ${err}`}}
+        },
+        remove:function(err){
+            return {rc:30008,msg:{client:`数据库错误，请联系管理员`,server:`remove err is ${err}`}}
+        },
+        readAll:function(err){
+            return {rc:30010,msg:{client:`数据库错误，请联系管理员`,server:`read all err is ${err}`}}
+        },
+        readName:function(err){
+            return {rc:30012,msg:{client:`数据库错误，请联系管理员`,server:`read name err is ${err}`}}
+        },
+        search:function(err){
+            return {rc:30014,msg:{client:`数据库错误，请联系管理员`,server:`search err is ${err}`}}
+        },
     }
 }
 
