@@ -264,17 +264,38 @@ app.factory('financeHelper', function (contEnum) {
         }
     }
 
-    //将选中的field和value加入到allData.activeQueryValue
-    function addQueryValue(field, value, activateQueryFieldAndValue) {
+    //将选择的field和value键入数组（以便在client显示，而不能直接转换成server端的格式）
+    //{name:['a','b'],parentBillType:['c','d']}
+    function addQueryValue(field, value, fkConfig, activateQueryFieldAndValue) {
         // console.log(`field is ${field},value is ${JSON.stringify(value)}, activated value is ${activateQueryFieldAndValue}`)
         // if(undefined===activateQueryFieldAndValue){
         //     console.log(`in to init activea vlauy`)
         //     activateQueryFieldAndValue={}
         // }
+        console.log('field is ' + JSON.stringify(field));
+        console.log('field is ' + JSON.stringify(value));
+
+        /*        let eleValue={'value':value}
+                //是外键，需要找到对应的冗余字段
+                if(true=== field in fkConfig){
+                    let redundancyField=fkConfig[field]['fields'][0] //当前冗余字段虽然是数组，但是其实只有一个元素
+                    if (undefined === activateQueryFieldAndValue[field]) {
+                        activateQueryFieldAndValue[field] = {}  //外键为object，内置冗余字段
+                    }
+                    if (undefined === activateQueryFieldAndValue[field][redundancyField]) {
+                        activateQueryFieldAndValue[field][redundancyField] = []
+                    }
+                    activateQueryFieldAndValue[field][redundancyField].push(eleValue)
+                }else{
+                    if (undefined === activateQueryFieldAndValue[field]) {
+                        activateQueryFieldAndValue[field] = []  //非外键直接数组，内置查询参数
+                    }
+                    activateQueryFieldAndValue[field].push(eleValue)
+                }*/
+
         if (undefined === activateQueryFieldAndValue[field]) {
             activateQueryFieldAndValue[field] = [];
         }
-
         //如果是select传递过来的值
         if (value.key) {
             activateQueryFieldAndValue[field].push(value.key);
@@ -283,7 +304,60 @@ app.factory('financeHelper', function (contEnum) {
         }
     }
 
-    return { deleteQueryValue: deleteQueryValue, addQueryValue: addQueryValue };
+    //将选中的field和value加入到allData.activeQueryValue（直接转换成server端能处理的格式）
+    // {"values":{"name":[{"value":"{{billtype_name_1}}"}],"parentBillType":{"name":[{"value":"{{billtype_name_2}}"}]}}}
+    //不能直接转换，因为AddQueryValue里的内容要在页面上显示
+    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue, fkConfig) {
+        var formattedValue = {};
+        for (var fieldName in activateQueryFieldAndValue) {
+            var aValue = void 0; //应用需要加入值的数组（外键和非外键的结构不一致）
+            //1. 创建必要的结构
+            //如果是外键
+            if (true === fieldName in fkConfig) {
+                if (undefined === formattedValue[fieldName]) {
+                    formattedValue[fieldName] = {};
+                }
+                var redundancyField = fkConfig[fieldName]['fields'][0]; //当前冗余字段虽然是数组，但是其实只有一个元素
+                if (undefined === formattedValue[fieldName][redundancyField]) {
+                    formattedValue[fieldName][redundancyField] = [];
+                }
+                aValue = formattedValue[fieldName][redundancyField];
+            } else {
+                if (undefined === formattedValue[fieldName]) {
+                    formattedValue[fieldName] = []; //非外键直接数组
+                }
+                aValue = formattedValue[fieldName];
+            }
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = activateQueryFieldAndValue[fieldName][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var singleValue = _step.value;
+
+                    var newValue = { value: singleValue };
+                    aValue.push(newValue);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+        return formattedValue;
+    }
+    return { deleteQueryValue: deleteQueryValue, addQueryValue: addQueryValue, convertAddQueryValueToServerFormat: convertAddQueryValueToServerFormat };
 });
 
 app.factory('inputAttrHelper', function (contEnum) {
@@ -461,8 +535,120 @@ app.factory('commonHelper', function () {
         }
     }
 
+    /*  /!*                  操作modalCommon                   *!/
+      function setTop(modalId){
+          //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
+          var top=parseInt((document.body.clientHeight-174)/2)
+          $(modalId+'>div').css('top',top)
+      }
+        function modalHide(modalId){
+          $('#'+modalId+'_msg').text('')
+          $('#'+modalId).removeClass('show')
+          $('#'+modalId+'_title').text('').removeClass('text-danger').removeClass('text-info')
+          $('#'+modalId+'_close_button').removeClass('btn-danger').removeClass('btn-info').unbind('click')
+          $('#'+modalId+'_close_symbol').unbind('click')
+      }
+        function modalShowErrMsg(modalId,msg){
+          setTop()
+          $('#'+modalId+'_msg').text(msg)
+          //$('#modal_msg').text=msg
+          $('#'+modalId).addClass('show')
+          $('#'+modalId+'_title').text('错误').addClass('text-danger')
+          $('#'+modalId+'_close_button').addClass('btn-danger').bind('click',function(){
+              modalHide(modalId)
+          })
+          $('#'+modalId+'_close_symbol').bind('click',function(){
+              modalHide(modalId)
+          })
+      }
+      function modalShowInfoMsg(modalId,msg) {
+          $('#' + modalId + '_msg').text(msg)
+          $('#' + modalId ).addClass('show')
+          $('#' + modalId + '_title').text('信息').addClass('text-info')
+          $('#' + modalId + '_close_button').addClass('btn-info').bind('click', function () {
+              hide()
+          })
+          $('#' + modalId + '_close_symbol').bind('click', function () {
+              hide()
+          })
+      }*/
+
     return {
         convertDateTime: convertDateTime
+    };
+});
+
+app.service('modal', function () {
+    var _modalId = void 0,
+        _modalMsgId = void 0,
+        _modalTitleId = void 0,
+        _modalCloseButtonId = void 0,
+        _modalCloseSymbolId = void 0;
+    function _setTop() {
+        //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
+        var top = parseInt((document.body.clientHeight - 174) / 2);
+        $(_modalId + '>div').css('top', top);
+    }
+    function _modalHide() {
+        $('#' + _modalMsgId).text('');
+        $('#' + _modalId).removeClass('show');
+        $('#' + _modalTitleId).text('').removeClass('text-danger').removeClass('text-info');
+        $('#' + _modalCloseButtonId).removeClass('btn-danger').removeClass('btn-info').unbind('click');
+        $('#' + _modalCloseSymbolId).unbind('click');
+    }
+    /*                  设置id            */
+    //modal的id
+    this.setModalId = function (modalId) {
+        _modalId = modalId;
+        //默认是如下格式，可以通过set覆盖
+        _modalMsgId = modalId + 'msg';
+        _modalTitleId = modalId + '_title';
+        _modalCloseButtonId = modalId + '_close_button';
+        _modalCloseSymbolId = modalId + '_close_symbol';
+    };
+
+    //modalMsg：显示信息的元素
+    this.setModalMsgId = function (modalMsgId) {
+        _modalMsgId = modalMsgId;
+    };
+
+    this.setModalTitleId = function (modalTitleId) {
+        _modalTitleId = modalTitleId;
+    };
+
+    this.setModalCloseButtonId = function (modalCloseButtonId) {
+        _modalCloseButtonId = modalCloseButtonId;
+    };
+
+    this.setModalCloseSymbolId = function (modalCloseSymbolId) {
+        _modalCloseSymbolId = modalCloseSymbolId;
+    };
+
+    /*              设置信息            */
+    this.showErrMsg = function (msg) {
+        _setTop();
+        $('#' + _modalMsgId).text(msg);
+        //$('#modal_msg').text=msg
+        $('#' + _modalId).addClass('show');
+        $('#' + _modalTitleId).text('错误').addClass('text-danger');
+        $('#' + _modalCloseButtonId).addClass('btn-danger').bind('click', function () {
+            _modalHide(_modalId);
+        });
+        $('#' + _modalCloseSymbolId).bind('click', function () {
+            _modalHide(_modalId);
+        });
+    };
+
+    this.showInfoMsg = function (msg) {
+        $('#' + _modalMsgId).text(msg);
+        $('#' + _modalId).addClass('show');
+        $('#' + _modalTitleId).text('信息').addClass('text-info');
+        $('#' + _modalCloseButtonId).addClass('btn-info').bind('click', function () {
+            _modalHide(_modalId);
+        });
+        $('#' + _modalCloseSymbolId).bind('click', function () {
+            _modalHide(_modalId);
+        });
     };
 });
 

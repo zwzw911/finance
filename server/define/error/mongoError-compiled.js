@@ -51,7 +51,7 @@ var mongooseErrorHandler = function mongooseErrorHandler(mongooseOp) {
 
     //具体操作祥光的error
     console.log("common err is " + JSON.stringify(mongooseOp));
-    return errorDefine['common'][mongooseOp]();
+    return errorDefine['common'][mongooseOp](err);
 };
 
 //常见错误
@@ -108,22 +108,22 @@ var errorDefine = {
             return { rc: 30002, msg: { client: chineseName + "的值已经存在", server: "集合" + coll + "的字段" + field + "的值" + dupValue + "重复" } };
         },
         findById: function findById(err) {
-            return { rc: 30004, msg: { client: "数据库错误，请联系管理员", server: "findById err is " + err } };
+            return { rc: 30004, msg: { client: "数据库错误，请联系管理员", server: "findById err is " + JSON.stringify(err) } };
         },
         findByIdAndUpdate: function findByIdAndUpdate(err) {
-            return { rc: 30006, msg: { client: "数据库错误，请联系管理员", server: "findByIdAndUpdate err is " + err } };
+            return { rc: 30006, msg: { client: "数据库错误，请联系管理员", server: "findByIdAndUpdate err is " + JSON.stringify(err) } };
         },
         remove: function remove(err) {
-            return { rc: 30008, msg: { client: "数据库错误，请联系管理员", server: "remove err is " + err } };
+            return { rc: 30008, msg: { client: "数据库错误，请联系管理员", server: "remove err is " + JSON.stringify(err) } };
         },
         readAll: function readAll(err) {
-            return { rc: 30010, msg: { client: "数据库错误，请联系管理员", server: "read all err is " + err } };
+            return { rc: 30010, msg: { client: "数据库错误，请联系管理员", server: "read all err is " + JSON.stringify(err) } };
         },
         readName: function readName(err) {
-            return { rc: 30012, msg: { client: "数据库错误，请联系管理员", server: "read name err is " + err } };
+            return { rc: 30012, msg: { client: "数据库错误，请联系管理员", server: "read name err is " + JSON.stringify(err) } };
         },
         search: function search(err) {
-            return { rc: 30014, msg: { client: "数据库错误，请联系管理员", server: "search err is " + err } };
+            return { rc: 30014, msg: { client: "数据库错误，请联系管理员", server: "search err is " + JSON.stringify(err) } };
         }
     }
 };

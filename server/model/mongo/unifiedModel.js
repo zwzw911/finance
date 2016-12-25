@@ -141,14 +141,16 @@ async function readAll({dbModel,populateOpt,recorderLimit}){
     //})
 }
 
+//readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
 async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField}){
     //return new Promise(function(resolve,reject){
         //过滤标记为删除的记录
-        let condition={dDate:{$exists:false}}
+        // let condition={dDate:{$exists:false}}
+        let condition={}
         if(undefined!==nameToBeSearched && ''!== nameToBeSearched.toString()){
             condition[readNameField]=new RegExp(nameToBeSearched,'i')
         }
-        //console.log(`read name condition is ${JSON.stringify(condition)}`)
+        console.log(`read name condition is ${JSON.stringify(condition)}`)
         //let selectField='name'?
         let option={}
         //option.limit=pageSetting.billType.limit
@@ -195,12 +197,19 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     })*/
 }
 
-async function search ({dbModel,searchParams}) {
+async function search ({dbModel,populateOpt,searchParams,recorderLimit}) {
     //return new Promise(function(resolve,reject){
-    //    console.log(`billType search in with params ${searchParams}`)
-    let result=await dbModel.find(searchParams).exec()
+    //     console.log(`search in with params ${JSON.stringify(searchParams)}`)
+    // searchParams['dDate']={'$exists':1}
+    // console.log(`new search in with params ${JSON.stringify(searchParams)}`)
+    let option={}
+    option.limit=recorderLimit
+    //finalParams
+    let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false)
+        .populate(populateOpt)   //populate外键，以便直接在client显示
     .catch(
         (err)=>{
+            // console.log (`search err is ${JSON.stringify(err)}`)
             return Promise.reject(mongooseErrorHandler(mongooseOpEnum.search,err))
         }
     )

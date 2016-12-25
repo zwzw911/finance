@@ -4,18 +4,46 @@
  * Created by ada on 2016/8/28.
  */
 var app = angular.module('app', ['ui.router', 'ui.event', 'ngSanitize', 'MassAutoComplete', 'contDefine', 'component', 'finance']);
-/*app.constant('cont',{
-    asideName:{configuration:'配置信息',bill:'单据信息'},//aside菜单名称
-    //根据dbstructure设置查询条件
-    filterField:{
-        department:{
-            name:{labelName:'部门名称', inputType:'text'}
+app.constant('appCont', {
+    //和server不同，此处的配置，只是为了将外键的ObjectID替换成人类可读的字符串，（暂时）是1：1的关系
+    //格式还是采用object，以便后续可以加入其他选项
+    //nestedPrefix用来删除对应的字段，因为这些字段只是server用来serach用，无需在client显示
+    fkRedundancyFields: {
+        billType: {
+            parentBillType: { nestedPrefix: 'parentBillTypeFields', fields: ['name'] }
         },
-        employee:{},
-        billType:{},
-        bill:{}
+        department: {
+            parentDepartment: { fields: ['name'] }
+        },
+        employee: {
+            leader: { fields: ['name'] },
+            department: { fields: ['name'] }
+        },
+        bill: {
+            billType: { fields: ['name'] },
+            reimburser: { fields: ['name'] }
+        }
     },
-})*/
+    coll: {
+        'billType': 'billType',
+        'department': 'department',
+        'employee': 'employee',
+        'bill': 'bill'
+    },
+    collNameSearch: {
+        'billType': 'name',
+        'department': 'name',
+        'employee': 'name',
+        'bill': 'title'
+    },
+    //每个coll中，类型为date的字段。用来再cilent对server返回的数据进行日期处理
+    dateField: {
+        billType: ['cDate', 'uDate'],
+        bill: ['billDate', 'cDate', 'uDate'],
+        employee: ['cDate', 'uDate'],
+        department: ['cDate', 'uDate']
+    }
+});
 
 app.config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
     $locationProvider.html5Mode(true); //为了去除url中的#
@@ -67,7 +95,7 @@ app.controller('configurationController', function ($scope, htmlHelper) {
 /*test=function(){
     console.log('test in')
 }*/
-app.controller('configuration.billType.Controller', function ($scope, $q, $sce, cont, contEnum, inputAttrHelper, htmlHelper, validateHelper, financeHelper, commonHelper, financeCRUDHelper) {
+app.controller('configuration.billType.Controller', function ($scope, $q, $sce, appCont, cont, contEnum, inputAttrHelper, htmlHelper, validateHelper, financeHelper, commonHelper, financeCRUDHelper) {
 
     //需要用到的数据
     $scope.allData = {
@@ -136,26 +164,39 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
         setCurrentOpTypeDelete: function setCurrentOpTypeDelete() {
             $scope.allData.currentOpType = contEnum.opType.delete;
         },
-
+        setCurrentOpTypeSearch: function setCurrentOpTypeSearch() {
+            $scope.allData.currentOpType = contEnum.opType.search;
+        },
 
         CRUDOperation: function CRUDOperation(idx, inputAttr, recorder, selectedAC) {
             console.log('current op type is ' + $scope.allData.currentOpType.toString());
             console.log('current selectedAC is ' + selectedAC);
             if (contEnum.opType.create === $scope.allData.currentOpType) {
                 if ($scope.modal.buttonFlag) {
-                    financeCRUDHelper.dataOperator.billType.create(idx, inputAttr, recorder, selectedAC);
+                    financeCRUDHelper.dataOperator.billType.create(idx, inputAttr, recorder, selectedAC, appCont.fkRedundancyFields.billType, appCont.coll.billType, appCont.dateField.billType);
                     $scope.allFunc.switchDialogStatus();
                 }
             }
             if (contEnum.opType.update === $scope.allData.currentOpType) {
                 if ($scope.modal.buttonFlag) {
-                    financeCRUDHelper.dataOperator.billType.update(idx, inputAttr, recorder, selectedAC);
+                    financeCRUDHelper.dataOperator.billType.update(idx, inputAttr, recorder, selectedAC, appCont.fkRedundancyFields.billType, appCont.coll.billType, appCont.dateField.billType);
                     $scope.allFunc.switchDialogStatus();
                 }
             }
             if (contEnum.opType.delete === $scope.allData.currentOpType) {
                 //if($scope.modal.buttonFlag){
-                financeCRUDHelper.dataOperator.billType.delete(idx, recorder);
+                financeCRUDHelper.dataOperator.billType.delete(idx, recorder, appCont.coll.billType);
+                //$scope.switchDialogStatus();
+                //}
+            }
+            if (contEnum.opType.search === $scope.allData.currentOpType) {
+                //if($scope.modal.buttonFlag){
+                console.log('enter search');
+                console.log('origin search is ' + JSON.stringify($scope.allData.activeQueryValue));
+                console.log('origin fkconfig is ' + JSON.stringify(appCont.fkRedundancyFields.billType));
+                var convertedValue = financeHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue, appCont.fkRedundancyFields.billType);
+                console.log('search convert result is ' + JSON.stringify(convertedValue));
+                financeCRUDHelper.dataOperator.billType.search(recorder, convertedValue, appCont.fkRedundancyFields.billType, appCont.coll.billType, appCont.dateField.billType);
                 //$scope.switchDialogStatus();
                 //}
             }
@@ -226,9 +267,13 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
         addQueryValue: function addQueryValue(queryFiled, queryValue, activatedQueryValue) {
             console.log('add query in');
             console.log('activatedQueryValue length is ' + Object.keys($scope.allData.activeQueryValue).length);
-            financeHelper.addQueryValue(queryFiled, queryValue, activatedQueryValue);
+            financeHelper.addQueryValue(queryFiled, queryValue, appCont.fkRedundancyFields.billType, activatedQueryValue);
             console.log('after add query value ' + JSON.stringify(activatedQueryValue));
         },
+        /*        //转换成server端格式
+                convertAddQueryValueToServerFormat:function(activateQueryFieldAndValue,fkConfig){
+                    financeHelper.convertAddQueryValueToServerFormat()
+                },*/
         queryFieldChange: function queryFieldChange(selectedQueryField) {
             $scope.allData.selectedQueryFieldValue = '';
         },
@@ -254,7 +299,7 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
             parentBillType: {
                 suggest: function suggest(name) {
                     var deferred = $q.defer();
-                    financeCRUDHelper.dataOperator.billType.readName(name).success(function (data, status, header, config) {
+                    financeCRUDHelper.dataOperator.billType.readName(name, appCont.coll.billType, appCont.collNameSearch.billType).success(function (data, status, header, config) {
                         //$scope.allData.inputAttr['parentBillType']['suggestList']=[]
                         var tmpResult = [];
                         //console.log(`get suggest result is ${data.msg}`)
@@ -346,7 +391,7 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
     //only for query
     $scope.allData.inputAttr['name']['suggestList'] = $scope.allFunc.acFun.name;
 
-    financeCRUDHelper.dataOperator.billType.read($scope.allData.recorder);
+    financeCRUDHelper.dataOperator.billType.read($scope.allData.recorder, appCont.fkRedundancyFields.billType, appCont.coll.billType, appCont.dateField.billType);
 });
 
 /*

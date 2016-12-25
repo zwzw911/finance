@@ -68,7 +68,7 @@
       <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
       <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,queryValue,allData.activeQueryValue)"></span></span>
     </div>
-    <button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()">查询</button>
+    <button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.setCurrentOpTypeSearch();allFunc.CRUDOperation(null,null,allData.recorder,null)">查询</button>
   </div>
 
 
@@ -100,7 +100,7 @@
       <tr ng-repeat="(idx,value) in allData.recorder">
         <td>{{idx+1}}</td>
         <td>{{value.name}}</td>
-        <td class="hidden-sm">{{value.parentBillType}}</td>
+        <td class="hidden-sm">{{value.parentBillType.name}}</td>
         <td class="hidden-xs hidden-sm">{{value.cDate}}</td>
         <td class="hidden-xs hidden-sm">{{value.uDate}}</td>
         <td style="align:left">

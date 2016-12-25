@@ -191,8 +191,14 @@ var create=async function ({eCurrentColl,req,res}){
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
     //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
     arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
+
+    //3 删除null的字段（null说明字段为空，所以无需传入db
+    for(let doc of arrayResult){
+        validateFunc.constructCreateCriteria(doc)
+    }
+
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
-    //3 检查外键是否存在
+    //4 检查外键是否存在
     //遍历所有记录
     for(let doc of arrayResult){
         //遍历所有的外键配置
@@ -215,10 +221,7 @@ var create=async function ({eCurrentColl,req,res}){
         }
     }
 
-    //4 删除null的字段（null说明字段为空，所以无需传入db
-    for(let doc of arrayResult){
-        validateFunc.constructCreateCriteria(doc)
-    }
+
     //4.5 如果外键存在，获得外键的额外字段
     //console.log(`before get additional is ${JSON.stringify(arrayResult)}`)
     for(let idx in arrayResult) {
@@ -230,7 +233,7 @@ var create=async function ({eCurrentColl,req,res}){
             //return res.json(getFkResult)
         }
     }
-    console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
+    // console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
     //console.log(`after get additional is ${JSON.stringify(arrayResult)}`)
     //5. 对db执行操作
     let result=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
@@ -398,14 +401,15 @@ var readName=async function  ({eCurrentColl,req,res}){
 var search=async function ({eCurrentColl,req,res}){
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
-    // console.log(`santiy result is ${sanitizedInputValue}`)
+    // console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
+
         return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
 
     let searchParams=validateFunc.genNativeSearchCondition(req.body.values,eCurrentColl,fkConfig,inputRule)
-    //console.log(`convert search params id ${JSON.stringify(searchParams)}`)
-    let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],'searchParams':searchParams})
+    // console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,recorderLimit:pageSetting[eCurrentColl]['limit']})
 
     //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
     return Promise.resolve(unifiedHelper.returnResult(recorder))

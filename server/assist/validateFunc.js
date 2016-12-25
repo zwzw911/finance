@@ -1336,8 +1336,8 @@ function checkSingleSearchValue(chineseName,singleSearchString,singleFieldRule){
     }
 
     //1.2 检查value的类型是否符合type中的定义
-/*     console.log(`data is ${singleSearchString}`)
-      console.log(`data type is ${singleFieldRule['type'].toString()}`)*/
+    //  console.log(`data is ${singleSearchString}`)
+    //   console.log(`data type is ${singleFieldRule['type'].toString()}`)
 
     let typeCheckResult = valueTypeCheck(singleSearchString,singleFieldRule['type'])
  //console.log(`data type check result is ${JSON.stringify(typeCheckResult)}`)
@@ -1481,9 +1481,13 @@ var genNativeSearchCondition=function(inputSearch,collName,fkAdditionalFieldsCon
         //普通字段
         if(false===singleField in fkAdditionalFieldsConfig){
             //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
-            let fieldValue,fieldRule,fieldCondition,fieldResult={}
+            let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
             fieldValue=inputSearch[singleField]
             fieldRule=rules[collName][singleField]
+/*            fieldValueType=fieldRule['type']
+            if(dataType.string===fieldValueType){
+                fieldValue=new RegExp(fieldValue,'i')
+            }*/
             fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
             fieldResult[singleField]=fieldCondition
             result['$or'].push(fieldResult)
@@ -1493,9 +1497,19 @@ var genNativeSearchCondition=function(inputSearch,collName,fkAdditionalFieldsCon
             let fkConfig=fkAdditionalFieldsConfig[singleField]
             for(let fkRedundantField in inputSearch[singleField]){
                 //每个外键字段的变量要重新定义，否则fieldResult会重复push
-                let fieldValue,fieldRule,fieldCondition,fieldResult={}
+                let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
                 fieldValue=inputSearch[singleField][fkRedundantField]
                 fieldRule=rules[fkConfig['relatedColl']][fkRedundantField]
+                // console.log(`rules is ${JSON.stringify(rules)}`)
+                // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
+/*                console.log(`field value is ${JSON.stringify(fieldValue)}`)
+                fieldValueType=fieldRule['type']
+                console.log(fieldValueType)
+                 // console.log(`field type is ${fieldRule['type']}`)
+                 if(dataType.string===fieldValueType){
+                 fieldValue=new RegExp(fieldValue,'i')
+                 }
+                console.log(fieldValue)*/
                 fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
                 //外键对应的冗余父字段.子字段
                 fieldResult[`${fkConfig['nestedPrefix']}.${fkRedundantField}`]=fieldCondition
@@ -1518,7 +1532,7 @@ function subGenNativeSearchCondition(fieldValue,fieldRule){
         let inArray=[]
         for(let singleElement of fieldValue){
 
-            inArray.push(singleElement['value'])
+            inArray.push(new RegExp(singleElement['value'],'i'))
         }
         conditionResult['$in']=inArray
     }

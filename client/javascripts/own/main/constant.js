@@ -4,14 +4,7 @@
  */
 var app=angular.module('contDefine',[])
 app.constant('cont',{
-    //查找的时候，如果选择了外键，那么对应冗余字段是什么
-    //外键是objectId，不能在client提供给用户查找，而是要提供 字符。redundancyFields提供了直接通过字符查找的字段。简化查找操作
-    //prefix: 冗余字段默认放在一个nested结构中，此结构的名字
-    fkRedundancyFields:{
-        billType:{
-            parentBillType:{prefix:'parentBillTypeFields',field:'name'}
-        }
-    },
+
     //asideName:{configuration:'配置信息',bill:'单据信息'},//aside菜单名称
     //angular检查input输入的rule（由服务器端脚本根据inputRule生成：包括去除不必要字段，关联到相关字段等操作）
     inputRule:
@@ -658,13 +651,7 @@ app.constant('cont',{
         ]
     },
 
-    //每个coll中，类型为date的字段。用来再cilent对server返回的数据进行日期处理
-    dateField:{
-        billType:['cDate','uDate'],
-        bill:['billDate','cDate','uDate'],
-        employee:['cDate','uDate'],
-        department:['cDate','uDate'],
-    },
+
 
 
 })
@@ -675,6 +662,7 @@ app.constant('contEnum',{
         'read': Symbol('read'),
         'update': Symbol('update'),
         'delete': Symbol('delete'),
+        'search': Symbol('search'),
     },
 /*    opType:{
         'create': 'create',
