@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" ng-click="switchDialogStatus()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" >{{modal.title[allData.currentOperation]}}</h4>
+        <h4 class="modal-title" >{{modal.title[allData.currentOpType]}}</h4>
       </div>
       <div class="modal-body">
         <!--<div >-->
@@ -21,7 +21,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="allFunc.switchDialogStatus();allFunc.initAllFieldInputAttr(allData.inputAttr)">取消</button>
-        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="allFunc.allCheckInput(allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr);allFunc.CRUDOperation(allData.currentIdx,allData.inputAttr,allData.recorder,allData.selectedAC)">确定</button>
+        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="allFunc.allCheckInput(allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr);allFunc.CRUDOperation.createUpdate(allData.currentIdx,allData.inputAttr,allData.recorder,allData.selectedAC)">确定</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -58,7 +58,7 @@
 
       </select>
     </div>
-    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="allFunc.addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue)">确定</button>
+    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="allFunc.addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder)">确定</button>
 
   </div>
 
@@ -66,9 +66,9 @@
     <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
     <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
       <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
-      <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,queryValue,allData.activeQueryValue)"></span></span>
+      <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,queryValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder)"></span></span>
     </div>
-    <button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.setCurrentOpTypeSearch();allFunc.CRUDOperation(null,null,allData.recorder,null)">查询</button>
+    <!--<button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.CRUDOperation.search(allData.recorder)">查询</button>-->
   </div>
 
 
@@ -105,7 +105,7 @@
         <td class="hidden-xs hidden-sm">{{value.uDate}}</td>
         <td style="align:left">
           <button class="btn btn-default btn-xs" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();"><span class="fa fa-edit marginR_1" ></span>修改</button>
-          <button class="btn btn-danger btn-xs" ng-click="allFunc.setCurrentOpTypeDelete();allFunc.setCurrentIdx(idx);allFunc.CRUDOperation(allData.currentIdx,null,allData.recorder,null)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
+          <button class="btn btn-danger btn-xs" ng-click="allFunc.setCurrentIdx(idx);allFunc.CRUDOperation.delete(allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
         </td>
       </tr>
       </tbody>

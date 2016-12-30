@@ -311,8 +311,8 @@ var update=async function ({eCurrentColl,req,res}){
     }
     //console.log(`fk exist check doen`)
     //7 如果外键存在，获得外键的额外字段
-    // console.log(`config is ${JSON.stringify(fkAdditionalFieldsConfig.department)}`)
-    let getFkResult=unifiedHelper.getFkAdditionalFields(convertedResult,fkConfig,dbModel)
+    // console.log(`convertedResult is ${JSON.stringify(convertedResult)}`)
+    let getFkResult=await unifiedHelper.getFkAdditionalFields(convertedResult,fkConfig,dbModel)
     if(getFkResult.rc>0){
         return Promise.reject(getFkResult)
     }
@@ -335,7 +335,7 @@ var update=async function ({eCurrentColl,req,res}){
 var remove=async function  ({eCurrentColl,req,res}){
     //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
     let inputResult={}
-    //console.log(`delete params is ${JSON.stringify(req.params.id)}`)
+    console.log(`delete params is ${JSON.stringify(req.params.id)}`)
     let checkResult=validateFunc.validateDeleteInput(req.params.id)
     //console.log(`delete check result is ${JSON.stringify(checkResult)}`)
     if(checkResult.rc>0){
@@ -370,7 +370,7 @@ var readAll=async function ({eCurrentColl,req,res}){
     return Promise.resolve(unifiedHelper.returnResult(result))
 }
 
-var readName=async function  ({eCurrentColl,req,res}){
+/*var readName=async function  ({eCurrentColl,req,res}){
     let recorder
     //执行readName是，对哪个字段进行查找（一般是name，但是bill使用title）
     let nameField=readNameField[eCurrentColl]
@@ -396,6 +396,75 @@ var readName=async function  ({eCurrentColl,req,res}){
 //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
     return Promise.resolve(unifiedHelper.returnResult(recorder))
     //return JSON.stringify(result)
+}*/
+
+/*      采用POST的方式完成auto complete的功能         */
+//传入参数的格式同inputValue，检查的格式同inputSearch（不用检查最大值）
+var readName=async function  ({eCurrentColl,req,res}){
+    let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
+
+    //1 检查格式
+    let formatCheckResult=validateFunc.validateInputFormat(req.body.values,inputRule[eCurrentColl],1)
+    console.log(`format check result is ${JSON.stringify(formatCheckResult)}`)
+    if(formatCheckResult.rc>0){
+        return  Promise.reject(unifiedHelper.returnResult(formatCheckResult))
+    }
+
+    //提取数据。转换成mongodb能接受的格式
+    let inputValue=req.body.values
+    let coll=eCurrentColl  //根据coll决定使用哪个dbModel
+    let inputValueFiledName=Object.keys(inputValue)[0]
+    let inputValueFiledValue=inputValue[inputValueFiledName]['value']
+
+    //如果是外键，coll根据外键决定
+    if(true===inputValueFiledName in fkConfig){
+        coll=fkConfig[inputValueFiledName]['relatedColl']
+        inputValueFiledName=fkConfig[inputValueFiledName]['forSetValue'][0] //外键对应的记录的一个字段
+    }
+
+
+    //return {rc:0}
+
+
+
+/*    let sanitizedInputValue=unifiedHelper.sanityAutoCompleteInput(req.body.values,fkConfig,eCurrentColl,inputRule)
+     console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
+    if(sanitizedInputValue.rc>0){
+        return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
+    }*/
+
+
+    //let constructedValue={}
+
+
+
+
+console.log(`ready to read db`)
+    console.log(`db is ${coll}`)
+    console.log(`value is ${inputValueFiledValue}`)
+    console.log(`limit is ${JSON.stringify(pageSetting[coll]['limit'])}`)
+    console.log(`field is ${JSON.stringify(inputValueFiledName)}`)
+    let recorder
+    if(null!==inputValueFiledValue && undefined!==inputValueFiledValue && ''!==inputValueFiledValue){
+        //  有值的情况下，检查搜索值是否正确（否则checkSingleSearchValue会报错）
+        //  在readName中，如果为undefined/null/''，是读取所有记录（即null是valida的值）；而在普通的inputSearch中，undefined/null/''会报错
+        let chineseName=inputRule[coll][inputValueFiledName]['chineseName']
+        let valueCheckResult=validateFunc.checkSingleSearchValue(chineseName,inputValueFiledValue,inputRule[coll][inputValueFiledName])
+        console.log(   `value resuot is ${JSON.stringify(valueCheckResult)}`)
+        //for(let singleFieldName in valueCheckResult){
+            if(valueCheckResult['rc']>0){
+                return Promise.reject(unifiedHelper.returnResult(valueCheckResult))
+            }
+        //}
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],nameToBeSearched:inputValueFiledValue,recorderLimit:pageSetting[coll]['limit'],'readNameField':inputValueFiledName})
+        //constructedValue[inputValueFiledName]=inputValue[inputValueFiledName]['value']
+    }else{
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:pageSetting[coll]['limit'],'readNameField':inputValueFiledName})
+    }
+    console.log(`read db result is ${JSON.stringify(recorder)}`)
+    return Promise.resolve(unifiedHelper.returnResult(recorder))
+
+
 }
 
 var search=async function ({eCurrentColl,req,res}){

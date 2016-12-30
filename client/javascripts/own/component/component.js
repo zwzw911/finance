@@ -248,8 +248,8 @@ app.factory('htmlHelper',function(validateHelper){
     }
 })
 
-
-app.factory('financeHelper',function(contEnum) {
+/*            设置 查询条件 时，使用的函数              */
+app.factory('queryHelper',function(contEnum) {
     //var allFunc={}
     //allFunc={
     //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
@@ -397,14 +397,20 @@ app.factory('inputAttrHelper',function(contEnum) {
         return true
     }
     //将当前的记录载入到inputAttr
-    function loadCurrentData(idx,inputAttr,recorder){
+    function loadCurrentData(idx,inputAttr,recorder,fkConfig){
         for(var field in inputAttr){
+
             if(undefined===recorder[idx][field] || null===recorder[idx][field]){
                 inputAttr[field]['value']=''
                 inputAttr[field]['originalValue']='' //用来比较是不是做了修改
             }else{
-                inputAttr[field]['value']=recorder[idx][field]
-                inputAttr[field]['originalValue']=recorder[idx][field] //用来比较是不是做了修改
+                let newValue=recorder[idx][field]
+                if(true===field in fkConfig){
+                    let redundancyField=fkConfig[field]['fields'][0]
+                    newValue=recorder[idx][field][redundancyField]
+                }
+                inputAttr[field]['value']=newValue
+                inputAttr[field]['originalValue']=newValue //用来比较是不是做了修改
             }
 
         }
@@ -586,7 +592,7 @@ app.service('modal',function(){
     this.setModalId=function(modalId){
         _modalId=modalId
         //默认是如下格式，可以通过set覆盖
-        _modalMsgId=modalId+'msg'
+        _modalMsgId=modalId+'_msg'
         _modalTitleId=modalId + '_title'
         _modalCloseButtonId=modalId+'_close_button'
         _modalCloseSymbolId=modalId+'_close_symbol'
@@ -625,6 +631,7 @@ app.service('modal',function(){
     }
 
     this.showInfoMsg=function(msg) {
+        _setTop()
         $('#' + _modalMsgId).text(msg)
         $('#' + _modalId ).addClass('show')
         $('#' +_modalTitleId).text('信息').addClass('text-info')
@@ -632,6 +639,7 @@ app.service('modal',function(){
             _modalHide(_modalId)
         })
         $('#' + _modalCloseSymbolId).bind('click', function () {
+            //console.log(`click symbol id is ${_modalCloseSymbolId}`)
             _modalHide(_modalId)
         })
     }

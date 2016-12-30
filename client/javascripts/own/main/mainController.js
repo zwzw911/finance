@@ -41,6 +41,16 @@ app.constant('appCont',{
         employee:['cDate','uDate'],
         department:['cDate','uDate'],
     },
+
+    //临时存储   外键   的id，以便后续acBlur的时候检测是否   外键   正确
+    selectedAC:{
+        'billType':{
+            parentBillType:{value:null,_id:null},//value：选中的记录的名称，id：选中的记录的实际id。ac有时候需要显示给用户 字符，但实际传递给server id，以便操作
+        },
+        'bill':{
+            ''
+        }
+    }
 })
 
 app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
@@ -100,50 +110,317 @@ app.controller('configurationController',function($scope,htmlHelper){
 
 })
 
-/*test=function(){
-    console.log('test in')
-}*/
-app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,financeHelper,commonHelper,financeCRUDHelper){
+app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper){
+    var generateControllerDate=function(eColl){
+        return {
+            inputAttr:cont.inputAttr[eColl],//CRUD记录的时候，对输入进行设置
+            inputRule:cont.inputRule[eColl],//CRUD，对输入进行设置（min/maxLength）以及进行检测
+            //存储当前载入的数据，数组，以便判断是否为空
+            recorder:[],
 
-    //需要用到的数据
-    $scope.allData={
-        inputAttr:cont.inputAttr.billType,//CRUD记录的时候，对输入进行设置
-        inputRule:cont.inputRule.billType,//CRUD，对输入进行设置（min/maxLength）以及进行检测
-        //存储当前载入的数据，数组，以便判断是否为空
-        recorder:[],
+            queryFieldEnable:false,//当前 字段查询是否展开
 
-        queryFieldEnable:false,//当前 字段查询是否展开
+            selectedQueryField:'', //当前选中的查询字段
+            selectedQueryFieldValue:undefined,//下拉菜单中选中的值
+            queryField:cont.queryField[eColl], //可选的查询字段
 
-        selectedQueryField:'', //当前选中的查询字段
-        selectedQueryFieldValue:undefined,//下拉菜单中选中的值
-        queryField:cont.queryField.billType, //可选的查询字段
+            activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}   采用{}初始化，则可以直接通过函数的参数进行修改；缺点是无法在前端判断是否为{}
 
-        activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}   采用{}初始化，则可以直接通过函数的参数进行修改；缺点是无法在前端判断是否为{}
+            recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
 
-        recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
-        
-        //从finance/financeCRUDHelper中载入对应CRUD方法
-        //CRUDOperation:financeCRUDHelper.billType,
+            currentIdx:-1, //当前操作的记录的idx
 
-        // currentOperation:'',
-        currentIdx:-1, //当前操作的记录的idx
+            //临时存储用户选择的外键值，之后在acBlur中进行检查此外键值是否validate
+            //对于当前用户选择的记录，保存id，以便在create/update的时候，确保能上传正确的id值（acBlur的时候检查id，如果正确，将value保存到allData.inputAttr,告诉用户选择的外键值validate）
+            //对于设置查询条件，直接保存到allData.inputAttr即可
+            selectedAC:appCont.selectedAC[eColl],
 
-        selectedAC:{
-            name:{value:null,_id:null},
-            parentBillType:{value:null,_id:null},//value：选中的记录的名称，id：选中的记录的实际id。ac有时候需要显示给用户 字符，但实际传递给server id，以便操作
+            currentOpType:null,
+        }
+    }
 
-        },
+    function generateCreateUpdateModalInfo(){
+        return {
+            title:{'create':'添加数据','update':'修改数据'},
+            buttonFlag:true,//初始为true
+        }
+    }
 
-        currentOpType:null,
+    //此处$scope并非controlller中$scope，只是一个变量的名字；为了方便从controller中把function移植
+    function allFunc($scope,eColl){
 
+        let fkConfig=appCont.fkRedundancyFields[eColl]
+        //需要进行转换的日期字段名称
+        let dateField=appCont.dateField[eColl]
+
+        let allFuncResult={
+//在对记录进行update的时候，根据idx，将recorder中的一个载入到inputAttr
+            loadCurrentData:function (idx,inputAttr,recorder){
+                inputAttrHelper.loadCurrentData(idx,inputAttr,recorder,fkConfig);
+            },
+
+            //初始化当前coll所有字段的inputAttr
+            initAllFieldInputAttr:function (inputAttr){
+                $scope.modal.buttonFlag=true;
+                //console.log(`optype is ${}`)
+                if(contEnum.opType.create===$scope.allData.currentOpType){
+                    inputAttrHelper.initAllFieldInputAttrCreate(inputAttr)
+                }
+                if(contEnum.opType.update===$scope.allData.currentOpType){
+                    inputAttrHelper.initAllFieldInputAttrUpdate(inputAttr)
+                }
+            },
+
+            initSingleFieldInputAttr:function(field,inputAttr){
+                //console.log(`field is ${field}`)
+                //console.log(`inputAttr is ${JSON.stringify(inputAttr)}`)
+                $scope.modal.buttonFlag=true;
+                if(contEnum.opType.create===$scope.allData.currentOpType){
+                    inputAttrHelper.initSingleFieldInputAttrCreate(field,inputAttr)
+                }
+                if(contEnum.opType.update===$scope.allData.currentOpType){
+                    inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+                }
+                // queryHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
+            },
+            //因为create和update公用一个modal，所以需要设置opType来区分操作类型
+            setCurrentOpTypeCreate(){
+                $scope.allData.currentOpType=contEnum.opType.create
+            },
+            setCurrentOpTypeUpdate(){
+                $scope.allData.currentOpType=contEnum.opType.update
+            },
+            /*        setCurrentOpTypeDelete(){
+             $scope.allData.currentOpType=contEnum.opType.delete
+             },
+             setCurrentOpTypeSearch(){
+             $scope.allData.currentOpType=contEnum.opType.search
+             },*/
+            //不同操作，参数不一样，所以使用不同的函数（create update因为使用同一个modal，所以使用同一个函数，内部使用opType区分）
+            CRUDOperation:{
+                'createUpdate':function(idx,inputAttr,recorder,selectedAC){
+                    if(contEnum.opType.create===$scope.allData.currentOpType){
+                        if($scope.modal.buttonFlag){
+                            financeHelper.dataOperator.create(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField);
+                            $scope.allFunc.switchDialogStatus()
+                            //操作完成（无论成功失败），将操作类型 复位
+                            $scope.allData.currentOpType=null
+                        }
+                    }
+                    if(contEnum.opType.update===$scope.allData.currentOpType){
+                        if($scope.modal.buttonFlag){
+                            financeHelper.dataOperator.update(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField);
+                            $scope.allFunc.switchDialogStatus();
+                            //操作完成（无论成功失败），将操作类型 复位
+                            $scope.allData.currentOpType=null
+                        }
+                    }
+                },
+                'delete':function(idx,recorder){
+                    financeHelper.dataOperator.delete(idx,recorder,eColl);
+                },
+                'search':function(recorder){
+                    console.log(`enter search`)
+                    console.log(`origin search is ${JSON.stringify($scope.allData.activeQueryValue)}`)
+                    console.log(`origin fkconfig is ${JSON.stringify(fkConfig)}`)
+                    let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig)
+                    console.log(`search convert result is ${JSON.stringify(convertedValue)}`)
+
+                    //没有任何查询条件，或者删除了所有查询条件
+                    if(0===Object.keys($scope.allData.activeQueryValue).length){
+                        financeHelper.dataOperator.read($scope.allData.recorder,fkConfig,eColl,dateField)
+                    }else{
+                        financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField);
+                    }
+
+                    $scope.allData.selectedQueryField=''
+                    $scope.allData.selectedQueryFieldValue=''
+                    //$scope.switchDialogStatus();
+                }
+            },
+
+            //在crete/update记录时，如果input提供autoComplete功能时（一般是外键），blur时需要检测input的内容是否存在，不存在需要报错提示。
+            //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
+            //currentId:当前记录的objId（如果是create，为undefined）
+            acBlur:function(field,inputAttr,currentId){
+                console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
+                // if(contEnum.opType.update===$scope.allData.currentOpType){
+                //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+                // }
+
+                //console.log(`check id is ${$scope.allData.selectedAC[field]}`)
+                //acBlur无需检测input（min/max/minLength等），只需检测a，是否选择（null或者objId），b.是否和当前一样（不能把自己当成自己的父）
+                if(null===$scope.allData.selectedAC[field]['_id']){
+                    // console.log(`before msg is ${JSON.stringify(inputAttr[field])}`)
+                    inputAttrHelper.setSingleInputAttrErrorMsg(field,inputAttr,`${inputAttr[field]['chineseName']}${inputAttr[field]['value']}不存在`)
+                    //console.log(`after err msg is ${JSON.stringify(JSON.stringify(inputAttr[field]))}`)
+                    //return false
+                }else{
+                    //input中的内容在db中有对应的记录
+                    console.log(`check is self`)
+                    //只有update的时候，才需要判断是否为自己
+                    if(contEnum.opType.update===$scope.allData.currentOpType && $scope.allData.selectedAC[field]['_id']===currentId){
+                        // console.log(`check is self in`)
+                        inputAttrHelper.setSingleInputAttrErrorMsg(field,inputAttr,`${inputAttr[field]['chineseName']}不能为自己`)
+                    }
+                    if(contEnum.opType.create===$scope.allData.currentOpType){
+                        inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
+                        inputAttr[field]['value']=$scope.allData.selectedAC[field]['value']
+                    }
+                }
+
+                /*            else{
+                 queryHelper.checkInput(field,inputRule,inputAttr)
+                 }*/
+
+                //modal.allInputValidCheck(inputAttr)
+                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+                /*            console.log(`validate result is ${JSON.stringify(inputAttr)}`)
+                 console.log(`but flag is ${$scope.modal.buttonFlag}`)*/
+            },
+
+            nonAcBlur:function(field,inputRule,inputAttr){
+                validateHelper.checkInput(field,inputRule,inputAttr)
+                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+            },
+
+
+            /*        allInputValidCheck:function(inputAttr){
+             $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+             },*/
+            //create/update
+
+            allCheckInput:function(inputRule,inputAttr){
+                validateHelper.allCheckInput(inputRule,inputAttr)
+            },
+
+            //从activatedQueryValue中删除value
+            //queryFiled:parentBillType
+            //queryValue:'a'
+            //activatedQueryValue:{parentBillType:['a','b']}
+            deleteQueryValue:function(queryFiled,queryValue,activatedQueryValue){
+                queryHelper.deleteQueryValue(queryFiled,queryValue,activatedQueryValue)
+                console.log(`after delete query value ${activatedQueryValue}`)
+            },
+            // $scope.addQueryValue=queryHelper.addQueryValue
+            addQueryValue:function(queryFiled,queryValue,activatedQueryValue){
+                console.log(`add query in`)
+                console.log(`activatedQueryValue length is ${Object.keys($scope.allData.activeQueryValue).length}`)
+                queryHelper.addQueryValue(queryFiled,queryValue,fkConfig,activatedQueryValue)
+                console.log(`after add query value ${JSON.stringify(activatedQueryValue)}`)
+            },
+
+            queryFieldChange:function(selectedQueryField){
+                $scope.allData.selectedQueryFieldValue=''
+            },
+
+            clickQueryFlag:function(){
+                $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
+            },
+
+
+            switchDialogStatus:function(){
+                $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+                htmlHelper.verticalModalCenter('CRUDRecorder')
+            },
+
+            setCurrentIdx:function(idx){
+                $scope.allData.currentIdx=idx
+            },
+
+            //通用autoComplete，for both create/update and query
+            //其中对selectedAC的处理，虽然也是for both create/update and query，但是实际只有在create/update的时候才会用到
+            generateSuggestList:function(eColl,fieldName){
+                //最终返回suggest和on_select的一个对应
+                let suggestList={}
+
+                //设置suggest
+                suggestList['suggest']=function(name){
+                    let deferred=$q.defer()
+                    let searchValue={}
+                    searchValue[fieldName]={}
+                    searchValue[fieldName]['value']=name
+                    financeHelper.dataOperator.readName(searchValue,eColl).success(
+                        (data, status, header, config)=>{
+                            let tmpResult = []
+                            //console.log(`get suggest result is ${data.msg}`)
+                            //如果当前的字段是外键（定义在allData.selectedAC中），需要确定的id，以便保存到数据库，则初始设为-1
+                            if(true=== fieldName in $scope.allData.selectedAC){
+                                if ('' !== name && null !== name) {
+                                    $scope.allData.selectedAC[fieldName]._id = null
+                                    $scope.allData.selectedAC[fieldName].value=null
+                                }
+                            }
+
+                            if (data.msg.length > 0) {
+                                data.msg.forEach(function (e) {
+                                    //label:下拉菜单中的选项，value：选中后显示的内容，id:选中项目的id（用作外键）
+                                    tmpResult.push({label: e.name, value: e.name, id: e._id})
+                                    //如果当前的字段是外键（定义在allData.selectedAC中），且输入的值存在db中，则将id保存到selectedAC中，以便crete/update使用（query也保存，但是实际不使用），包括blur时做检测
+                                    if(true=== fieldName in $scope.allData.selectedAC){
+                                        //输入的外键值，在db中存在，保存其id，
+                                        if (name === e.name) {
+                                            $scope.allData.selectedAC[fieldName]._id = e._id
+                                            $scope.allData.selectedAC[fieldName].value = name
+                                            // console.log(`set id is ${JSON.stringify($scope.allData.selectedAC[fieldName])}`)
+                                        }
+                                    }
+                                })
+                                deferred.resolve(tmpResult)
+                            }
+                        }
+                    ).error(
+                        (data, status, header, config)=>{
+                            deferred.resolve({rc: 9999, msg: data})
+                        }
+                    )
+                    return deferred.promise
+                }
+
+                suggestList['on_select']=function (selected) {
+                    console.log(`on_selected is ${JSON.stringify(selected)}`)
+                    if(true=== fieldName in $scope.allData.selectedAC){
+                        $scope.allData.selectedAC[fieldName]._id = selected.id
+                        $scope.allData.selectedAC[fieldName].value = selected.value
+                        //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
+                    }else{
+                        //不是外键，直接保存在inputAttr中
+                        $scope.allData.inputAttr[fieldName]['value']=selected.value
+                    }
+                }
+
+                return suggestList
+            },
+        }
+
+
+        return allFuncResult
     }
 
 
 
-//}
-    $scope.allFunc={
+    return {
+        generateControllerDate, //产生
+        generateCreateUpdateModalInfo, //设置create/update用的modal
+        allFunc, //返回一个对象，value是函数
+    }
+})
+
+
+
+app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,templateFunc){
+
+    //为bill/billType/employee/department设置数据($scope.allData)
+    //必须放在controller中，以便可以直接使用其他模块（例如cont.inputAttr），
+
+    //需要用到的数据，预先定义好
+    $scope.allData=templateFunc.generateControllerDate(appCont.coll.billType)
+    $scope.modal=templateFunc.generateCreateUpdateModalInfo()
+    $scope.allFunc=templateFunc.allFunc($scope,appCont.coll.billType)
+    /*$scope.allFunc={
+        //在对记录进行update的时候，根据idx，将recorder中的一个载入到inputAttr
         loadCurrentData:function(idx,inputAttr,recorder){
-            inputAttrHelper.loadCurrentData(idx,inputAttr,recorder);
+            inputAttrHelper.loadCurrentData(idx,inputAttr,recorder,appCont.fkRedundancyFields.billType);
         },
         initAllFieldInputAttr:function(inputAttr){
             $scope.modal.buttonFlag=true;
@@ -166,71 +443,82 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCo
             if(contEnum.opType.update===$scope.allData.currentOpType){
                 inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
             }
-            // financeHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
+            // queryHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
         },
+        //因为create和update公用一个modal，所以需要设置opType来区分操作类型
         setCurrentOpTypeCreate(){
             $scope.allData.currentOpType=contEnum.opType.create
         },
         setCurrentOpTypeUpdate(){
             $scope.allData.currentOpType=contEnum.opType.update
         },
-        setCurrentOpTypeDelete(){
+/!*        setCurrentOpTypeDelete(){
             $scope.allData.currentOpType=contEnum.opType.delete
         },
         setCurrentOpTypeSearch(){
             $scope.allData.currentOpType=contEnum.opType.search
-        },
-        CRUDOperation:function(idx,inputAttr,recorder,selectedAC){
-            console.log(`current op type is ${$scope.allData.currentOpType.toString()}`)
-            console.log(`current selectedAC is ${selectedAC}`)
-            if(contEnum.opType.create===$scope.allData.currentOpType){
-                if($scope.modal.buttonFlag){
-                    financeCRUDHelper.dataOperator.billType.create(idx,inputAttr,recorder,selectedAC,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
-                    $scope.allFunc.switchDialogStatus()
+        },*!/
+        //不同操作，参数不一样，所以使用不同的函数（create update因为使用同一个modal，所以使用同一个函数，内部使用opType区分）
+        CRUDOperation:{
+            'createUpdate':function(idx,inputAttr,recorder,selectedAC){
+                if(contEnum.opType.create===$scope.allData.currentOpType){
+                    if($scope.modal.buttonFlag){
+                        financeHelper.dataOperator.create(idx,inputAttr,recorder,selectedAC,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
+                        $scope.allFunc.switchDialogStatus()
+                        //操作完成（无论成功失败），将操作类型 复位
+                        $scope.allData.currentOpType=null
+                    }
                 }
-            }
-            if(contEnum.opType.update===$scope.allData.currentOpType){
-                if($scope.modal.buttonFlag){
-                    financeCRUDHelper.dataOperator.billType.update(idx,inputAttr,recorder,selectedAC,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
-                    $scope.allFunc.switchDialogStatus();
+                if(contEnum.opType.update===$scope.allData.currentOpType){
+                    if($scope.modal.buttonFlag){
+                        financeHelper.dataOperator.update(idx,inputAttr,recorder,selectedAC,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
+                        $scope.allFunc.switchDialogStatus();
+                        //操作完成（无论成功失败），将操作类型 复位
+                        $scope.allData.currentOpType=null
+                    }
                 }
-            }
-            if(contEnum.opType.delete===$scope.allData.currentOpType){
-                //if($scope.modal.buttonFlag){
-                    financeCRUDHelper.dataOperator.billType.delete(idx,recorder,appCont.coll.billType);
-                    //$scope.switchDialogStatus();
-                //}
-            }
-            if(contEnum.opType.search===$scope.allData.currentOpType){
-                //if($scope.modal.buttonFlag){
+            },
+            'delete':function(idx,recorder){
+                financeHelper.dataOperator.delete(idx,recorder,appCont.coll.billType);
+            },
+            'search':function(recorder){
                 console.log(`enter search`)
                 console.log(`origin search is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                 console.log(`origin fkconfig is ${JSON.stringify(appCont.fkRedundancyFields.billType)}`)
-                let convertedValue=financeHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,appCont.fkRedundancyFields.billType)
+                let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,appCont.fkRedundancyFields.billType)
                 console.log(`search convert result is ${JSON.stringify(convertedValue)}`)
-                financeCRUDHelper.dataOperator.billType.search(recorder,convertedValue,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
+
+                //没有任何查询条件，或者删除了所有查询条件
+                if(0===Object.keys($scope.allData.activeQueryValue).length){
+                    financeHelper.dataOperator.read($scope.allData.recorder,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType)
+                }else{
+                    financeHelper.dataOperator.search(recorder,convertedValue,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType);
+                }
+
+                $scope.allData.selectedQueryField=''
+                $scope.allData.selectedQueryFieldValue=''
                 //$scope.switchDialogStatus();
-                //}
             }
         },
 
-        //当input提供autoComplete功能时，blur要做的操作
+        //在crete/update记录时，如果input提供autoComplete功能时（一般是外键），blur时需要检测input的内容是否存在，不存在需要报错提示。
         //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
         //currentId:当前记录的objId（如果是create，为undefined）
         acBlur:function(field,inputAttr,currentId){
-            console.log(`field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
+            console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
             // if(contEnum.opType.update===$scope.allData.currentOpType){
             //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
             // }
 
             //console.log(`check id is ${$scope.allData.selectedAC[field]}`)
             //acBlur无需检测input（min/max/minLength等），只需检测a，是否选择（null或者objId），b.是否和当前一样（不能把自己当成自己的父）
-            if(-1===$scope.allData.selectedAC[field]['_id']){
+            if(null===$scope.allData.selectedAC[field]['_id']){
                 // console.log(`before msg is ${JSON.stringify(inputAttr[field])}`)
                 inputAttrHelper.setSingleInputAttrErrorMsg(field,inputAttr,`${inputAttr[field]['chineseName']}${inputAttr[field]['value']}不存在`)
                 //console.log(`after err msg is ${JSON.stringify(JSON.stringify(inputAttr[field]))}`)
                 //return false
             }else{
+                //input中的内容在db中有对应的记录
                 console.log(`check is self`)
                 //只有update的时候，才需要判断是否为自己
                 if(contEnum.opType.update===$scope.allData.currentOpType && $scope.allData.selectedAC[field]['_id']===currentId){
@@ -243,14 +531,14 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCo
                 }
             }
 
-/*            else{
-                financeHelper.checkInput(field,inputRule,inputAttr)
-            }*/
+/!*            else{
+                queryHelper.checkInput(field,inputRule,inputAttr)
+            }*!/
 
             //modal.allInputValidCheck(inputAttr)
             $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
-/*            console.log(`validate result is ${JSON.stringify(inputAttr)}`)
-            console.log(`but flag is ${$scope.modal.buttonFlag}`)*/
+/!*            console.log(`validate result is ${JSON.stringify(inputAttr)}`)
+            console.log(`but flag is ${$scope.modal.buttonFlag}`)*!/
         },
 
         nonAcBlur:function(field,inputRule,inputAttr){
@@ -259,9 +547,9 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCo
         },
 
 
-/*        allInputValidCheck:function(inputAttr){
+/!*        allInputValidCheck:function(inputAttr){
             $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
-        },*/
+        },*!/
         //create/update
 
         allCheckInput:function(inputRule,inputAttr){
@@ -273,26 +561,26 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCo
         //queryValue:'a'
         //activatedQueryValue:{parentBillType:['a','b']}
         deleteQueryValue:function(queryFiled,queryValue,activatedQueryValue){
-            financeHelper.deleteQueryValue(queryFiled,queryValue,activatedQueryValue)
+            queryHelper.deleteQueryValue(queryFiled,queryValue,activatedQueryValue)
             console.log(`after delete query value ${activatedQueryValue}`)
         },
-        // $scope.addQueryValue=financeHelper.addQueryValue
+        // $scope.addQueryValue=queryHelper.addQueryValue
         addQueryValue:function(queryFiled,queryValue,activatedQueryValue){
             console.log(`add query in`)
             console.log(`activatedQueryValue length is ${Object.keys($scope.allData.activeQueryValue).length}`)
-            financeHelper.addQueryValue(queryFiled,queryValue,appCont.fkRedundancyFields.billType,activatedQueryValue)
+            queryHelper.addQueryValue(queryFiled,queryValue,appCont.fkRedundancyFields.billType,activatedQueryValue)
             console.log(`after add query value ${JSON.stringify(activatedQueryValue)}`)
         },
-/*        //转换成server端格式
+/!*        //转换成server端格式
         convertAddQueryValueToServerFormat:function(activateQueryFieldAndValue,fkConfig){
-            financeHelper.convertAddQueryValueToServerFormat()
-        },*/
+            queryHelper.convertAddQueryValueToServerFormat()
+        },*!/
         queryFieldChange:function(selectedQueryField){
             $scope.allData.selectedQueryFieldValue=''
         },
-        isActiveQueryValueEmpty:function(){
+/!*        isActiveQueryValueEmpty:function(){
             return Object.keys($scope.allData.activeQueryValue).length===0
-        },
+        },*!/
         clickQueryFlag:function(){
             $scope.allData.queryFieldEnable=!$scope.allData.queryFieldEnable
         },
@@ -307,113 +595,99 @@ app.controller('configuration.billType.Controller',function($scope,$q,$sce,appCo
             $scope.allData.currentIdx=idx
         },
 
-        //因为需要对$scope.allData下的数据进行操作，所以不能单独放到一个module中，只能放在controller中
-        acFun:{
-            //for query and update
-            parentBillType: {
-                suggest: function (name) {
-                    let deferred = $q.defer()
-                    financeCRUDHelper.dataOperator.billType.readName(name,appCont.coll.billType,appCont.collNameSearch.billType).success(function (data, status, header, config) {
-                        //$scope.allData.inputAttr['parentBillType']['suggestList']=[]
+        //通用autoComplete，for both create/update and query
+        //其中对selectedAC的处理，虽然也是for both create/update and query，但是实际只有在create/update的时候才会用到
+        generateSuggestList:function(eColl,fieldName){
+            //最终返回suggest和on_select的一个对应
+            let suggestList={}
+
+            //设置suggest
+            suggestList['suggest']=function(name){
+                let deferred=$q.defer()
+                let searchValue={}
+                searchValue[fieldName]={}
+                searchValue[fieldName]['value']=name
+                financeHelper.dataOperator.readName(searchValue,eColl).success(
+                    (data, status, header, config)=>{
                         let tmpResult = []
                         //console.log(`get suggest result is ${data.msg}`)
-                        //初始设为-1
-                        if ('' !== name && null !== name) {
-                            $scope.allData.selectedAC.parentBillType._id = -1
+                        //如果当前的字段是外键（定义在allData.selectedAC中），需要确定的id，以便保存到数据库，则初始设为-1
+                        if(true=== fieldName in $scope.allData.selectedAC){
+                            if ('' !== name && null !== name) {
+                                $scope.allData.selectedAC[fieldName]._id = null
+                                $scope.allData.selectedAC[fieldName].value=null
+                            }
                         }
 
                         if (data.msg.length > 0) {
                             data.msg.forEach(function (e) {
                                 //label:下拉菜单中的选项，value：选中后显示的内容，id:选中项目的id（用作外键）
                                 tmpResult.push({label: e.name, value: e.name, id: e._id})
-                                //如果当前输入的值存在选项中，隐式的认为此值被选中
-                                console.log(`suggest change: term is ${name}, item name is ${e.name}`)
-                                if (name === e.name) {
-//console.log(`input is selet`)
-                                    $scope.allData.selectedAC.parentBillType._id = e._id
-                                    $scope.allData.selectedAC.parentBillType.value = name
-                                    console.log(`set id is ${JSON.stringify($scope.allData.selectedAC.parentBillType)}`)
+                                //如果当前的字段是外键（定义在allData.selectedAC中），且输入的值存在db中，则将id保存到selectedAC中，以便crete/update使用（query也保存，但是实际不使用），包括blur时做检测
+                                if(true=== fieldName in $scope.allData.selectedAC){
+                                    //输入的外键值，在db中存在，保存其id，
+                                    if (name === e.name) {
+                                        $scope.allData.selectedAC[fieldName]._id = e._id
+                                        $scope.allData.selectedAC[fieldName].value = name
+                                        // console.log(`set id is ${JSON.stringify($scope.allData.selectedAC[fieldName])}`)
+                                    }
                                 }
                             })
                             deferred.resolve(tmpResult)
-                            //$scope.allData.inputAttr['parentBillType']['suggestList']=$scope.suggestListValue.parentBillType
-                            //$scope.suggestListValue
                         }
-                    }).error(function (data, status, header, config) {
+                    }
+                ).error(
+                    (data, status, header, config)=>{
                         deferred.resolve({rc: 9999, msg: data})
-                    })
-                    return deferred.promise
-                },
-                on_select: function (selected) {
-                    console.log(`selected is ${JSON.stringify(selected)}`)
-                    $scope.allData.selectedAC.parentBillType._id = selected.id
-                    $scope.allData.selectedAC.parentBillType.value = selected.value
-                }
-            },
-            //only for query。query的时候，提供可能的选项
-            name: {
-                suggest: function (name) {
-                    let deferred = $q.defer()
-                    financeCRUDHelper.dataOperator.billType.readName(name).success(function (data, status, header, config) {
+                    }
+                )
+                return deferred.promise
+            }
 
-                        let tmpResult = []
-                        //console.log(`get suggest result is ${data.msg}`)
-                        //初始设为-1
-                        if ('' !== name && null !== name) {
-                            $scope.allData.selectedAC.name._id = -1
-                        }
-
-                        if (data.msg.length > 0) {
-                            data.msg.forEach(function (e) {
-                                //label:下拉菜单中的选项，value：选中后显示的内容，id:选中项目的id（用作外键）
-                                tmpResult.push({label: e.name, value: e.name, id: e._id})
-                                //如果当前输入的值存在选项中，隐式的认为此值被选中
-                                console.log(`suggest change: term is ${name}, item name is ${e.name}`)
-                                if (name === e.name) {
-//console.log(`input is selet`)
-                                    $scope.allData.selectedAC.name._id = e._id
-                                    console.log(`set id is ${$scope.allData.selectedAC.name}`)
-                                }
-                            })
-                            deferred.resolve(tmpResult)
-                            //$scope.allData.inputAttr['parentBillType']['suggestList']=$scope.suggestListValue.parentBillType
-                            //$scope.suggestListValue
-                        }
-                    }).error(function (data, status, header, config) {
-                        deferred.resolve({rc: 9999, msg: data})
-                    })
-                    return deferred.promise
-                },
-                on_select: function (selected) {
-                    console.log(`selected is ${JSON.stringify(selected)}`)
-                    $scope.allData.selectedAC.billType = selected.id
+            suggestList['on_select']=function (selected) {
+                console.log(`on_selected is ${JSON.stringify(selected)}`)
+                if(true=== fieldName in $scope.allData.selectedAC){
+                    $scope.allData.selectedAC[fieldName]._id = selected.id
+                    $scope.allData.selectedAC[fieldName].value = selected.value
+                    //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
+                }else{
+                    //不是外键，直接保存在inputAttr中
+                    $scope.allData.inputAttr[fieldName]['value']=selected.value
                 }
             }
-        }
-    }
 
-    $scope.modal={
-        title:{'create':'添加数据','update':'修改数据'},
-        buttonFlag:true,//初始为true
-    }
+            return suggestList
+        },
+
+
+
+
+    }*/
+
+
 
     htmlHelper.adjustFooterPosition()
     //初始化调用
 
 
     //同时提供query和update时使用
-    $scope.allData.inputAttr['parentBillType']['suggestList']=$scope.allFunc.acFun.parentBillType
+/*    $scope.allData.inputAttr['parentBillType']['suggestList']=$scope.allFunc.acFun.parentBillType
     //only for query
-    $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.acFun.name
+    $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.acFun.name*/
 
-    financeCRUDHelper.dataOperator.billType.read($scope.allData.recorder,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType)
+    $scope.allData.inputAttr['parentBillType']['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll.billType,'parentBillType')
+    //console.log(`typeof suggest is  ${typeof JSON.stringify($scope.allData.inputAttr['parentBillType']['suggestList']['suggest'])}`)
+    //only for query
+    $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll.billType,'name')
+
+    financeHelper.dataOperator.read($scope.allData.recorder,appCont.fkRedundancyFields.billType,appCont.coll.billType,appCont.dateField.billType)
 
 })
 
 
 
 /*
-app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper,contEnum){
+app.controller('configuration.departmentInfo.Controller',function($scope,cont,basicHelper,helper,$sce,queryHelper,financeHelper,contEnum){
     $scope.allData={
         inputAttr:cont.inputAttr.department,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.department,//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -430,8 +704,8 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
 
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
 
-        //从finance/financeCRUDHelper中载入对应CRUD方法
-        CRUDOperation:financeCRUDHelper.department,
+        //从finance/financeHelper中载入对应CRUD方法
+        CRUDOperation:financeHelper.department,
 
         currentOperation:'',
         currentIdx:-1, //当前操作的记录的idx
@@ -439,15 +713,15 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
         currentOpType:null,
 
         loadCurrentData:function(idx,inputAttr,recorder){
-            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+            queryHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllFieldInputAttr:function(inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
+            queryHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
         },
         initSingleFieldInputAttr:function(field,inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
+            queryHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
         }
     }
     //当前字段对应的coll/field（从哪个coll/field获得值来完成autocomplete功能）
@@ -461,7 +735,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
                 tmpColl=tmpStr[0]
                 tmpField=tmpStr[1]
                 //添加/修改记录的时候 提供autoComplete功能
-                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeHelper.suggest_state[tmpColl][tmpField]}
             }
         }
     }
@@ -469,28 +743,28 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     $scope.modal={
         commonError:"commonError",//create或者update是，发生的非field错误
         title:{'create':'添加数据','update':'修改数据'},
-        inputBlur:financeHelper.checkInput,
-        inputFocus:financeHelper.initSingleFieldInputAttr,
+        inputBlur:queryHelper.checkInput,
+        inputFocus:queryHelper.initSingleFieldInputAttr,
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
-            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            $scope.modal.buttonFlag=queryHelper.allInputValidCheck(inputAttr)
         },
         CRUDOperation:{
             //此处idx只是为了格式统一，实际没用
             'create':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.department.create(idx,inputAttr,recorder);
+                    financeHelper.department.create(idx,inputAttr,recorder);
                     $scope.switchDialogStatus()
                 }
             },
             'update':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.department.update(idx,inputAttr,recorder);
+                    financeHelper.department.update(idx,inputAttr,recorder);
                     $scope.switchDialogStatus();
                 }
             },
         },
-        allCheckInput:financeHelper.allCheckInput,
+        allCheckInput:queryHelper.allCheckInput,
 
     }
 
@@ -498,8 +772,8 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
     //初始化调用
 
 
-    $scope.deleteQueryValue=financeHelper.deleteQueryValue
-    $scope.addQueryValue=financeHelper.addQueryValue
+    $scope.deleteQueryValue=queryHelper.deleteQueryValue
+    $scope.addQueryValue=queryHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
         $scope.allData.selectedQueryFieldValue=''
@@ -523,7 +797,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,cont,ba
 
 
 
-app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper,contEnum){
+app.controller('configuration.employeeInfo.Controller',function($scope,cont,basicHelper,helper,$sce,queryHelper,financeHelper,contEnum){
     $scope.allData={
         inputAttr:cont.inputAttr.employee,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.employee,//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -543,8 +817,8 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
 
-        //从finance/financeCRUDHelper中载入对应CRUD方法
-        CRUDOperation:financeCRUDHelper.employee,
+        //从finance/financeHelper中载入对应CRUD方法
+        CRUDOperation:financeHelper.employee,
 
         currentOperation:'',
         currentIdx:-1, //当前操作的记录的idx
@@ -553,15 +827,15 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
 
         loadCurrentData:function(idx,inputAttr,recorder){
 // console.log('load data')
-            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+            queryHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllFieldInputAttr:function(inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
+            queryHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
         },
         initSingleFieldInputAttr:function(field,inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
+            queryHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
         }
     }
 
@@ -577,41 +851,41 @@ app.controller('configuration.employeeInfo.Controller',function($scope,cont,basi
                 tmpColl=tmpStr[0]
                 tmpField=tmpStr[1]
                 //添加/修改记录的时候 提供autoComplete功能
-                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeHelper.suggest_state[tmpColl][tmpField]}
             }
         }
     }
 
     $scope.modal={
         title:{'create':'添加数据','update':'修改数据'},
-        inputBlur:financeHelper.checkInput,
-        inputFocus:financeHelper.initSingleFieldInputAttr,
+        inputBlur:queryHelper.checkInput,
+        inputFocus:queryHelper.initSingleFieldInputAttr,
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
-            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            $scope.modal.buttonFlag=queryHelper.allInputValidCheck(inputAttr)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.employee.create(idx,inputAttr,recorder);
+                    financeHelper.employee.create(idx,inputAttr,recorder);
                     $scope.switchDialogStatus()
                 }
             },
             'update':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.employee.update(idx,inputAttr,recorder);
+                    financeHelper.employee.update(idx,inputAttr,recorder);
                     $scope.switchDialogStatus();
                 }
             },
         },
-        allCheckInput:financeHelper.allCheckInput,
+        allCheckInput:queryHelper.allCheckInput,
 
     }
 
     helper.adjustFooterPosition()
 
-    $scope.deleteQueryValue=financeHelper.deleteQueryValue
-    $scope.addQueryValue=financeHelper.addQueryValue
+    $scope.deleteQueryValue=queryHelper.deleteQueryValue
+    $scope.addQueryValue=queryHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
         $scope.allData.selectedQueryFieldValue=''
@@ -658,7 +932,7 @@ app.controller('billController',function($scope,cont,helper){
 
 
 
-app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,financeHelper,financeCRUDHelper,contEnum){
+app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helper,$sce,queryHelper,financeHelper,contEnum){
     $scope.allData={
         inputAttr:cont.inputAttr.bill,//CRUD记录的时候，对输入进行设置
         inputRule:cont.inputRule.bill,//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -678,8 +952,8 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
         activeQueryValue:{},//当前生效的查询字段和查询值 {field:['value1','value2']}
         recorderDialogShow:false,//当前modal-dialog是否显示（用来add/modify记录）
 
-        //从finance/financeCRUDHelper中载入对应CRUD方法
-        CRUDOperation:financeCRUDHelper.bill,
+        //从finance/financeHelper中载入对应CRUD方法
+        CRUDOperation:financeHelper.bill,
 
         currentOperation:'',
         currentIdx:-1, //当前操作的记录的idx
@@ -688,15 +962,15 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
 
         loadCurrentData:function(idx,inputAttr,recorder){
 // console.log('load data')
-            financeHelper.loadCurrentData(idx,inputAttr,recorder);
+            queryHelper.loadCurrentData(idx,inputAttr,recorder);
         },
         initAllFieldInputAttr:function(inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
+            queryHelper.initAllFieldInputAttr(inputAttr,this.currentOpType)
         },
         initSingleFieldInputAttr:function(field,inputAttr){
             $scope.modal.buttonFlag=true;
-            financeHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
+            queryHelper.initSingleFieldInputAttr(field,inputAttr,this.currentOpType)
         }
     }
 
@@ -711,41 +985,41 @@ app.controller('bill.billInfo.Controller',function($scope,cont,basicHelper,helpe
                 tmpColl=tmpStr[0]
                 tmpField=tmpStr[1]
                 //添加/修改记录的时候 提供autoComplete功能
-                $scope.allData.inputAttr[field]['suggestList']={suggest:financeCRUDHelper.suggest_state[tmpColl][tmpField]}
+                $scope.allData.inputAttr[field]['suggestList']={suggest:financeHelper.suggest_state[tmpColl][tmpField]}
             }
         }
     }
 
     $scope.modal={
         title:{'create':'添加数据','update':'修改数据'},
-        inputBlur:financeHelper.checkInput,
-        inputFocus:financeHelper.initSingleFieldInputAttr,
+        inputBlur:queryHelper.checkInput,
+        inputFocus:queryHelper.initSingleFieldInputAttr,
         buttonFlag:true,//初始为true
         allInputValidCheck:function(inputAttr){
-            $scope.modal.buttonFlag=financeHelper.allInputValidCheck(inputAttr)
+            $scope.modal.buttonFlag=queryHelper.allInputValidCheck(inputAttr)
         },
         CRUDOperation:{
             'create':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.department.create(idx,inputAttr,recorder);
+                    financeHelper.department.create(idx,inputAttr,recorder);
                     $scope.switchDialogStatus()
                 }
             },
             'update':function(idx,inputAttr,recorder){
                 if($scope.modal.buttonFlag){
-                    financeCRUDHelper.department.update(idx,inputAttr,recorder);
+                    financeHelper.department.update(idx,inputAttr,recorder);
                     $scope.switchDialogStatus();
                 }
             },
         },
-        allCheckInput:financeHelper.allCheckInput,
+        allCheckInput:queryHelper.allCheckInput,
 
     }
 
     helper.adjustFooterPosition()
 
-    $scope.deleteQueryValue=financeHelper.deleteQueryValue
-    $scope.addQueryValue=financeHelper.addQueryValue
+    $scope.deleteQueryValue=queryHelper.deleteQueryValue
+    $scope.addQueryValue=queryHelper.addQueryValue
 
     $scope.change=function(selectedQueryField){
         $scope.allData.selectedQueryFieldValue=''

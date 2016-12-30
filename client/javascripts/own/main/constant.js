@@ -657,17 +657,19 @@ app.constant('cont',{
 })
 
 app.constant('contEnum',{
-    opType:{
+/*    opType:{
         'create': Symbol('create'),
         'read': Symbol('read'),
         'update': Symbol('update'),
         'delete': Symbol('delete'),
         'search': Symbol('search'),
-    },
-/*    opType:{
+    },*/
+/*          value采用字符，而不是symbol，因为为modal设置title是，key只能用字符       */
+    opType:{
         'create': 'create',
         'read': 'read',
         'update': 'update',
         'delete': 'delete',
-    },*/
+        'search':'search',
+    },
 })

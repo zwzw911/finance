@@ -36,3 +36,8 @@
 1. 为提供外键的model添加id是否存在的函数====>mainController/checkIdExist()
 
 1. 为remove和read添加对_id的check
+
+
+1. modal的title没有显示====》done
+2. msg modal的body不能显示信息====》done
+3. 如果查询条件 全部 删除，则自动重新获得所有数据

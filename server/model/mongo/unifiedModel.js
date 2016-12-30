@@ -123,7 +123,7 @@ async function readAll({dbModel,populateOpt,recorderLimit}){
         let selectField=null
         let option={}
         option.limit=recorderLimit
-        let result=await dbModel.find(condition,selectField,option).populate(populateOpt)
+        let result=await dbModel.find(condition,selectField,option).sort('cDate').populate(populateOpt)
         .catch(
             function(err){
                 //console.log(`readall err is ${JSON.stringify(err)}`)
@@ -154,6 +154,7 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField}){
         //let selectField='name'?
         let option={}
         //option.limit=pageSetting.billType.limit
+    //console.log(`read name condition is ${JSON.stringify(condition)}`)
         option.limit=recorderLimit
         let result = await dbModel.find(condition,readNameField,option)
             .catch(
@@ -205,7 +206,7 @@ async function search ({dbModel,populateOpt,searchParams,recorderLimit}) {
     let option={}
     option.limit=recorderLimit
     //finalParams
-    let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false)
+    let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('cDate')
         .populate(populateOpt)   //populate外键，以便直接在client显示
     .catch(
         (err)=>{

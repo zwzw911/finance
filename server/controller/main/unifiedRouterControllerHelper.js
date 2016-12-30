@@ -96,6 +96,23 @@ function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRu
     return {rc:0}
 }
 
+
+
+/*
+* 对传入的字段，返回所有匹配的值，完成autoComplete的功能
+* 参数
+*   1. inputValue：{field:{value:'xxxx'}}。每次只能上传一个field的值
+*   2. fkConfig: coll的fkConfig
+*   3. collName
+*   4. inputRules：所有rule
+*
+* */
+/*function sanityAutoCompleteInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
+
+}*/
+
+
+
 //对returnResult做包装，通过env的判断决定res.json输出的格式
 function returnResult(rc){
     if(envEnum.production===appSetting.env){
@@ -218,7 +235,7 @@ async function getFkAdditionalFields(doc,fkAdditionalConfig,dbModel){
 /*                if(fkAdditionalFields.rc>0){
                     return fkAdditionalFields
                 }*/
-                // console.log(`add result is ${JSON.stringify(fkAdditionalFields)}`)
+                 //console.log(`add result is ${JSON.stringify(fkAdditionalFieldsResult)}`)
                 doc[nestedPrefix]={}
                 //将读取到的额外字段赋值给
                 for(let field of fkAdditionalFieldsArray){
@@ -245,6 +262,7 @@ module.exports= {
     common,//每个请求进来是，都要进行的操作（时间间隔检查等）
     sanityInput,//create/update/remove等请求，传入参数的检查。{field1:{value:'xxx'},field2:{value:'yyy'}}
     sanitySearchInput,//当客户端传入的搜索参数的检查，格式见 doc 文档
+    //sanityAutoCompleteInput, //format采用inputValue的函数，值验证采用inputSearch的方式
     returnResult,//是否需要将结果转换成客户端能够处理的格式
     // checkIdExist,//检查外键对应的记录是否存在
     //getAdditionalFields,

@@ -1,5 +1,6 @@
 .idea
 node_modules
 server/**/*compiled*
+client/**/*compiled*
 client/**/3rd
 **/*not_used_*

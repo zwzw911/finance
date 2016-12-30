@@ -1319,7 +1319,9 @@ function checkSingleSearchValue(chineseName,singleSearchString,singleFieldRule){
         return
     }*/
     //console.log(`called func rule is ${JSON.stringify(singleFieldRule)}`)
-    if(singleFieldRule['format']){
+
+    /*                  不能使用format，因为不能使用minLength（只输入一个字符，也算有效的搜索值）    */
+    /*if(singleFieldRule['format']){
 // console.log(`format defined`)
         let currentRule=singleFieldRule['format']
         let currentRuleDefine=currentRule['define']
@@ -1329,11 +1331,11 @@ function checkSingleSearchValue(chineseName,singleSearchString,singleFieldRule){
             result['msg']=generateErrorMsg.format(chineseName,currentRuleDefine,false)
             // console.log(    `format check failed result is ${JSON.stringify(result)}`)
             return result
-/*                result[singleFieldName]['rc']=currentRule['error']['rc']
-            result[singleFieldName]['msg']=generateErrorMsg.format(currentRule['chineseName'],currentRuleDefine,false)*/
+/!*                result[singleFieldName]['rc']=currentRule['error']['rc']
+            result[singleFieldName]['msg']=generateErrorMsg.format(currentRule['chineseName'],currentRuleDefine,false)*!/
             // break
         }
-    }
+    }*/
 
     //1.2 检查value的类型是否符合type中的定义
     //  console.log(`data is ${singleSearchString}`)
@@ -1643,7 +1645,7 @@ exports.func={
     subValidateInputSearchFormat,
 
     validateInputSearchValue,//对POST的参数进行检查
-    checkSingleSearchValue,//被validateInputSearchValue调用。
+    checkSingleSearchValue,//被validateInputSearchValue调用，对单个value进行检测
 
     genNativeSearchCondition,//根据输入的searchValue，产生mongodb的查询参数（方便调试）
 

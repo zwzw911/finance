@@ -132,7 +132,7 @@ router.get('/employee',function(req,res,next){
         })
 })
 //read single field
-router.get('/employee/name',function(req,res,next){
+router.post('/employee/name',function(req,res,next){
     console.log('get no name ')
     unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
         (v)=>{
@@ -144,7 +144,7 @@ router.get('/employee/name',function(req,res,next){
             return res.json(e)
         })
 })
-router.get('/employee/name/:name',function(req,res,next){
+/*router.get('/employee/name/:name',function(req,res,next){
     console.log('get name ')
     unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
         (v)=>{
@@ -155,7 +155,7 @@ router.get('/employee/name/:name',function(req,res,next){
             console.log(`read employee name fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //update
 router.put('/employee',function(req,res,next){
     unifiedRouterController.update({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
@@ -227,7 +227,7 @@ router.get('/department',function(req,res,next){
         })
 })
 //read single field
-router.get('/department/name',function(req,res,next){
+router.post('/department/name',function(req,res,next){
     console.log('get no name ')
     unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then(
         (v)=>{
@@ -239,7 +239,7 @@ router.get('/department/name',function(req,res,next){
             return res.json(e)
         })
 })
-router.get('/department/name/:name',function(req,res,next){
+/*router.get('/department/name/:name',function(req,res,next){
     console.log('get name ')
     unifiedRouterController.readName({eCurrentColl:coll.department, 'req':req,'res':res}).then(
         (v)=>{
@@ -250,7 +250,7 @@ router.get('/department/name/:name',function(req,res,next){
             console.log(`read department name fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //update
 router.put('/department',function(req,res,next){
     unifiedRouterController.update({eCurrentColl:coll.department, 'req':req,'res':res}).then(
@@ -296,6 +296,7 @@ router.post('/department/search',function(req,res,next){
     unifiedRouterController.create({eCurrentColl:coll.billType, 'req':req,'res':res}).then((v)=>{console.log(`post result is ${JSON.stringify(v)}`)},(e)=>console.log(`post fail ${JSON.stringify(e)}`))
 })*/
 router.post('/billType',function(req,res,next){
+    console.log(`post billtype`)
     unifiedRouterController.create({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
         function(v){
             console.log(`create billType success, result:  ${JSON.stringify(v)}`)
@@ -321,7 +322,7 @@ router.get('/billType',function(req,res,next){
         })
 })
 //read single field
-router.get('/billType/name',function(req,res,next){
+router.post('/billType/name',function(req,res,next){
     console.log('get no name ')
     unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
         (v)=>{
@@ -333,7 +334,7 @@ router.get('/billType/name',function(req,res,next){
             return res.json(e)
         })
 })
-router.get('/billType/name/:name',function(req,res,next){
+/*router.get('/billType/name/:name',function(req,res,next){
     console.log('get name ')
     unifiedRouterController.readName({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
         (v)=>{
@@ -344,7 +345,7 @@ router.get('/billType/name/:name',function(req,res,next){
             console.log(`read billType name fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //update
 router.put('/billType',function(req,res,next){
     unifiedRouterController.update({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
@@ -416,7 +417,7 @@ router.get('/bill',function(req,res,next){
         })
 })
 //read single field
-router.get('/bill/name',function(req,res,next){
+router.post('/bill/name',function(req,res,next){
     console.log('get no name ')
     unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
         (v)=>{
@@ -428,7 +429,7 @@ router.get('/bill/name',function(req,res,next){
             return res.json(e)
         })
 })
-router.get('/bill/name/:title',function(req,res,next){
+/*router.get('/bill/name/:title',function(req,res,next){
     console.log('get name ')
     unifiedRouterController.readName({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
         (v)=>{
@@ -439,7 +440,7 @@ router.get('/bill/name/:title',function(req,res,next){
             console.log(`read bill name fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //update
 router.put('/bill',function(req,res,next){
     unifiedRouterController.update({eCurrentColl:coll.bill, 'req':req,'res':res}).then(

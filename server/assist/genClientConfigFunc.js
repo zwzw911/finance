@@ -13,6 +13,8 @@ var clientRuleType=require('../define/enum/validEnum').enum.clientRuleType
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var rightResult={rc:0}
 
+var dbStructure=require('../model/mongo/common/structure').fieldDefine
+
 var generateClientRule=function(obj,level,resultObj){
     // let resultObj={}
     if('object'===typeof obj){
@@ -187,6 +189,25 @@ var generateClientInputAttr=function(obj,level,resultObj){
     // return resultObj
 }
 
+/*          根据structure产生client用的selectedAC             */
+//如果db中，某个字段是外键，则把此字段加入
+// 'billType':{'parentBillType:{value:null,_id:null}}
+var genSelectedAC=function(){
+    let result={}
+    for(let singleCollName in dbStructure){
+        for(let singleFieldName in dbStructure[singleCollName]){
+            if(true === 'ref' in dbStructure[singleCollName][singleFieldName]){
+                //初始化coll的结构
+                if(false=== singleCollName in result){
+                    result[singleCollName]={}
+                }
+                result[singleCollName][singleFieldName]={value:null,_id:null}
+            }
+        }
+    }
+
+    return result
+}
 module.exports={
     generateClientRule,
     deleteNonNeededObject,
