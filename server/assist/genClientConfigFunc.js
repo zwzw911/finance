@@ -13,7 +13,12 @@ var clientRuleType=require('../define/enum/validEnum').enum.clientRuleType
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var rightResult={rc:0}
 
+var dataTypeCheck=require('./validateFunc').func.dataTypeCheck
+var dataType=require('../define/enum/validEnum').enum.dataType
+
 var dbStructure=require('../model/mongo/common/structure').fieldDefine
+
+var fs=require('fs')
 
 var generateClientRule=function(obj,level,resultObj){
     // let resultObj={}
@@ -205,12 +210,15 @@ var genSelectedAC=function(){
             }
         }
     }
-
-    return result
+    fs.writeFile('selectedAC.txt',JSON.stringify(result))
 }
+
 module.exports={
     generateClientRule,
     deleteNonNeededObject,
     objectIdToRealField,
     generateClientInputAttr,
+    genSelectedAC,
 }
+
+genSelectedAC()

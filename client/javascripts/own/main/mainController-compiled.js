@@ -44,10 +44,22 @@ app.constant('appCont', {
         department: ['cDate', 'uDate']
     },
 
-    //临时存储外键的id，以便后续acBlur的时候检测是否外键正确
+    //临时存储   外键   的id，以便后续acBlur的时候检测是否   外键   正确
     selectedAC: {
-        'billType': {
-            parentBillType: { value: null, _id: null } }
+        "department": {
+            "parentDepartment": { "value": null, "_id": null }
+        },
+        "employee": {
+            "leader": { "value": null, "_id": null },
+            "department": { "value": null, "_id": null }
+        },
+        "billType": {
+            "parentBillType": { "value": null, "_id": null } //value：选中的记录的名称，id：选中的记录的实际id。ac有时候需要显示给用户 字符，但实际传递给server id，以便操作
+        },
+        "bill": {
+            "billType": { "value": null, "_id": null },
+            "reimburser": { "value": null, "_id": null }
+        }
     }
 });
 
@@ -378,10 +390,32 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
         return allFuncResult;
     }
 
+    function setACConfig($scope) {
+        for (var singleFieldName in $scope.allData.inputAttr) {
+            var singleInputAttr = $scope.allData.inputAttr[singleFieldName];
+            //无论是query还是create/update需要AC，都要为对应的字段设置AC
+            if (true === singleInputAttr['isQueryAutoComplete'] || true === singleInputAttr['isCRUDAutoComplete']) {
+                //从autoCompleteCollField字段中获取从哪个coll的哪个field中获得ac
+                var fk = singleInputAttr['autoCompleteCollField'].split('.');
+                var coll = fk[0];
+                var field = fk[1];
+                console.log('field for ac is ' + singleFieldName + ', related coll is ' + coll + ', related field is ' + field);
+
+                $scope.allData.inputAttr['parentBillType']['suggestList'] = $scope.allFunc.generateSuggestList(appCont.coll.billType, 'parentBillType');
+                $scope.allData.inputAttr['name']['suggestList'] = $scope.allFunc.generateSuggestList(appCont.coll.billType, 'name');
+
+                //字段名是原始字段名（符合正常的逻辑），server会根据fkconfig自动查找对应的字段
+                $scope.allData.inputAttr[singleFieldName]['suggestList'] = $scope.allFunc.generateSuggestList(appCont.coll[coll], singleFieldName);
+            }
+        }
+    }
+
+    //以下4个函数有严格的先后顺序，需要顺序执行
     return {
         generateControllerDate: generateControllerDate, //产生
         generateCreateUpdateModalInfo: generateCreateUpdateModalInfo, //设置create/update用的modal
-        allFunc: allFunc };
+        allFunc: allFunc, //返回一个对象，value是函数
+        setACConfig: setACConfig };
 });
 
 app.controller('configuration.billType.Controller', function ($scope, $q, $sce, appCont, cont, contEnum, inputAttrHelper, htmlHelper, validateHelper, queryHelper, commonHelper, financeHelper, templateFunc) {
@@ -626,11 +660,25 @@ app.controller('configuration.billType.Controller', function ($scope, $q, $sce, 
         //only for query
         $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.acFun.name*/
 
-    $scope.allData.inputAttr['parentBillType']['suggestList'] = $scope.allFunc.generateSuggestList(appCont.coll.billType, 'parentBillType');
-    //console.log(`typeof suggest is  ${typeof JSON.stringify($scope.allData.inputAttr['parentBillType']['suggestList']['suggest'])}`)
-    //only for query
-    $scope.allData.inputAttr['name']['suggestList'] = $scope.allFunc.generateSuggestList(appCont.coll.billType, 'name');
+    /*    for(let singleFieldName in $scope.allData.inputAttr){
+            let singleInputAttr=$scope.allData.inputAttr[singleFieldName]
+            //无论是query还是create/update需要AC，都要为对应的字段设置AC
+            if(true===singleInputAttr['isQueryAutoComplete'] || true===singleInputAttr['isCRUDAutoComplete']){
+                //从autoCompleteCollField字段中获取从哪个coll的哪个field中获得ac
+                let fk=singleInputAttr['autoCompleteCollField'].split('.')
+                let coll=fk[0]
+                let field=fk[1]
+                console.log(`field for ac is ${singleFieldName}, related coll is ${coll}, related field is ${field}`)
+    
+                $scope.allData.inputAttr['parentBillType']['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll.billType,'parentBillType')
+                $scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll.billType,'name')
+    
+                //字段名是原始字段名（符合正常的逻辑），server会根据fkconfig自动查找对应的字段
+                $scope.allData.inputAttr[singleFieldName]['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll[coll],singleFieldName)
+            }
+        }*/
 
+    templateFunc.setACConfig($scope);
     financeHelper.dataOperator.read($scope.allData.recorder, appCont.fkRedundancyFields.billType, appCont.coll.billType, appCont.dateField.billType);
 });
 
