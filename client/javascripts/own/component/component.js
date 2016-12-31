@@ -13,11 +13,14 @@ app.factory('validateHelper',function(){
                 return obj && typeof obj === 'object' &&
                 Array == obj.constructor;
             },
+            isInt: function (value) {
+                return !isNaN(parseInt(value))
+            },
             isNumber: function (value) {
-                return isNaN(parseFloat(value))
+                return !isNaN(parseFloat(value))
             },
             isString(value){
-                return typeof value === 'string'
+                return ( "" === value || 0 === value.length || "" === value.trim());
             },
             isDate(date) {
                 let parsedDate=new Date(date)
@@ -81,11 +84,15 @@ app.factory('validateHelper',function(){
     //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
     // inputRule/inputAttr是coll级别
     function checkInput(field,inputRule,inputAttr){
+        // console.log(`inputAttr is ${JSON.stringify(inputAttr)}`)
+        // console.log(`field to be checked is ${JSON.stringify(field)}`)
         //id不需要检测
         if('id'===field){
             return true
         }
+        //console.log(`before field is ${field}`)
         var requireFlag=inputRule[field]['require']['define']
+        //console.log(`after field is ${field}`)
         var currentValue=inputAttr[field]['value']
         if(undefined===requireFlag){
             requireFlag=false
@@ -103,6 +110,43 @@ app.factory('validateHelper',function(){
             }
         }
 
+        //检查类型
+        let tmpFieldDataType=inputRule[field]['type']
+        let dataTypeCheckResult=false
+/*        console.log(`dataType is ${JSON.stringify(tmpFieldDataType)}`)
+        console.log(`value is ${JSON.stringify(currentValue)}`)*/
+        switch (tmpFieldDataType){
+            case 'int':
+                dataTypeCheckResult=dataTypeCheck.isInt(currentValue)
+                break;
+            case 'float':
+                dataTypeCheckResult=dataTypeCheck.isNumber(currentValue)
+                console.log(`resulr is ${JSON.stringify(dataTypeCheckResult)}`)
+                break;
+            case 'number':
+                dataTypeCheckResult=dataTypeCheck.isNumber(currentValue)
+                break;
+            case 'string':
+                dataTypeCheckResult=dataTypeCheck.isString(currentValue)
+                break;
+            case 'date':
+                dataTypeCheckResult=dataTypeCheck.isDate(currentValue)
+                break;
+        }
+
+        if(false===dataTypeCheckResult){
+            if('int'===tmpFieldDataType || 'float'===tmpFieldDataType || 'number'===tmpFieldDataType){
+                inputAttr[field]['errorMsg']=inputAttr[field]['chineseName']+'必须是数字'
+            }
+            if('date'===tmpFieldDataType){
+                inputAttr[field]['errorMsg']=inputAttr[field]['chineseName']+'必须是日期'
+            }
+            inputAttr[field]['validated']=false
+            console.log(`error is ${JSON.stringify(inputAttr[field])}`)
+            return false
+        }
+
+
         //input不空，检查当前字段除了require之外的其他所有rule
         if(''!==currentValue){
             for(let singleRule in inputRule[field]){
@@ -110,6 +154,9 @@ app.factory('validateHelper',function(){
                 if('require'===singleRule){
                     continue
                 }
+
+
+                //检查rule
                 switch (singleRule){
                     case 'max':
                         ruleCheckFunc='exceedMax'
@@ -234,11 +281,23 @@ app.factory('htmlHelper',function(validateHelper){
             //console.log(dialog.offsetHeight)
             var dialogHeight=dialog.style.height.replace('px','')
 
+/*            console.log(`windos height is ${windowHeight}`)
+            console.log(`dialog height is ${dialogHeight}`)*/
+            //diag太长了
             //60是botstrap中为diaglog定义的上下margin，略微上移，符合人类审美
-            var top=((windowHeight-dialogHeight)/2)-60
+          if(windowHeight-dialogHeight<30){
+                var top=20 //不能覆盖header
+            }else{
+/*                console.log(`windowHeight-dialogHeight is ${windowHeight-dialogHeight}`)
+                console.log(`windowHeight-dialogHeight/2 is ${(windowHeight-dialogHeight)/2}`)*/
+                top=((windowHeight-dialogHeight)/2)-30
+                //console.log(`result is ${top}`)
+            }
+
+/*            var top=((windowHeight-dialogHeight)/2)-60
             if(top<0){
                 top=0
-            }
+            }*/
 
             dialog.style.top=top+'px'
 
@@ -578,7 +637,7 @@ app.service('modal',function(){
     function _setTop(){
         //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
         var top=parseInt((document.body.clientHeight-174)/2)
-        $(_modalId+'>div').css('top',top)
+        $('#'+_modalId).css('top',top)
     }
     function _modalHide(){
         $('#'+_modalMsgId).text('')

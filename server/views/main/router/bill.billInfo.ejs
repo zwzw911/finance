@@ -1,85 +1,76 @@
-<div id="modal" class="modal" ng-class="{show:allData.recorderDialogShow,fade:!allData.recorderDialogShow}" >
-  <div id="CRUDRecorder" class="modal-dialog modal-sm" style="height:718px">
+<div id="modal" class="modal " ng-class="{show:allData.recorderDialogShow,fade:!allData.recorderDialogShow}">
+    <!--diag height is self defined,different is differend page-->
+  <div id="CRUDRecorder" class="modal-dialog modal-sm " style="height:688px">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" ng-click="switchDialogStatus()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" >{{modal.title[allData.currentOperation]}}</h4>
+        <button type="button" class="close" data-dismiss="modal" ng-click="allFunc.switchDialogStatus()"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" >{{modal.title[allData.currentOpType]}}</h4>
       </div>
       <div class="modal-body">
         <!--<div >-->
-
-        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-class="{'has-error': 0<value.errorMsg.length}">
+        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id'" ng-class="{'has-error': 0<value.errorMsg.length}">
           <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
-          <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
+          <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr)'}" >
 
           <div mass-autocomplete ng-if="value.isCRUDAutoComplete">
-            <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allData.initSingleAllInputAttr(field,allData.inputAttr);modal.inputFocus(field,allData.inputAttr)',blur:'modal.inputBlur(field,allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr)'}" >
+            <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
           </div>
 
-          <p class="text-danger" style="height:20px">{{value.errorMsg}}</p>
+          <p class="text-danger" style="height:4px">{{value.errorMsg}}</p>
         </div>
         <!--</div>-->
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="switchDialogStatus();allData.initAllInputAttr(allData.inputAttr)">取消</button>
-        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="modal.allCheckInput(allData.inputRule,allData.inputAttr);modal.allInputValidCheck(allData.inputAttr);modal.CRUDOperation[allData.currentOperation](allData.currentIdx,allData.inputAttr,allData.recorder)">确定</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="allFunc.switchDialogStatus();allFunc.initAllFieldInputAttr(allData.inputAttr)">取消</button>
+        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="allFunc.allCheckInput(allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr);allFunc.CRUDOperation.createUpdate(allData.currentIdx,allData.inputAttr,allData.recorder,allData.selectedAC)">确定</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div>
 
+
+
+
+
 <div class="flex-vertical">
-    <div class="page-header h3 text-primary col-lg-12" sytle="">
-        设置查询条件
-        <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.queryFieldEnable" ng-init="allData.queryFieldEnable=false" ng-click="clickQueryFlag()"></span>
-        <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===allData.queryFieldEnable" ng-click="clickQueryFlag()"></span>
+  <div class="page-header h3 text-primary col-lg-12" sytle="">
+    设置查询条件
+    <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.queryFieldEnable" ng-init="allData.queryFieldEnable=false" ng-click="allFunc.clickQueryFlag()"></span>
+    <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===allData.queryFieldEnable" ng-click="allFunc.clickQueryFlag()"></span>
+  </div>
+  <div class="form-group col-lg-12 delete-padding-1" ng-show="allData.queryFieldEnable">
+    <label class="control-label col-lg-2 text-left" style="font-size:18px;font-weight:700;font-family:serif">选择查询字段</label>
+    <div class="col-lg-2">
+      <select id="queryField" class="form-control input-sm"  ng-model="allData.selectedQueryField" ng-options="option.value for option in allData.queryField" ng-change="allFunc.queryFieldChange(allData.selectedQueryField)">
+
+      </select>
     </div>
-    <div class="form-group col-lg-12 delete-padding-1" ng-show="allData.queryFieldEnable">
-        <label class="control-label col-lg-2 text-left" style="font-size:18px;font-weight:700;font-family:serif">选择查询字段</label>
-        <div class="col-lg-2">
-            <select id="queryField" class="form-control input-sm"  ng-model="allData.selectedQueryField" ng-options="option.value for option in allData.queryField" ng-change="change(allData.selectedQueryField)">
+    <div class="col-lg-2">
+      <!--      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px;border-right:none" ng-change="filter()" ng-model="text">
+            <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
 
-            </select>
-        </div>
-        <div class="col-lg-2">
-            <!--      <input id="coveringEle" type="text" class="form-control" style="border-bottom-right-radius:0px;border-top-right-radius:0px;border-right:none" ng-change="filter()" ng-model="text">
-                  <select id="coveredEle" class="form-control input-sm"  ng-model="currentQueryFieldValue" ng-options="option.key for option in queryFieldValue" >
-
-      </select>-->
+            </select>-->
       <!--query：只要是非 text 类型的，都要提供autoComplete-->
       <div mass-autocomplete ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
         <input class="form-control input-sm" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']">
       </div>
-            <input class="form-control input-sm" type="allData.inputAttr[allData.selectedQueryField['key']]['inputDataType']" ng-model="allData.selectedQueryFieldValue" ng-if="!allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">
-            <select class="form-control input-sm"  ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isSelect']" ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
+      <input class="form-control input-sm" type="allData.inputAttr[allData.selectedQueryField['key']]['inputDataType']" ng-model="allData.selectedQueryFieldValue" ng-if="!allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">
+      <select class="form-control input-sm"  ng-if="allData.inputAttr[allData.selectedQueryField['key']]['isSelect']" ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
 
-            </select>
+      </select>
     </div>
-    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue)">确定</button>
+    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="allFunc.addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder)">确定</button>
 
+  </div>
+
+  <div id="activeQueryValue" class="col-lg-12"  ng-show="allData.queryFieldEnable">
+    <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
+    <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
+      <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
+      <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,queryValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder)"></span></span>
     </div>
-
-    <div id="activeQueryValue" class="col-lg-12" ng-if="undefined!==allData.activeQueryValue" ng-show="allData.queryFieldEnable">
-        <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
-        <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
-            <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
-            <span ng-repeat="queryValue in values" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="deleteQueryValue(key,queryValue,allData.activeQueryValue)"></span></span>
-        </div>
-    </div>
-    <!--  <div id="activeQueryValue" ng-show="undefined!==activeQueryValue">
-          <label></label>
-      </div>-->
-    <!--<div class="" style="animation:myfirst;animation-duration:2s;-webkit-animation:myfirst 2s;animation-fill-mode: forwards;">-->
-    <!--  <div class="form-group col-lg-12 delete-padding-1" ng-repeat="(key,value) in inputAttr" ng-show="queryFlag">
-            <label class="control-label col-lg-2 text-center">{{value.chineseName}}</label>
-            <div class="col-lg-4">
-              <input class="form-control input-sm" type="{{value['inputDataType']}}" ng-model="value.value">
-            </div>
-            <button class="btn  btn-primary btn-sm col-lg-1">确定</button>
-            <p class="col-lg-offset-2 col-lg-4 text-danger">error msg</p>
-      </div>-->
-
-
+    <!--<button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.CRUDOperation.search(allData.recorder)">查询</button>-->
+  </div>
 </div>
 
 
@@ -88,7 +79,7 @@
         数据
     </div>
 
-    <button class="btn btn-primary btn-sm marginL_3"  ng-click="allData.initAllInputAttr(allData.inputAttr,'create');switchDialogStatus();setOperationType('create',-1)" ><span class="fa fa-plus marginR_1 "></span>添加</button>
+      <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
     <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
     <div class="col-lg-12" >
 
@@ -98,31 +89,31 @@
             <th class="text-primary">编号</th>
             <!--<th>所属目录</th>-->
             <th class="text-primary ">单据抬头</th>
-            <th class="text-primary hidden-sm">单据内容</th>
+            <th class="text-primary hidden-xs hidden-sm">单据内容</th>
             <th class="text-primary hidden-xs hidden-sm">单据类别</th>
-            <th class="text-primary hidden-sm">单据日期</th>
+            <th class="text-primary hidden-xs">单据日期</th>
             <th class="text-primary ">报销金额</th>
             <th class="text-primary ">报销员工</th>
-            <th class="text-primary ">报销日期</th>
-
+            <th class="text-primary hidden-xs hidden-sm">报销日期</th>
+            <th class="text-primary hidden-xs hidden-sm">更新日期</th>
             <!--<th class="text-primary hidden-xs hidden-sm">修改时间</th>-->
             <th class="text-primary">操作</th>
             </thead>
             <tbody>
             <tr ng-repeat="(idx,value) in allData.recorder">
-                <td>{{idx}}</td>
+                <td>{{idx+1}}</td>
                 <td>{{value.title}}</td>
-                <td>{{value.content}}</td>
-                <td>{{value.billName}}</td>
-                <td>{{value.billDate}}</td>
+                <td class="hidden-xs hidden-sm">{{value.content}}</td>
+                <td class="hidden-xs hidden-sm">{{value.billType.name}}</td>
+                <td class="hidden-xs">{{value.billDate}}</td>
                 <td>{{value.amount}}</td>
-                <td>{{value.reimburser}}</td>
-                <td>{{value.cDate}}</td>
+                <td>{{value.reimburser.name}}</td>
+                <td class="hidden-xs hidden-sm">{{value.cDate}}</td>
 
-                <!--<td>{{value.uDate}}</td>-->
+                <td class="hidden-xs hidden-sm">{{value.uDate}}</td>
                 <td style="align:left">
-          <button class="btn btn-default btn-xs" ng-click="allData.loadCurrentData(idx,allData.inputAttr,allData.recorder);switchDialogStatus();setOperationType('update',idx)"><span class="fa fa-edit marginR_1" ></span>修改</button>
-          <button class="btn btn-danger btn-xs" ng-click="setOperationType('delete',idx);allData.CRUDOperation[allData.currentOperation](allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
+          <button class="btn btn-default btn-xs" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();"><span class="fa fa-edit marginR_1" ></span>修改</button>
+          <button class="btn btn-danger btn-xs" ng-click="allFunc.setCurrentIdx(idx);allFunc.CRUDOperation.delete(allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
                 </td>
             </tr>
             </tbody>

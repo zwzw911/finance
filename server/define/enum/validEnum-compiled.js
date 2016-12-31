@@ -31,19 +31,36 @@ var ruleType = {
     equalTo: 'equalTo',
     'enum': 'enum'
 };
+
+//采用字符，而不是symbol，否则无法读取key：value对
 var dataType = {
-    'int': Symbol('int'),
-    'float': Symbol('float'),
-    'string': Symbol('string'),
+    'int': 'int',
+    'float': 'float',
+    'string': 'string',
     // 'string':'string',
-    'date': Symbol('date'),
-    'array': Symbol('array'),
-    'object': Symbol('object'),
-    'file': Symbol('file'),
-    'folder': Symbol('folder'),
-    'number': Symbol('number'),
-    'password': Symbol('string'),
-    'objectId': Symbol('objectId') };
+    'date': 'date',
+    'array': 'array',
+    'object': 'object',
+    'file': 'file',
+    'folder': 'folder',
+    'number': 'number',
+    'password': 'string',
+    'objectId': 'objectId' };
+/*var dataType={
+    'int':Symbol('int'),
+    'float':Symbol('float'),
+    'string':Symbol('string'),
+    // 'string':'string',
+    'date':Symbol('date'),
+    'array':Symbol('array'),
+    'object':Symbol('object'),
+    'file':Symbol('file'),
+    'folder':Symbol('folder'),
+    'number':Symbol('number'),
+    'password':Symbol('string'),
+    'objectId':Symbol('objectId'),//mongodb的id
+    // format:Symbol('regex'),
+}*/
 
 /*//客户端需要的rule（和ruleType不同，某些rule可能只在server端需要，client不需要）
 var clientRule={

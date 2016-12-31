@@ -18,24 +18,47 @@ var dataType=require('../define/enum/validEnum').enum.dataType
 
 var dbStructure=require('../model/mongo/common/structure').fieldDefine
 
+var inputRule=require('../define/validateRule/inputRule').inputRule
+var validateInputValue=require('../assist/validateFunc').func
+
 var fs=require('fs')
 
+/*//obj：inputRule
+// level：level的数量
+//resultObj：存储结果的变量
 var generateClientRule=function(obj,level,resultObj){
     // let resultObj={}
+    //client还需要type，以便判断类型
+    clientRuleType['type']='type'
+    console.log(`ojb is ${JSON.stringify(obj)}`)
     if('object'===typeof obj){
         for(let key in obj){
+            console.log(  `key is ${key}`)
             resultObj[key]={}
             //深度为1,达到subItem
             if(1===level){
                 for(let field in clientRuleType){
-                    //rule有定义
+                    console.log(  `field is ${field}`)
+                    //rule有定义，
                     if(undefined!==obj[key][field] && null!==obj[key][field]){
+                        let [newColl,newField]=[key,field]
+                        //如果是外键，读取对应的外键字段
+                        if(true=== 'ref' in dbStructure[key][field]){
+                            newColl=dbStructure[key][field]['ref']
+                        }
+                        //读取type
+                        if('type'===field && obj[key][field]){
+                            resultObj[key][field]=obj[key][field]
+                        }
                         //读取rule定义
                         if(undefined!==obj[key][field]['define'] && null!==obj[key][field]['define']){
                             resultObj[key][field]={}
+
                             resultObj[key][field]['define']=obj[key][field]['define']
+
+
                             //产生错误信息，以便angularjs检查input错误时使用
-                            resultObj[key][field]['msg']=validateInputValue._private.generateErrorMsg[field](obj[key]['chineseName'],obj[key][field]['define'],obj[key]['default'])
+                            resultObj[key][field]['msg']=validateInputValue.generateErrorMsg[field](obj[key]['chineseName'],obj[key][field]['define'],obj[key]['default'])
                         }
                     }
                 }
@@ -49,9 +72,50 @@ var generateClientRule=function(obj,level,resultObj){
             }
         }
     }
-    // return resultObj
-}
 
+}*/
+
+
+//根据dbstructure，以inputRule为基础，生成对应的clientRule
+var generateClientRule=function(){
+    let result={}
+    //需要提取到client的rule
+    clientRuleType['type']='type'
+
+    //从inputRule中提取coll/field
+    for(let coll in inputRule){
+        result[coll]={}
+        for(let field in inputRule[coll]){
+            result[coll][field]={}
+            //检查是否为外键,是外键的话，要重定向rule对应的coll/field
+            let [newColl,newField]=[coll,field]
+            // console.log(`db field is ${JSON.stringify(dbStructure[coll][field])}`)
+            //使用获得coll/field在dbstructue中检查是否为外键
+            if(dbStructure[coll][field] && true==='ref' in dbStructure[coll][field]){
+                // console.log(`orig coll field is ${newColl}  ${newField}`)
+                let ref=dbStructure[coll][field]['ref']
+                newColl=ref.substring(0,ref.length-1) //去除最后一个字符s
+                newField='name' //如果是外键，对应的字符字段一般都是name
+                // console.log(`new coll field is ${newColl}  ${newField}`)
+            }
+
+            for(let singleRule in clientRuleType){
+                // console.log(`ready coll field is ${newColl}  ${newField}`)
+                if(inputRule[newColl][newField][singleRule]){
+                    if('type'===singleRule){
+                        result[coll][field]['type']=inputRule[newColl][newField][singleRule]
+                    }else{
+                        result[coll][field][singleRule]={}
+                        result[coll][field][singleRule]['define']=inputRule[newColl][newField][singleRule]['define']
+                        result[coll][field][singleRule]['msg']=validateInputValue.generateErrorMsg[singleRule](inputRule[coll][field]['chineseName'],inputRule[newColl][newField][singleRule]['define'],inputRule[newColl][newField]['default'])
+                    }
+
+                }
+            }
+        }
+    }
+    return result
+}
 //根据skipList提供的key，在origObj删除对应key
 //专门使用：使用generateClientRule或者generateClientInputAttr，是从mongodb structure中直接转换，但是其中有些字段，例如cDate，是后台自动创建，无需前台检测，所以需要删除
 //origObj: generateClientRule或者generateClientInputAttr产生的结果
@@ -155,13 +219,13 @@ var generateClientInputAttr=function(obj,level,resultObj){
                 let temInputDataType
                 switch (obj[key]['type']){
                     case dataType.number:
-                        temInputDataType='number';
+                        temInputDataType='text'; //数字采用text而不是number，因为现代浏览器会自动判别输入内容，如果不是数字，则内容不会被传递到angular（即angular得到的是空值），此时无法给出类型不正确的信息，而只能给出值为空的信息
                         break;
                     case dataType.float:
-                        temInputDataType='number';
+                        temInputDataType='text';
                         break;
                     case dataType.int:
-                        temInputDataType='number';
+                        temInputDataType='text';
                         break;
                     case dataType.password:
                         temInputDataType='password';
@@ -221,4 +285,7 @@ module.exports={
     genSelectedAC,
 }
 
-genSelectedAC()
+//genSelectedAC()
+
+let result=generateClientRule()
+fs.writeFile('generateClientRule.txt',JSON.stringify(result))

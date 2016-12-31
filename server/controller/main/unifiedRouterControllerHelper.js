@@ -49,7 +49,7 @@ function sanityInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNum)
     //console.log(`input value is ${JSON.stringify( originalInputValue)}`)
     //1. 检查格式
     let checkFormatResult=validateFunc.validateInputFormat(originalInputValue,inputRule,maxFieldNum)
-    //console.log(`check format is ${JSON.stringify(checkFormatResult)}`)
+    console.log(`check format is ${JSON.stringify(checkFormatResult)}`)
     if(checkFormatResult.rc>0){
         return checkFormatResult
     }

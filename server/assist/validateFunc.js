@@ -700,18 +700,20 @@ var valueMatchRuleDefineCheck={
 
 /*
 * validateInputFormat:检测client输入的格式是否正确》例如 {parentBillType:{value:'val1'}}
-* values: 传入的数据，以coll为基本单位
+* eColl: 当前使用的coll
+* values: 传入的数据，所有rules（考虑到外键的情况）
 * rules：数据对应的rule define，以coll为基本单位
+* fkConfig: 外键的配置，以coll为单位
 * maxFieldNum：传入数据中，最大包含的字段数量（防止用户输入过大数据）
 * 1. 必须设值，不能为undefined/null
 * 2. 必须是Object
 * 3. 必须有值，不能为''/[]/{}
 * 4. 检查key数量是否合适（不能超过最大定义）
 * 5. 每个key的value必须是object，且有key为value的key-value对
-* 6. 是否包含rule中未定义字段（防止用户随便输入字段名）
+* 6. 是否包含rule中未定义字段（防止用户随便输入字段名）.。如果是外键，要查找外键对应的rule是否存在,
 * 7. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
 * */
-function validateInputFormat(values,rules,maxFieldNum){
+function validateInputFormat(values,rule,maxFieldNum){
     console.log(`values is ${JSON.stringify(values)}`)
     //1. 必须设值，不能为undefined/null
     if(false===dataTypeCheck.isSetValue(values)){
@@ -741,11 +743,20 @@ function validateInputFormat(values,rules,maxFieldNum){
             return validateInputFormatError.valueNotDefineWithRequireTrue
         }*/
     }
+
+    //console.log(`fkconfig is ${JSON.stringify(fkConfig)}`)
     //6 inputValue中所有field，是否为rule中定义的（阻止传入额外字段）
     for(let singleFieldName in values){
         //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
         if(singleFieldName!=='_id' && singleFieldName !=='id'){
-            if(undefined===rules[singleFieldName ]){
+/*            let [newColl,newFieldName]=[eColl,singleFieldName]
+            if(true=== singleFieldName in fkConfig){
+                newColl=fkConfig[singleFieldName]['relatedColl']
+                newFieldName=fkConfig[singleFieldName]['forSetValue'][0]
+                console.log(`newCOll is ${newColl},newFieldName is ${newFieldName}`)
+            }
+            console.log(`newCOll is ${newColl},newFieldName is ${newFieldName}`)*/
+            if(undefined===rule[singleFieldName]){
                 //console.log(`single field name is ${singleFieldName}`)
                 //console.log(`coll rule  is ${JSON.stringify(collRules)}`)
                 //rc[singleFieldName]=validateInputFormatError.valueRelatedRuleNotDefine

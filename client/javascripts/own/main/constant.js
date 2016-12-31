@@ -5,6 +5,16 @@
 var app=angular.module('contDefine',[])
 app.constant('cont',{
 
+    //dataType主要验证client的用户输入，所以只要基本数据类型
+    dataType:{
+        'int':'int',
+        'float':'float',
+        'number':'number',
+
+        'string':'string',
+
+        'date':'date',
+    },
     //asideName:{configuration:'配置信息',bill:'单据信息'},//aside菜单名称
     //angular检查input输入的rule（由服务器端脚本根据inputRule生成：包括去除不必要字段，关联到相关字段等操作）
     inputRule:
@@ -22,7 +32,23 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "用户名包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
+            },
+            "salt": {
+                "require": {
+                    "define": false,
+                    "msg": "盐不能为空"
+                },
+                "maxLength": {
+                    "define": 10,
+                    "msg": "盐所包含的字符数不能超过10个"
+                },
+                "minLength": {
+                    "define": 1,
+                    "msg": "盐包含的字符数不能少于1个"
+                },
+                "type": "string"
             },
             "password": {
                 "require": {
@@ -36,7 +62,15 @@ app.constant('cont',{
                 "minLength": {
                     "define": 6,
                     "msg": "密码包含的字符数不能少于6个"
-                }
+                },
+                "type": "string"
+            },
+            "encryptedPassword": {
+                "require": {
+                    "define": true,
+                    "msg": "密码不能为空"
+                },
+                "type": "string"
             }
         },
         "department": {
@@ -52,21 +86,23 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "部门名称包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
             "parentDepartment": {
                 "require": {
-                    "define": false,
+                    "define": true,
                     "msg": "上级部门不能为空"
                 },
                 "maxLength": {
                     "define": 20,
-                    "msg": "部门名称所包含的字符数不能超过20个"
+                    "msg": "上级部门所包含的字符数不能超过20个"
                 },
                 "minLength": {
                     "define": 2,
-                    "msg": "部门名称包含的字符数不能少于2个"
-                }
+                    "msg": "上级部门包含的字符数不能少于2个"
+                },
+                "type": "string"
             }
         },
         "employee": {
@@ -82,21 +118,23 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "员工姓名包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
             "leader": {
                 "require": {
-                    "define": false,
+                    "define": true,
                     "msg": "上级主管不能为空"
                 },
                 "maxLength": {
                     "define": 20,
-                    "msg": "员工姓名所包含的字符数不能超过20个"
+                    "msg": "上级主管所包含的字符数不能超过20个"
                 },
                 "minLength": {
                     "define": 2,
-                    "msg": "员工姓名包含的字符数不能少于2个"
-                }
+                    "msg": "上级主管包含的字符数不能少于2个"
+                },
+                "type": "string"
             },
             "gender": {
                 "require": {
@@ -109,25 +147,37 @@ app.constant('cont',{
                         "female"
                     ],
                     "msg": "性别的默认值不正确"
-                }
+                },
+                "type": "string"
             },
             "birthDay": {
                 "require": {
                     "define": false,
                     "msg": "出生日期不能为空"
-                }
+                },
+                "type": "date"
             },
             "department": {
                 "require": {
                     "define": true,
                     "msg": "所属部门不能为空"
-                }
+                },
+                "maxLength": {
+                    "define": 20,
+                    "msg": "所属部门所包含的字符数不能超过20个"
+                },
+                "minLength": {
+                    "define": 2,
+                    "msg": "所属部门包含的字符数不能少于2个"
+                },
+                "type": "string"
             },
             "onBoardDate": {
                 "require": {
                     "define": false,
                     "msg": "入职日期不能为空"
-                }
+                },
+                "type": "date"
             }
         },
         "billType": {
@@ -143,11 +193,12 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "单据类别包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
             "parentBillType": {
                 "require": {
-                    "define": false,
+                    "define": true,
                     "msg": "父类别不能为空"
                 },
                 "maxLength": {
@@ -157,7 +208,8 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "父类别包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             }
         },
         "bill": {
@@ -173,7 +225,8 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "单据抬头包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
             "content": {
                 "require": {
@@ -187,11 +240,12 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "单据内容包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
-            "billName": {
+            "billType": {
                 "require": {
-                    "define": false,
+                    "define": true,
                     "msg": "单据类别不能为空"
                 },
                 "maxLength": {
@@ -201,13 +255,15 @@ app.constant('cont',{
                 "minLength": {
                     "define": 2,
                     "msg": "单据类别包含的字符数不能少于2个"
-                }
+                },
+                "type": "string"
             },
             "billDate": {
                 "require": {
                     "define": false,
                     "msg": "单据日期不能为空"
-                }
+                },
+                "type": "date"
             },
             "amount": {
                 "require": {
@@ -221,7 +277,8 @@ app.constant('cont',{
                 "max": {
                     "define": 100000,
                     "msg": "报销金额的值不能大于100000"
-                }
+                },
+                "type": "float"
             },
             "reimburser": {
                 "require": {
@@ -230,12 +287,13 @@ app.constant('cont',{
                 },
                 "maxLength": {
                     "define": 20,
-                    "msg": "员工姓名所包含的字符数不能超过20个"
+                    "msg": "报销员工所包含的字符数不能超过20个"
                 },
                 "minLength": {
                     "define": 2,
-                    "msg": "员工姓名包含的字符数不能少于2个"
-                }
+                    "msg": "报销员工包含的字符数不能少于2个"
+                },
+                "type": "string"
             }
         }
     },
@@ -539,7 +597,7 @@ app.constant('cont',{
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
                 "focus": true,
-                "inputDataType": "number",
+                "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "报销金额",
                 "errorMsg": "",
