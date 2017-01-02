@@ -16,7 +16,8 @@ app.factory('validateHelper', function () {
         },
 
         isInt: function isInt(value) {
-            return !isNaN(parseInt(value));
+            // return !isNaN(parseInt(value))
+            return parseInt(value).toString() === value.toString();
         },
         isNumber: function isNumber(value) {
             return !isNaN(parseFloat(value));
@@ -365,55 +366,58 @@ app.factory('queryHelper', function (contEnum) {
     //将选中的field和value加入到allData.activeQueryValue（直接转换成server端能处理的格式）
     // {"values":{"name":[{"value":"{{billtype_name_1}}"}],"parentBillType":{"name":[{"value":"{{billtype_name_2}}"}]}}}
     //不能直接转换，因为AddQueryValue里的内容要在页面上显示
-    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue, fkConfig) {
+    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue, fkConfig, currentPage) {
         var formattedValue = {};
-        for (var fieldName in activateQueryFieldAndValue) {
-            var aValue = void 0; //应用需要加入值的数组（外键和非外键的结构不一致）
-            //1. 创建必要的结构
-            //如果是外键
-            if (true === fieldName in fkConfig) {
-                if (undefined === formattedValue[fieldName]) {
-                    formattedValue[fieldName] = {};
-                }
-                var redundancyField = fkConfig[fieldName]['fields'][0]; //当前冗余字段虽然是数组，但是其实只有一个元素
-                if (undefined === formattedValue[fieldName][redundancyField]) {
-                    formattedValue[fieldName][redundancyField] = [];
-                }
-                aValue = formattedValue[fieldName][redundancyField];
-            } else {
-                if (undefined === formattedValue[fieldName]) {
-                    formattedValue[fieldName] = []; //非外键直接数组
-                }
-                aValue = formattedValue[fieldName];
-            }
-
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = activateQueryFieldAndValue[fieldName][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var singleValue = _step.value;
-
-                    var newValue = { value: singleValue };
-                    aValue.push(newValue);
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
+        if (Object.keys(activateQueryFieldAndValue).length > 0) {
+            for (var fieldName in activateQueryFieldAndValue) {
+                var aValue = void 0; //应用需要加入值的数组（外键和非外键的结构不一致）
+                //1. 创建必要的结构
+                //如果是外键
+                if (true === fieldName in fkConfig) {
+                    if (undefined === formattedValue[fieldName]) {
+                        formattedValue[fieldName] = {};
                     }
+                    var redundancyField = fkConfig[fieldName]['fields'][0]; //当前冗余字段虽然是数组，但是其实只有一个元素
+                    if (undefined === formattedValue[fieldName][redundancyField]) {
+                        formattedValue[fieldName][redundancyField] = [];
+                    }
+                    aValue = formattedValue[fieldName][redundancyField];
+                } else {
+                    if (undefined === formattedValue[fieldName]) {
+                        formattedValue[fieldName] = []; //非外键直接数组
+                    }
+                    aValue = formattedValue[fieldName];
+                }
+
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = activateQueryFieldAndValue[fieldName][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var singleValue = _step.value;
+
+                        var newValue = { value: singleValue };
+                        aValue.push(newValue);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
                 } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator.return) {
+                            _iterator.return();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
                     }
                 }
             }
         }
-        return formattedValue;
+
+        return { 'currentPage': currentPage, 'searchParams': formattedValue };
     }
     return { deleteQueryValue: deleteQueryValue, addQueryValue: addQueryValue, convertAddQueryValueToServerFormat: convertAddQueryValueToServerFormat };
 });

@@ -10,7 +10,9 @@ require("babel-core/register")
 
 
 var appSetting=require('../../config/global/appSetting')
-var pageSetting=require('../../config/global/globalSettingRule').pageSetting
+var paginationSetting=require('../../config/global/globalSettingRule').paginationSetting
+
+var suggestLimit=require('../../config/global/globalSettingRule').suggestLimit
 
 var inputRule=require('../../define/validateRule/inputRule').inputRule
 var validateFunc=require('../../assist/validateFunc').func
@@ -363,12 +365,7 @@ var remove=async function  ({eCurrentColl,req,res}){
     return Promise.resolve(unifiedHelper.returnResult(result))
 }
 
-var readAll=async function ({eCurrentColl,req,res}){
-    let result=await unifiedModel.readAll({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],recorderLimit:pageSetting[eCurrentColl]['limit']})
-    //console.log(`db op result is ${JSON.stringify(result)}`)
-    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
-    return Promise.resolve(unifiedHelper.returnResult(result))
-}
+
 
 /*var readName=async function  ({eCurrentColl,req,res}){
     let recorder
@@ -442,7 +439,7 @@ var readName=async function  ({eCurrentColl,req,res}){
 console.log(`ready to read db`)
     console.log(`db is ${coll}`)
     console.log(`value is ${inputValueFiledValue}`)
-    console.log(`limit is ${JSON.stringify(pageSetting[coll]['limit'])}`)
+    //console.log(`limit is ${JSON.stringify(pagi[coll]['limit'])}`)
     console.log(`field is ${JSON.stringify(inputValueFiledName)}`)
     let recorder
     if(null!==inputValueFiledValue && undefined!==inputValueFiledValue && ''!==inputValueFiledValue){
@@ -456,10 +453,10 @@ console.log(`ready to read db`)
                 return Promise.reject(unifiedHelper.returnResult(valueCheckResult))
             }
         //}
-        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],nameToBeSearched:inputValueFiledValue,recorderLimit:pageSetting[coll]['limit'],'readNameField':inputValueFiledName})
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],nameToBeSearched:inputValueFiledValue,recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName})
         //constructedValue[inputValueFiledName]=inputValue[inputValueFiledName]['value']
     }else{
-        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:pageSetting[coll]['limit'],'readNameField':inputValueFiledName})
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName})
     }
     console.log(`read db result is ${JSON.stringify(recorder)}`)
     return Promise.resolve(unifiedHelper.returnResult(recorder))
@@ -467,6 +464,20 @@ console.log(`ready to read db`)
 
 }
 
+
+
+/*var readAll=async function ({eCurrentColl,req,res}){
+    let result=await unifiedModel.readAll({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],recorderLimit:pageSetting[eCurrentColl]['limit']})
+    let totalRecorderNum=result.length
+    console.log(`read all recorder number is ${JSON.stringify(totalRecorderNum)}`)
+    //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
+    return Promise.resolve(unifiedHelper.returnResult(result))
+}*/
+
+/*        将readAll的功能合并进来（本质都是读取记录）。读记录的时候要考虑到分页，readAll和search合并成一个函数
+ *   req中包含2个参数：currentPage和searchParam
+ *           values:{currentPage:1,searchParams:{}}
+ * */
 var search=async function ({eCurrentColl,req,res}){
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
@@ -476,13 +487,18 @@ var search=async function ({eCurrentColl,req,res}){
         return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
 
-    let searchParams=validateFunc.genNativeSearchCondition(req.body.values,eCurrentColl,fkConfig,inputRule)
+    let currentPage=req.body.values['currentPage']
+    let clientSearchParams=req.body.values['searchParams']
+    let searchParams=validateFunc.genNativeSearchCondition(clientSearchParams,eCurrentColl,fkConfig,inputRule)
     // console.log(`convert search params id ${JSON.stringify(searchParams)}`)
-    let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,recorderLimit:pageSetting[eCurrentColl]['limit']})
+    let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'pageSize':paginationSetting[eCurrentColl]['pageSize'],'pageLength':paginationSetting[eCurrentColl]['pageLength'],'currentPage':currentPage})
 
     //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
     return Promise.resolve(unifiedHelper.returnResult(recorder))
 }
+
+
+
 
 //alldbModel:传入所有的dbModel，以便删除所有coll中的数据
 var removeAll=async function ({req,res}){
@@ -514,11 +530,12 @@ var removeAll=async function ({req,res}){
 
 }
 
+
 module.exports= {
     create,
     update,
     remove,
-    readAll,
+    //readAll,
     readName,
     search,
     removeAll,

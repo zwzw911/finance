@@ -12,8 +12,8 @@ require("babel-core/register")
 
 var mongooseErrorHandler=require('../../define/error/mongoError').mongooseErrorHandler
 
-var pageSetting=require('../../config/global/globalSettingRule').pageSetting
-
+//var pageSetting=require('../../config/global/globalSettingRule').pageSetting
+var pagination=require('../../assist/component/pagination').pagination
 
 var mongooseOpEnum=require('../../define/enum/node').node.mongooseOp
 //populate的选项
@@ -117,29 +117,39 @@ async  function removeAll({dbModel}){
     //})
 }
 
-async function readAll({dbModel,populateOpt,recorderLimit}){
+/*async function readAll({dbModel,populateOpt,recorderLimit}){
     //return new Promise(function(resolve,reject){
         let condition={dDate:{$exists:false}}
         let selectField=null
         let option={}
         option.limit=recorderLimit
-        let result=await dbModel.find(condition,selectField,option).sort('cDate').populate(populateOpt)
+/!*        let result=await dbModel.find(condition,selectField,option).sort('cDate').populate(populateOpt)
         .catch(
             function(err){
                 //console.log(`readall err is ${JSON.stringify(err)}`)
                 return Promise.reject(mongooseErrorHandler(mongooseOpEnum.readAll,err))
             }
+        )*!/
+/!*    let query=dbModel.find(condition,selectField,option).sort('cDate')
+    let count=await query.count()
+    console.log(`count is ${JSON.stringify(count)}`)*!/
+    let result=await dbModel.find(condition,selectField,option).sort('cDate').populate(populateOpt)
+        .catch(
+            function(err){
+                console.log(`readall err is ${JSON.stringify(err)}`)
+                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.readAll,err))
+            }
         )
         return Promise.resolve({rc:0,msg:result})
-/*        dbModel.find(condition,selectField,option).populate(populateOpt).exec(function (err,result) {
+/!*        dbModel.find(condition,selectField,option).populate(populateOpt).exec(function (err,result) {
             if(err){
                 // console.log(`db err is ${err}`)
                 resolve( mongooseErrorHandler(err))
             }
             resolve({rc:0,msg:result})
-        })*/
+        })*!/
     //})
-}
+}*/
 
 //readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
 async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField}){
@@ -198,13 +208,25 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     })*/
 }
 
-async function search ({dbModel,populateOpt,searchParams,recorderLimit}) {
+async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,currentPage}) {
     //return new Promise(function(resolve,reject){
     //     console.log(`search in with params ${JSON.stringify(searchParams)}`)
     // searchParams['dDate']={'$exists':1}
     // console.log(`new search in with params ${JSON.stringify(searchParams)}`)
     let option={}
-    option.limit=recorderLimit
+
+    //读取全部数据，不能有 limit
+    let count=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).count()
+    console.log(   `count is ${JSON.stringify(count)}`)
+    let paginationInfo=pagination({'total':count,'curPage':currentPage,'pageSize':pageSize,'pageLength':pageLength})
+
+
+    option.limit=pageSize
+    //当前页超过1，才计算skip，否则不用设置
+    if(paginationInfo.currentPage>1){
+        option.skip=(paginationInfo.currentPage-1)*pageSize
+    }
+
     //finalParams
     let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('cDate')
         .populate(populateOpt)   //populate外键，以便直接在client显示
@@ -215,7 +237,7 @@ async function search ({dbModel,populateOpt,searchParams,recorderLimit}) {
         }
     )
     //console.log(`find result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:result})
+    return Promise.resolve({rc:0,msg:{'recorder':result,'paginationInfo':paginationInfo}})
 
 /*        dbModel.find(searchParams,function(err,result){
             if(err){
@@ -233,7 +255,7 @@ module.exports= {
     update,
     remove,
     removeAll,//测试用
-    readAll,
+    //readAll,
     readName,
     findById,
     search,

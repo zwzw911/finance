@@ -142,40 +142,41 @@ app.factory('financeHelper', function ($http, $q, inputAttrHelper, commonHelper,
                 console.log('err');
             });
         },
-        'read': function read(recorder, fkConfig, eColl, aDateToBeConvert) {
-            var url = '/' + eColl;
-            $http.get(url, {}).success(function (data, status, header, config) {
-                if (0 === data.rc) {
-                    //对server返回的数据中的日期进行格式化
-                    //console.log(`read result is ${JSON.stringify(data.msg)}`)
-                    recorder.splice(0, recorder.length); //清空数组
-                    data.msg.forEach(function (e) {
-                        commonHelper.convertDateTime(e, aDateToBeConvert);
-                        //需要删除nestedPrefix字段
-                        for (var singleFKField in fkConfig) {
-                            var nestedPrefix = fkConfig[singleFKField]['nestedPrefix'];
-                            delete data.msg[nestedPrefix];
-                        }
-                        /*                            if(e.parentBillType && e.parentBillType.name){
-                         console.log('in')
-                         e.parentBillType=e.parentBillType.name
-                         }*/
-                        recorder.push(e);
-                    });
-                    // recorder=data.msg
-                    //console.log(`date format result ${JSON.stringify(returnResult.msg)}`)
-                } else {
-                    modal.showErrMsg(JSON.stringify(data.msg));
-                }
-            }).error(function () {
-                console.log('err');
-            });
-        },
+        //read合并到serach中
+        /* 'read': function (recorder, fkConfig, eColl, aDateToBeConvert) {
+             let url = '/' + eColl
+             $http.get(url, {}).success(function (data, status, header, config) {
+                 if (0 === data.rc) {
+                     //对server返回的数据中的日期进行格式化
+                     //console.log(`read result is ${JSON.stringify(data.msg)}`)
+                     recorder.splice(0, recorder.length)   //清空数组
+                     data.msg.forEach(function (e) {
+                         commonHelper.convertDateTime(e, aDateToBeConvert)
+                         //需要删除nestedPrefix字段
+                         for (let singleFKField in fkConfig) {
+                             let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
+                             delete data.msg[nestedPrefix]
+                         }
+                         /!*                            if(e.parentBillType && e.parentBillType.name){
+                          console.log('in')
+                          e.parentBillType=e.parentBillType.name
+                          }*!/
+                         recorder.push(e)
+                     })
+                     // recorder=data.msg
+                     //console.log(`date format result ${JSON.stringify(returnResult.msg)}`)
+                 } else {
+                     modal.showErrMsg(JSON.stringify(data.msg))
+                 }
+             }).error(function () {
+                 console.log('err')
+             })
+         },*/
         'readName': function readName(name, eColl) {
             var url = '/' + eColl + '/name/';
             return $http.post(url, { values: name }, {});
         },
-        'search': function search(recorder, queryValue, fkConfig, eColl, aDateToBeConvert) {
+        'search': function search(recorder, queryValue, fkConfig, eColl, aDateToBeConvert, pagination) {
 
             var url = '/' + eColl + "/" + "search";
             $http.post(url, { values: queryValue }).success(function (data, status, header, config) {
@@ -184,8 +185,8 @@ app.factory('financeHelper', function ($http, $q, inputAttrHelper, commonHelper,
                     //console.log(`read result is ${JSON.stringify(data.msg)}`)
 
                     recorder.splice(0, recorder.length); //清空数组
-                    console.log('after empty array is ' + JSON.stringify(recorder));
-                    data.msg.forEach(function (e) {
+                    //console.log(`after empty array is ${JSON.stringify(recorder)}`)
+                    data.msg['recorder'].forEach(function (e) {
                         commonHelper.convertDateTime(e, aDateToBeConvert);
                         //需要删除nestedPrefix字段
                         for (var singleFKField in fkConfig) {
@@ -199,8 +200,28 @@ app.factory('financeHelper', function ($http, $q, inputAttrHelper, commonHelper,
                         recorder.push(e);
                     });
                     console.log('after push array is ' + JSON.stringify(recorder));
+
+                    pagination.paginationInfo = data.msg['paginationInfo'];
+
+                    if (null === pagination.pageRange) {
+                        pagination.pageRange = [];
+                    }
+                    if (null !== pagination.pageRange) {
+                        pagination.pageRange.splice(0, pagination.pageRange.length);
+                    }
+                    for (var i = pagination.paginationInfo.start; i <= pagination.paginationInfo.end; i++) {
+                        var ele = {};
+                        ele['pageNo'] = i;
+                        ele['active'] = false;
+                        if (i === pagination.paginationInfo.currentPage) {
+                            ele['active'] = true;
+                        }
+
+                        pagination.pageRange.push(ele);
+                    }
+                    //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
                     // recorder=data.msg
-                    //console.log(`date format result ${JSON.stringify(returnResult.msg)}`)
+                    console.log('page info is ' + JSON.stringify(pagination));
                 } else {
                     modal.showErrMsg(JSON.stringify(data.msg));
                 }

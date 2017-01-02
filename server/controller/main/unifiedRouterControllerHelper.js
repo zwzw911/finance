@@ -86,7 +86,7 @@ function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRu
         return formatCheckResult
     }
     //2 检查搜索值是否正确
-    let valueCheckResult=validateFunc.validateInputSearchValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    let valueCheckResult=validateFunc.validateInputSearchValue(inputSearch['searchParams'],fkAdditionalFieldsConfig,collName,inputRules)
     // console.log(   `value resuot is ${valueCheckResult}`)
     for(let singleFieldName in valueCheckResult){
         if(valueCheckResult[singleFieldName]['rc']>0){

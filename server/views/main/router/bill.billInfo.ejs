@@ -59,7 +59,7 @@
 
       </select>
     </div>
-    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="allFunc.addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder)">确定</button>
+    <button class="btn  btn-primary btn-sm col-lg-1" ng-class="{disabled:0==allData.selectedQueryFieldValue.length || 0==allData.selectedQueryField.length,enable:0<allData.selectedQueryFieldValue.length && 0<allData.selectedQueryField.length}" ng-click="allFunc.addQueryValue(allData.selectedQueryField.key,allData.selectedQueryFieldValue,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder,1);allFunc.initSelectedQueryField()">确定</button>
 
   </div>
 
@@ -79,7 +79,7 @@
         数据
     </div>
 
-      <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
+    <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
     <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
     <div class="col-lg-12" >
 
@@ -112,8 +112,8 @@
 
                 <td class="hidden-xs hidden-sm">{{value.uDate}}</td>
                 <td style="align:left">
-          <button class="btn btn-default btn-xs" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();"><span class="fa fa-edit marginR_1" ></span>修改</button>
-          <button class="btn btn-danger btn-xs" ng-click="allFunc.setCurrentIdx(idx);allFunc.CRUDOperation.delete(allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o marginR_1"></span>删除</button>
+                  <button class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="right" title="修改" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();" ><span class="fa fa-edit" ></span></button>
+                  <button class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="right" title="删除" ng-click="allFunc.setCurrentIdx(idx);allFunc.CRUDOperation.delete(allData.currentIdx,allData.recorder)"><span class="fa fa-trash-o"></span></button>
                 </td>
             </tr>
             </tbody>
@@ -122,3 +122,32 @@
     </div>
 </div>
 
+<!--pagination-->
+<div class="flex-vertical col-lg-12" ng-if="undefined!==pagination.paginationInfo && pagination.paginationInfo.end>1">
+    <nav>
+        <ul class="pagination  pull-left paddingR_7">
+            <!--前一页-->
+            <li class="cursor_pointer" ng-if="pagination.paginationInfo.showPrevious" ng-click="allFunc.CRUDOperation.search(allData.recorder,pagination.paginationInfo.currentPage-1)">
+                <span>
+                <span aria-hidden="true">&laquo;</span>
+                </span>
+            </li>
+            <!--数字页码-->
+            <li ng-repeat="page in pagination.pageRange track by $index" ng-class="{'active':page.active}"><a href="#" ng-click="allFunc.CRUDOperation.search(allData.recorder,page.pageNo)">{{page.pageNo}}</a></li>
+            <!--后一页-->
+            <li class="cursor_pointer" aria-label="Next" ng-if="pagination.paginationInfo.showNext" ng-click="allFunc.CRUDOperation.search(allData.recorder,pagination.paginationInfo.currentPage+1)">
+                <!--<a href="#" >-->
+                    <span aria-hidden="true">&raquo;</span>
+                <!--</a>-->
+            </li>
+        </ul>
+        <!--页跳转-->
+        <div style="padding:21px 0px;" class="pull-left ">
+            <span class="text-muted">
+                <span class="pull-left paddingT_1">第</span>
+                <input type="text" class="ng-pristine ng-untouched ng-valid input-sm form-control pull-left marginH_2" ng-model="pagination.goToPageNo" ng-change="paginationFunc.validateGoToPageNo()" style="width:50px;">页
+            </span>
+            <button class="btn btn-sm btn-primary marginL_4" ng-click="allFunc.CRUDOperation.search(allData.recorder,pagination.goToPageNo)" ng-class="{'active':pagination.goToButtonEnable,'disabled':!pagination.goToButtonEnable}">Go</button>
+        </div>
+    </nav>
+</div>

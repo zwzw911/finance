@@ -111,7 +111,7 @@ app.controller('configurationController', function ($scope, htmlHelper) {
 });
 
 app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAttrHelper, htmlHelper, validateHelper, queryHelper, commonHelper, financeHelper) {
-    var generateControllerDate = function generateControllerDate(eColl) {
+    var generateControllerData = function generateControllerData(eColl) {
         return {
             inputAttr: cont.inputAttr[eColl], //CRUD记录的时候，对输入进行设置
             inputRule: cont.inputRule[eColl], //CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -138,6 +138,32 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
             currentOpType: null
         };
     };
+
+    /*            pagination            */
+    function generatePaginationData(eColl) {
+        return {
+            'paginationInfo': {},
+            'pageRange': null,
+            'goToPageNo': null,
+            'goToButtonEnable': false
+        };
+    }
+
+    function generatePaginationFunc($scope) {
+        var allFuncResult = {};
+        allFuncResult = {
+            validateGoToPageNo: function validateGoToPageNo() {
+                if (false === validateHelper.dataTypeCheck.isInt($scope.pagination.goToPageNo)) {
+                    $scope.pagination.goToPageNo = null;
+                    $scope.pagination.goToButtonEnable = false;
+                } else {
+                    $scope.pagination.goToButtonEnable = true;
+                }
+                console.log($scope.pagination.goToButtonEnable);
+            }
+        };
+        return allFuncResult;
+    }
 
     function generateCreateUpdateModalInfo() {
         return {
@@ -219,22 +245,20 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
                 'delete': function _delete(idx, recorder) {
                     financeHelper.dataOperator.delete(idx, recorder, eColl);
                 },
-                'search': function search(recorder) {
-                    /*                    console.log(`enter search`)
-                                        console.log(`origin search is ${JSON.stringify($scope.allData.activeQueryValue)}`)
-                                        console.log(`origin fkconfig is ${JSON.stringify(fkConfig)}`)*/
-                    var convertedValue = queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue, fkConfig);
-                    // console.log(`search convert result is ${JSON.stringify(convertedValue)}`)
+                'search': function search(recorder, currentPage) {
+                    //console.log(`enter search`)
+                    console.log('origin search is ' + JSON.stringify($scope.allData.activeQueryValue));
+                    //console.log(`origin fkconfig is ${JSON.stringify(fkConfig)}`)
+                    var convertedValue = queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue, fkConfig, currentPage);
+                    console.log('search convert result is ' + JSON.stringify(convertedValue));
 
                     //没有任何查询条件，或者删除了所有查询条件
-                    if (0 === Object.keys($scope.allData.activeQueryValue).length) {
-                        financeHelper.dataOperator.read($scope.allData.recorder, fkConfig, eColl, dateField);
-                    } else {
-                        financeHelper.dataOperator.search(recorder, convertedValue, fkConfig, eColl, dateField);
-                    }
+                    /*                    if(0===Object.keys($scope.allData.activeQueryValue).length){
+                                            financeHelper.dataOperator.read(recorder,fkConfig,eColl,dateField)
+                                        }else{*/
+                    financeHelper.dataOperator.search(recorder, convertedValue, fkConfig, eColl, dateField, $scope.pagination);
+                    //}
 
-                    $scope.allData.selectedQueryField = '';
-                    $scope.allData.selectedQueryFieldValue = '';
                     //$scope.switchDialogStatus();
                 }
             },
@@ -318,9 +342,17 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
                 $scope.allData.queryFieldEnable = !$scope.allData.queryFieldEnable;
             },
 
+            //选择查询条件完毕，并添加完成后，selectedField/selectedFieldValue设成空
+            initSelectedQueryField: function initSelectedQueryField() {
+                $scope.allData.selectedQueryField = '';
+                $scope.allData.selectedQueryFieldValue = '';
+            },
+
             switchDialogStatus: function switchDialogStatus() {
                 $scope.allData.recorderDialogShow = !$scope.allData.recorderDialogShow;
                 htmlHelper.verticalModalCenter('CRUDRecorder');
+                /*                alert($('table').attr('height'))
+                                alert($('table').attr('width'))*/
             },
 
             setCurrentIdx: function setCurrentIdx(idx) {
@@ -422,12 +454,18 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
     //对controller做初始化操作
     function init($scope, eColl) {
         htmlHelper.adjustFooterPosition();
-        financeHelper.dataOperator.read($scope.allData.recorder, appCont.fkRedundancyFields[eColl], appCont.coll[eColl], appCont.dateField[eColl]);
+        //let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,currentPage)
+        //financeHelper.dataOperator.search($scope.allData.recorder,appCont.fkRedundancyFields[eColl],appCont.coll[eColl],appCont.dateField[eColl])
+        financeHelper.dataOperator.search($scope.allData.recorder, { 'currentPage': 1, 'searchParams': {} }, appCont.fkRedundancyFields[eColl], eColl, appCont.dateField[eColl], $scope.pagination);
     }
 
     //以下5个函数有严格的先后顺序，需要顺序执行
     return {
-        generateControllerDate: generateControllerDate, //产生
+        generateControllerData: generateControllerData, //产生所需数据（除了分页信息之外）
+
+        generatePaginationData: generatePaginationData, //初始化分页信息数据
+        generatePaginationFunc: generatePaginationFunc, //分页需要用到的函数
+
         generateCreateUpdateModalInfo: generateCreateUpdateModalInfo, //设置create/update用的modal
         allFunc: allFunc, //返回一个对象，value是函数
         setACConfig: setACConfig, //对需要AC的字段设置AC的配置（通过allFunc.generateSuggestList产生的对象，赋值给对应的字段）
@@ -437,7 +475,8 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
 app.controller('configuration.billType.Controller', function ($scope, templateFunc) {
     //appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,templateFunc
     //需要用到的数据，预先定义好
-    $scope.allData = templateFunc.generateControllerDate('billType');
+    $scope.allData = templateFunc.generateControllerData('billType');
+
     $scope.modal = templateFunc.generateCreateUpdateModalInfo();
     $scope.allFunc = templateFunc.allFunc($scope, 'billType');
 
@@ -448,7 +487,7 @@ app.controller('configuration.billType.Controller', function ($scope, templateFu
 
 app.controller('configuration.departmentInfo.Controller', function ($scope, templateFunc) {
     //需要用到的数据，预先定义好
-    $scope.allData = templateFunc.generateControllerDate('department');
+    $scope.allData = templateFunc.generateControllerData('department');
     //console.log($scope.allData.queryFieldEnable)
     $scope.modal = templateFunc.generateCreateUpdateModalInfo();
     $scope.allFunc = templateFunc.allFunc($scope, 'department');
@@ -460,7 +499,7 @@ app.controller('configuration.departmentInfo.Controller', function ($scope, temp
 
 app.controller('configuration.employeeInfo.Controller', function ($scope, templateFunc) {
     //需要用到的数据，预先定义好
-    $scope.allData = templateFunc.generateControllerDate('employee');
+    $scope.allData = templateFunc.generateControllerData('employee');
     $scope.modal = templateFunc.generateCreateUpdateModalInfo();
     $scope.allFunc = templateFunc.allFunc($scope, 'employee');
 
@@ -478,7 +517,9 @@ app.controller('billController', function ($scope, htmlHelper) {
 
 app.controller('bill.billInfo.Controller', function ($scope, templateFunc) {
     //需要用到的数据，预先定义好
-    $scope.allData = templateFunc.generateControllerDate('bill');
+    $scope.allData = templateFunc.generateControllerData('bill');
+    $scope.pagination = templateFunc.generatePaginationData('bill');
+    $scope.paginationFunc = templateFunc.generatePaginationFunc($scope);
     $scope.modal = templateFunc.generateCreateUpdateModalInfo();
     $scope.allFunc = templateFunc.allFunc($scope, 'bill');
 

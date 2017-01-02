@@ -145,7 +145,8 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                 console.log('err')
             })
         },
-        'read': function (recorder, fkConfig, eColl, aDateToBeConvert) {
+        //read合并到serach中
+       /* 'read': function (recorder, fkConfig, eColl, aDateToBeConvert) {
             let url = '/' + eColl
             $http.get(url, {}).success(function (data, status, header, config) {
                 if (0 === data.rc) {
@@ -159,10 +160,10 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                             let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
                             delete data.msg[nestedPrefix]
                         }
-                        /*                            if(e.parentBillType && e.parentBillType.name){
+                        /!*                            if(e.parentBillType && e.parentBillType.name){
                          console.log('in')
                          e.parentBillType=e.parentBillType.name
-                         }*/
+                         }*!/
                         recorder.push(e)
                     })
                     // recorder=data.msg
@@ -173,12 +174,12 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
             }).error(function () {
                 console.log('err')
             })
-        },
+        },*/
         'readName': function (name, eColl) {
             let url = '/' + eColl + '/name/'
             return $http.post(url, {values: name}, {})
         },
-        'search': function (recorder, queryValue, fkConfig, eColl, aDateToBeConvert) {
+        'search': function (recorder, queryValue, fkConfig, eColl, aDateToBeConvert,pagination) {
 
             let url = '/' + eColl + "/" + "search"
             $http.post(url, {values: queryValue}).success(function (data, status, header, config) {
@@ -187,8 +188,8 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                     //console.log(`read result is ${JSON.stringify(data.msg)}`)
 
                     recorder.splice(0, recorder.length)   //清空数组
-                    console.log(`after empty array is ${JSON.stringify(recorder)}`)
-                    data.msg.forEach(function (e) {
+                    //console.log(`after empty array is ${JSON.stringify(recorder)}`)
+                    data.msg['recorder'].forEach(function (e) {
                         commonHelper.convertDateTime(e, aDateToBeConvert)
                         //需要删除nestedPrefix字段
                         for (let singleFKField in fkConfig) {
@@ -202,8 +203,28 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                         recorder.push(e)
                     })
                     console.log(`after push array is ${JSON.stringify(recorder)}`)
+
+                    pagination.paginationInfo=data.msg['paginationInfo']
+
+                    if(null===pagination.pageRange){
+                        pagination.pageRange=[]
+                    }
+                    if(null!==pagination.pageRange){
+                        pagination.pageRange.splice(0, pagination.pageRange.length)
+                    }
+                    for(let i=pagination.paginationInfo.start;i<=pagination.paginationInfo.end;i++){
+                        let ele={}
+                        ele['pageNo']=i
+                        ele['active']=false
+                        if(i===pagination.paginationInfo.currentPage){
+                            ele['active']=true
+                        }
+
+                        pagination.pageRange.push(ele)
+                    }
+                    //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
                     // recorder=data.msg
-                    //console.log(`date format result ${JSON.stringify(returnResult.msg)}`)
+                    console.log(`page info is ${JSON.stringify(pagination)}`)
                 } else {
                     modal.showErrMsg(JSON.stringify(data.msg))
                 }

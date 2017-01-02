@@ -120,7 +120,7 @@ router.post('/employee',function(req,res,next){
     )
 })
 //read
-router.get('/employee',function(req,res,next){
+/*router.post('/employee',function(req,res,next){
     unifiedRouterController.readAll({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`read all employee success,result: ${JSON.stringify(v)}`)
@@ -130,7 +130,7 @@ router.get('/employee',function(req,res,next){
             console.log(`read all employee fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //read single field
 router.post('/employee/name',function(req,res,next){
     console.log('get no name ')
@@ -215,7 +215,7 @@ router.post('/department',function(req,res,next){
     )
 })
 //read
-router.get('/department',function(req,res,next){
+/*router.get('/department',function(req,res,next){
     unifiedRouterController.readAll({eCurrentColl:coll.department, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`read all department success,result: ${JSON.stringify(v)}`)
@@ -225,7 +225,7 @@ router.get('/department',function(req,res,next){
             console.log(`read all department fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //read single field
 router.post('/department/name',function(req,res,next){
     console.log('get no name ')
@@ -310,7 +310,7 @@ router.post('/billType',function(req,res,next){
     )
 })
 //read
-router.get('/billType',function(req,res,next){
+/*router.get('/billType',function(req,res,next){
     unifiedRouterController.readAll({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`read all billType success,result: ${JSON.stringify(v)}`)
@@ -320,7 +320,7 @@ router.get('/billType',function(req,res,next){
             console.log(`read all billType fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //read single field
 router.post('/billType/name',function(req,res,next){
     console.log('get no name ')
@@ -405,7 +405,7 @@ router.post('/bill',function(req,res,next){
     )
 })
 //read
-router.get('/bill',function(req,res,next){
+/*router.get('/bill',function(req,res,next){
     unifiedRouterController.readAll({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`read all bill success,result: ${JSON.stringify(v)}`)
@@ -415,7 +415,7 @@ router.get('/bill',function(req,res,next){
             console.log(`read all bill fail: ${JSON.stringify(e)}`)
             return res.json(e)
         })
-})
+})*/
 //read single field
 router.post('/bill/name',function(req,res,next){
     console.log('get no name ')

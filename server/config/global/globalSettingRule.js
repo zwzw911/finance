@@ -89,7 +89,7 @@ var internalSetting={
 
 }
 
-//设置每次读取的记录数量
+/*//设置每次读取的记录数量===》用paginationSetting的pageSize代替
 var pageSetting={
     department:{
         limit:10,//每次最多读取10条记录
@@ -102,6 +102,41 @@ var pageSetting={
     },
     bill:{
         limit:10,//每次最多读取10条记录
+    },
+}*/
+
+var paginationSetting={
+    department:{
+        pageSize:10,//每页最多读取的记录数
+        pageLength:10, //pagination最大显示的页码数量
+    },
+    employee:{
+        pageSize:10,//每页最多读取的记录数
+        pageLength:10, //pagination最大显示的页码数量
+    },
+    billType:{
+        pageSize:10,//每页最多读取的记录数
+        pageLength:10, //pagination最大显示的页码数量
+    },
+    bill:{
+        pageSize:6,//每页最多读取的记录数
+        pageLength:10, //pagination最大显示的页码数量
+    },
+}
+
+//当使用suggest功能为用户提供可选项时，最大提供多少
+var suggestLimit={
+    department:{
+        maxOptionNum:5,//每次最多提供可选项数目
+    },
+    employee:{
+        maxOptionNum:5,//每次最多提供可选项数目
+    },
+    billType:{
+        maxOptionNum:5,//每次最多提供可选项数目
+    },
+    bill:{
+        maxOptionNum:5,//每次最多提供可选项数目
     },
 }
 //可以更改的设定
@@ -557,6 +592,8 @@ module.exports={
     searchSetting,
 	internalSetting,
 	session,
-    pageSetting,
+    //pageSetting,
+    paginationSetting,
+    suggestLimit,
 }
 

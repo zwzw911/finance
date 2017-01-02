@@ -1123,20 +1123,25 @@ function checkSearchValue(value,inputRule){
 /* 对POST输入的 查询参数 的格式检查，只检查
 1.inputSearch是否为object，
 2，inputSearch是否为空
-3 inputSearch中的每个key（字段）是否有对应的db字段，如果是外键，还要检查对应值是否为对象，且其中的冗余字段是否有定义
-4.字段值不为空
-5. 调用subValidateInputSearchFormat进行值的检测
+3 inputSearch中是否有currentPage和searchParams2个key
+4. 如果searchParams不为空，每个key（字段）是否有对应的db字段，如果是外键，还要检查对应值是否为对象，且其中的冗余字段是否有定义
+5. 字段值不为空
+6. 调用subValidateInputSearchFormat进行值的检测
  *           1.inputSearch
- *           name:[{value:'name1'},{value:'name2'}],
-                 age:[{value:18,compOp:'gt'},{value:20,compOp:'eq'}],
-                 parentBillType:
-                 {
-                     name:[{value:'asdf'},{value:'fda'}],
-                     age:[{value:12, compOp:'gt'}, {value:24, compOp:'lt'}]
+ *           {
+            currentPage:1,
+            searchaParams:{
+                  name:[{value:'name1'},{value:'name2'}],
+                     age:[{value:18,compOp:'gt'},{value:20,compOp:'eq'}],
+                     parentBillType:
+                     {
+                         name:[{value:'asdf'},{value:'fda'}],
+                         age:[{value:12, compOp:'gt'}, {value:24, compOp:'lt'}]
+                     }
                  }
              }
 *           client传入的搜索参数，以coll为单位。因为使用独立的函数进行处理，所以可以和validateInput的输入参数不一致.如此可以简化对格式的检查步骤
-*           父函数validateInputSearchFormat只检查字段是否有值，至于值的格式，由subValidateInputSearchFormat检测（因为普通字段和外键字段格式类似，可以调用同一个函数来简化操作）
+*           父函数validateinputSearchFormat只检查字段是否有值，至于值的格式，由subValidateInputSearchFormat检测（因为普通字段和外键字段格式类似，可以调用同一个函数来简化操作）
 *           2. fkAdditionalFieldsConfig
 *           基于coll
 *           返回{rc:0,msg:'xxxx}
@@ -1152,48 +1157,66 @@ function validateInputSearchFormat(inputSearch,fkAdditionalFieldsConfig,collName
     if (true === dataTypeCheck.isEmpty(inputSearch)) {
         return validateInputSearchFormatError.inputSearchCanNotEmpty
     }
-    //3. inputSearch中的每个key（字段）是否有对应的db字段，如果是外键，还要检查对应的冗余字段是否有定义
-    for (let singleFieldName in inputSearch) {
-        //3  是否有对应的rule（说明字段在数据库中有定义，而不是notExist的字段）
-        if(false===singleFieldName in inputRules[collName]){
-            return validateInputSearchFormatError.inputSearchNoRelatedRule
-        }
-        //4.1 普通字段，检测是否字段值为空
-        if(!fkAdditionalFieldsConfig[singleFieldName]){
-            if(true===dataTypeCheck.isEmpty(inputSearch[singleFieldName])){
-                return validateInputSearchFormatError.inputSearchValueCanNotEmpty
+    //3 检查其中的currentPage是否存在，且为整数
+    if(false==='currentPage' in inputSearch){
+        return validateInputSearchFormatError.inputSearchNotContainCurrentPage
+    }
+    if(false===dataTypeCheck.isInt(inputSearch['currentPage'])){
+        return validateInputSearchFormatError.inputSearchCurrentPageMustBeInt
+    }
+    //3 检查其中的searchParams是否存在，且为对象（可以为空）
+    if(false==='searchParams' in inputSearch){
+        return  validateInputSearchFormatError.inputSearchNotContainSearchParams
+    }
+    if(false===dataTypeCheck.isObject(inputSearch['searchParams'])){
+        return validateInputSearchFormatError.inputSearchSearchParamsMustBeObject
+    }
+    //4. inputSearch.searchParam中不空，则检查每个key（字段）是否有对应的db字段，如果是外键，还要检查对应的冗余字段是否有定义
+    if(false===dataTypeCheck.isEmpty(inputSearch['searchParams'])){
+        let searchParams=inputSearch['searchParams']
+        for (let singleFieldName in searchParams) {
+            //3  是否有对应的rule（说明字段在数据库中有定义，而不是notExist的字段）
+            if(false===singleFieldName in inputRules[collName]){
+                return validateInputSearchFormatError.inputSearchNoRelatedRule
             }
-            //5 调用subValidateInputSearchFormat检查冗余字段的值的格式
-//console.log(`input value is ${JSON.stringify(inputSearch[singleFieldName])}`)
-            //console.log(`input value rule is ${JSON.stringify(inputSearch[singleFieldName])}`)
-            let singleFiledValueCheckResult=subValidateInputSearchFormat(inputSearch[singleFieldName],inputRules[collName][singleFieldName])
-            if(singleFiledValueCheckResult.rc>0){
-                return singleFiledValueCheckResult
-            }
-        }
-        //4.2 是外键，检查是否为对象，且冗余字段是否定义
-        if(fkAdditionalFieldsConfig[singleFieldName]){
-            if(false===dataTypeCheck.isObject(inputSearch[singleFieldName])){
-                return validateInputSearchFormatError.inputSearchFKFiledValueNotObject
-            }
-            let fkConfig=fkAdditionalFieldsConfig[singleFieldName]
-            for(let fkRedundantFieldName in inputSearch[singleFieldName]){
-                //4.2.1 外键中的冗余字段是否存在
-                if(false===fkRedundantFieldName in inputRules[fkConfig['relatedColl']]){
-                    return validateInputSearchFormatError.inputSearchFKNoRelatedRule
-                }
-                //4.2.1 外键中的冗余字段的值是否为空
-                if(true===dataTypeCheck.isEmpty(inputSearch[singleFieldName][fkRedundantFieldName])){
-                    return validateInputSearchFormatError.inputSearchFKFiledValueCanNotEmpty
+            //4.1 普通字段，检测是否字段值为空
+            if(!fkAdditionalFieldsConfig[singleFieldName]){
+                if(true===dataTypeCheck.isEmpty(searchParams[singleFieldName])){
+                    return validateInputSearchFormatError.inputSearchValueCanNotEmpty
                 }
                 //5 调用subValidateInputSearchFormat检查冗余字段的值的格式
-                let singleFiledValueCheckResult=subValidateInputSearchFormat(inputSearch[singleFieldName][fkRedundantFieldName],inputRules[fkConfig['relatedColl']][fkRedundantFieldName])
+//console.log(`input value is ${JSON.stringify(inputSearch[singleFieldName])}`)
+                //console.log(`input value rule is ${JSON.stringify(inputSearch[singleFieldName])}`)
+                let singleFiledValueCheckResult=subValidateInputSearchFormat(searchParams[singleFieldName],inputRules[collName][singleFieldName])
                 if(singleFiledValueCheckResult.rc>0){
                     return singleFiledValueCheckResult
                 }
             }
+            //4.2 是外键，检查是否为对象，且冗余字段是否定义
+            if(fkAdditionalFieldsConfig[singleFieldName]){
+                if(false===dataTypeCheck.isObject(searchParams[singleFieldName])){
+                    return validateInputSearchFormatError.inputSearchFKFiledValueNotObject
+                }
+                let fkConfig=fkAdditionalFieldsConfig[singleFieldName]
+                for(let fkRedundantFieldName in searchParams[singleFieldName]){
+                    //4.2.1 外键中的冗余字段是否存在
+                    if(false===fkRedundantFieldName in inputRules[fkConfig['relatedColl']]){
+                        return validateInputSearchFormatError.inputSearchFKNoRelatedRule
+                    }
+                    //4.2.1 外键中的冗余字段的值是否为空
+                    if(true===dataTypeCheck.isEmpty(searchParams[singleFieldName][fkRedundantFieldName])){
+                        return validateInputSearchFormatError.inputSearchFKFiledValueCanNotEmpty
+                    }
+                    //5 调用subValidateInputSearchFormat检查冗余字段的值的格式
+                    let singleFiledValueCheckResult=subValidateInputSearchFormat(searchParams[singleFieldName][fkRedundantFieldName],inputRules[fkConfig['relatedColl']][fkRedundantFieldName])
+                    if(singleFiledValueCheckResult.rc>0){
+                        return singleFiledValueCheckResult
+                    }
+                }
+            }
         }
     }
+
     return rightResult
 }
 
@@ -1485,52 +1508,58 @@ var convertClientValueToServerFormat=function(values){
  *           4 inputRules
  *           整个inputRule，因为外键可能对应在其他coll
 * */
-var genNativeSearchCondition=function(inputSearch,collName,fkAdditionalFieldsConfig,rules){
+var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFieldsConfig,rules){
     //所有的查询条件都是 或
     let fieldsType={} //{name:dataType.string,age:dataType.int}  普通字段，只有一个key，外键：可能有一个以上的key
-    let result={'$or':[]}
-    for(let singleField in inputSearch){
+    let result={}
 
-        //普通字段
-        if(false===singleField in fkAdditionalFieldsConfig){
-            //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
-            let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
-            fieldValue=inputSearch[singleField]
-            fieldRule=rules[collName][singleField]
-/*            fieldValueType=fieldRule['type']
-            if(dataType.string===fieldValueType){
-                fieldValue=new RegExp(fieldValue,'i')
-            }*/
-            fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
-            fieldResult[singleField]=fieldCondition
-            result['$or'].push(fieldResult)
-        }
-        //外键字段
-        if(fkAdditionalFieldsConfig[singleField]){
-            let fkConfig=fkAdditionalFieldsConfig[singleField]
-            for(let fkRedundantField in inputSearch[singleField]){
-                //每个外键字段的变量要重新定义，否则fieldResult会重复push
+    //有search参数传入，则进行转换
+    if(false===dataTypeCheck.isEmpty(clientSearchParams)){
+        result={'$or':[]}
+        for(let singleField in clientSearchParams){
+
+            //普通字段
+            if(false===singleField in fkAdditionalFieldsConfig){
+                //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
                 let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
-                fieldValue=inputSearch[singleField][fkRedundantField]
-                fieldRule=rules[fkConfig['relatedColl']][fkRedundantField]
-                // console.log(`rules is ${JSON.stringify(rules)}`)
-                // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
-/*                console.log(`field value is ${JSON.stringify(fieldValue)}`)
-                fieldValueType=fieldRule['type']
-                console.log(fieldValueType)
-                 // console.log(`field type is ${fieldRule['type']}`)
+                fieldValue=clientSearchParams[singleField]
+                fieldRule=rules[collName][singleField]
+                /*            fieldValueType=fieldRule['type']
                  if(dataType.string===fieldValueType){
                  fieldValue=new RegExp(fieldValue,'i')
-                 }
-                console.log(fieldValue)*/
+                 }*/
                 fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
-                //外键对应的冗余父字段.子字段
-                fieldResult[`${fkConfig['nestedPrefix']}.${fkRedundantField}`]=fieldCondition
-                //使用冗余字段进行查找
+                fieldResult[singleField]=fieldCondition
                 result['$or'].push(fieldResult)
+            }
+            //外键字段
+            if(fkAdditionalFieldsConfig[singleField]){
+                let fkConfig=fkAdditionalFieldsConfig[singleField]
+                for(let fkRedundantField in clientSearchParams[singleField]){
+                    //每个外键字段的变量要重新定义，否则fieldResult会重复push
+                    let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
+                    fieldValue=clientSearchParams[singleField][fkRedundantField]
+                    fieldRule=rules[fkConfig['relatedColl']][fkRedundantField]
+                    // console.log(`rules is ${JSON.stringify(rules)}`)
+                    // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
+                    /*                console.log(`field value is ${JSON.stringify(fieldValue)}`)
+                     fieldValueType=fieldRule['type']
+                     console.log(fieldValueType)
+                     // console.log(`field type is ${fieldRule['type']}`)
+                     if(dataType.string===fieldValueType){
+                     fieldValue=new RegExp(fieldValue,'i')
+                     }
+                     console.log(fieldValue)*/
+                    fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
+                    //外键对应的冗余父字段.子字段
+                    fieldResult[`${fkConfig['nestedPrefix']}.${fkRedundantField}`]=fieldCondition
+                    //使用冗余字段进行查找
+                    result['$or'].push(fieldResult)
+                }
             }
         }
     }
+
     return result
 }
 

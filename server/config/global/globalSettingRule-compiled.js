@@ -84,16 +84,47 @@ var internalSetting = {
     globalSettingBackupPath: 'h:/ss_express/ss-express/setting.txt',
     globalSettingBackupSize: 10 * 1024 };
 
-//设置每次读取的记录数量
-var pageSetting = {
+/*//设置每次读取的记录数量===》用paginationSetting的pageSize代替
+var pageSetting={
+    department:{
+        limit:10,//每次最多读取10条记录
+    },
+    employee:{
+        limit:10,//每次最多读取10条记录
+    },
+    billType:{
+        limit:10,//每次最多读取10条记录
+    },
+    bill:{
+        limit:10,//每次最多读取10条记录
+    },
+}*/
+
+var paginationSetting = {
     department: {
-        limit: 10 },
+        pageSize: 10, //每页最多读取的记录数
+        pageLength: 10 },
     employee: {
-        limit: 10 },
+        pageSize: 10, //每页最多读取的记录数
+        pageLength: 10 },
     billType: {
-        limit: 10 },
+        pageSize: 10, //每页最多读取的记录数
+        pageLength: 10 },
     bill: {
-        limit: 10 }
+        pageSize: 6, //每页最多读取的记录数
+        pageLength: 10 }
+};
+
+//当使用suggest功能为用户提供可选项时，最大提供多少
+var suggestLimit = {
+    department: {
+        maxOptionNum: 5 },
+    employee: {
+        maxOptionNum: 5 },
+    billType: {
+        maxOptionNum: 5 },
+    bill: {
+        maxOptionNum: 5 }
 };
 //可以更改的设定
 //type:int 如果有max属性，说明可以修改（只要小于max）;否则不能修改
@@ -518,7 +549,9 @@ module.exports = {
     searchSetting: searchSetting,
     internalSetting: internalSetting,
     session: session,
-    pageSetting: pageSetting
+    //pageSetting,
+    paginationSetting: paginationSetting,
+    suggestLimit: suggestLimit
 };
 
 //# sourceMappingURL=globalSettingRule-compiled.js.map

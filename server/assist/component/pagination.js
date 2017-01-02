@@ -7,9 +7,9 @@
     * pageSize：每页显示记录数
     * pageLength：显示页的数量
     *
-    * 结果：返回分页html的起始页码和结束页码
+    * 结果：返回分页html的起始页码和结束页码，以及 前一页 后一页是否可得
     * */
-var pagination=function(total,curPage,pageSize=10,pageLength=10){
+var pagination=function({total,curPage,pageSize=10,pageLength=10}){
 
     //如果输入参数不正确，设定默认值
 /*    if(pageSize<0 || undefined===pageSize){pageSize=10}
@@ -95,7 +95,9 @@ var pagination=function(total,curPage,pageSize=10,pageLength=10){
             }
         }
     }
-    return {start:start,end:end,curPage:curPage,showPrevious:showPrevious,showNext:showNext}
+    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage}
 }
 
-exports.pagination=pagination
+module.exports={
+    pagination,
+}
