@@ -730,4 +730,10 @@ app.constant('contEnum',{
         'delete': 'delete',
         'search':'search',
     },
+    //主要用于在client判断是否合法操作符；也可进行赋值操作
+    'operator':{
+        'gt':'gt',
+        'lt':'lt',
+        'eq':'eq',
+    },
 })

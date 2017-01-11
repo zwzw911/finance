@@ -23,6 +23,9 @@ app.factory('validateHelper', function () {
             return !isNaN(parseFloat(value));
         },
         isString: function isString(value) {
+            return typeof value === 'string';
+        },
+        isStringEmpty: function isStringEmpty(value) {
             return "" === value || 0 === value.length || "" === value.trim();
         },
         isDate: function isDate(date) {
@@ -251,17 +254,18 @@ app.factory('htmlHelper', function (validateHelper) {
         *       否则移除fixed-footer(因为此时footer已经在最下方)
         * */
         adjustFooterPosition: function adjustFooterPosition() {
-            var contentHeight = document.body.scrollHeight,
-                //网页正文全文高度
-            winHeight = window.innerHeight; //可视窗口高度，不包括浏览器顶部工具栏
-            /*console.log(contentHeight)
-                        console.log(winHeight)*/
+            // let contentHeight = document.body.scrollHeight//网页正文全文高度
+            // let winHeight = window.innerHeight//可视窗口高度，不包括浏览器顶部工具栏
+            var contentHeight = $(document).height(); //网页正文全文高度
+            var winHeight = $(window).height(); //可视窗口高度，不包括浏览器顶部工具栏
+            // console.log(`contentHeight is ${contentHeight}, winHeight is ${winHeight}`)
+            //console.log(winHeight)
             if (!(contentHeight > winHeight)) {
                 //当网页正文高度小于可视窗口高度时，为footer添加类fixed-bottom
                 //console.log('add')
                 $("footer").addClass("fixed-footer");
             } else {
-                //console.log('remove')
+                // console.log('remove')
                 $("footer").removeClass("fixed-footer");
             }
         },
@@ -282,8 +286,8 @@ app.factory('htmlHelper', function (validateHelper) {
             //console.log(dialog.offsetHeight)
             var dialogHeight = dialog.style.height.replace('px', '');
 
-            /*            console.log(`windos height is ${windowHeight}`)
-                        console.log(`dialog height is ${dialogHeight}`)*/
+            //console.log(`windos height is ${windowHeight}`)
+            //console.log(`dialog height is ${dialogHeight}`)
             //diag太长了
             //60是botstrap中为diaglog定义的上下margin，略微上移，符合人类审美
             if (windowHeight - dialogHeight < 30) {
@@ -310,22 +314,31 @@ app.factory('htmlHelper', function (validateHelper) {
 app.factory('queryHelper', function (contEnum) {
     //var allFunc={}
     //allFunc={
-    //传入字段，以及对应的value，那么从activateQueryFieldAndValue删除对应的value，如果filed中对应的value为0，则同时删除field
-    function deleteQueryValue(field, value, activateQueryFieldAndValue) {
-        for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
-            if (value === activateQueryFieldAndValue[field][i]) {
-                activateQueryFieldAndValue[field].splice(i, 1);
-                break;
+    //field：要操作的字段名
+    //idx：要删除的搜索值（因为搜索值是一个数组，格式为[{value:'val1'}]）
+    function deleteQueryValue(field, idx, activateQueryFieldAndValue) {
+        if (activateQueryFieldAndValue[field] && activateQueryFieldAndValue[field][idx]) {
+            activateQueryFieldAndValue[field].splice(idx, 1);
+            if (0 === activateQueryFieldAndValue[field].length) {
+                delete activateQueryFieldAndValue[field];
             }
         }
-        if (0 === activateQueryFieldAndValue[field].length) {
-            delete activateQueryFieldAndValue[field];
-        }
     }
+    /*    function deleteQueryValue(field, idx, activateQueryFieldAndValue) {
+            for (var i = 0; i < activateQueryFieldAndValue[field].length; i++) {
+                if (value === activateQueryFieldAndValue[field][i]) {
+                    activateQueryFieldAndValue[field].splice(i, 1)
+                    break
+                }
+            }
+            if (0 === activateQueryFieldAndValue[field].length) {
+                delete activateQueryFieldAndValue[field]
+            }
+        }*/
 
     //将选择的field和value键入数组（以便在client显示，而不能直接转换成server端的格式）
     //{name:['a','b'],parentBillType:['c','d']}
-    function addQueryValue(field, value, fkConfig, activateQueryFieldAndValue) {
+    function addQueryValueOld(field, value, fkConfig, activateQueryFieldAndValue) {
         // console.log(`field is ${field},value is ${JSON.stringify(value)}, activated value is ${activateQueryFieldAndValue}`)
         // if(undefined===activateQueryFieldAndValue){
         //     console.log(`in to init activea vlauy`)
@@ -363,9 +376,75 @@ app.factory('queryHelper', function (contEnum) {
         }
     }
 
-    //将选中的field和value加入到allData.activeQueryValue（直接转换成server端能处理的格式）
+    //无论字段类型，使用同一个函数进行处理，得到统一格式
+    //{name:[{value:'val1'},{value:'val2'}], parentBillType:{name:[{value:'name1'}]}, age:[{value:20,comOp:'gt',compSymbol:'>'}]}
+    //如果是日期或者数字，会多出一个compSymbol，用来在页面上显示比较符，需要通过convertAddQueryValueToServerFormat去掉
+    function addQueryValue(field, value, activateQueryFieldAndValue, operator) {
+
+        /*        console.log(`field is ${JSON.stringify(field)}`)
+                console.log(`value is ${JSON.stringify(value)}`)
+                console.log(`operator is ${JSON.stringify(operator)}`)*/
+
+        if (undefined === activateQueryFieldAndValue[field]) {
+            activateQueryFieldAndValue[field] = [];
+        }
+
+        //如果有比较符，同时activateQueryFieldAndValue的某个查询元素也带有此相同的比较符，那么直接用新的值代替这个元素中的搜索值
+        if (operator) {
+            //将测是否已经有对应的compOp
+            //有，直接覆盖value
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = activateQueryFieldAndValue[field][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var singleParam = _step.value;
+
+                    if (singleParam['compOp'] && operator === singleParam['compOp']) {
+                        singleParam['value'] = value;
+                        return true;
+                    }
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+
+        //activateQueryFieldAndValue字段的搜索数组中没有 比较符
+        var valueToBePush = {}; //如果当前此字段没有对应的比较符，那么valueToBePush初始化为{}，并赋值；  否则从当前字段中取出符号为此
+        if (operator) {
+            valueToBePush['compOp'] = operator;
+            if ('gt' === operator) {
+                valueToBePush['compSymbol'] = '>';
+            }
+            if ('lt' === operator) {
+                valueToBePush['compSymbol'] = '<';
+            }
+        }
+        //如果是select传递过来的值
+        if (value.key) {
+            valueToBePush['value'] = value.key;
+        } else {
+            valueToBePush['value'] = value;
+        }
+
+        activateQueryFieldAndValue[field].push(valueToBePush);
+    }
+
+    //如果是外键，选择外键对应的冗余字段（一般是一个）；同时，如果是日期或者数字，去掉compSymbol
     // {"values":{"name":[{"value":"{{billtype_name_1}}"}],"parentBillType":{"name":[{"value":"{{billtype_name_2}}"}]}}}
-    //不能直接转换，因为AddQueryValue里的内容要在页面上显示
     function convertAddQueryValueToServerFormat(activateQueryFieldAndValue, fkConfig, currentPage) {
         var formattedValue = {};
         if (Object.keys(activateQueryFieldAndValue).length > 0) {
@@ -389,28 +468,32 @@ app.factory('queryHelper', function (contEnum) {
                     aValue = formattedValue[fieldName];
                 }
 
-                var _iteratorNormalCompletion = true;
-                var _didIteratorError = false;
-                var _iteratorError = undefined;
+                var _iteratorNormalCompletion2 = true;
+                var _didIteratorError2 = false;
+                var _iteratorError2 = undefined;
 
                 try {
-                    for (var _iterator = activateQueryFieldAndValue[fieldName][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                        var singleValue = _step.value;
+                    for (var _iterator2 = activateQueryFieldAndValue[fieldName][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                        var singleValue = _step2.value;
 
-                        var newValue = { value: singleValue };
+                        //不能直接 delete singleValue['compSymbol']（因为是引用），只能直接复制
+                        var newValue = {};
+                        newValue['value'] = singleValue['value'];
+                        newValue['compOp'] = singleValue['compOp'];
+
                         aValue.push(newValue);
                     }
                 } catch (err) {
-                    _didIteratorError = true;
-                    _iteratorError = err;
+                    _didIteratorError2 = true;
+                    _iteratorError2 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion && _iterator.return) {
-                            _iterator.return();
+                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                            _iterator2.return();
                         }
                     } finally {
-                        if (_didIteratorError) {
-                            throw _iteratorError;
+                        if (_didIteratorError2) {
+                            throw _iteratorError2;
                         }
                     }
                 }
@@ -421,6 +504,43 @@ app.factory('queryHelper', function (contEnum) {
     }
     return { deleteQueryValue: deleteQueryValue, addQueryValue: addQueryValue, convertAddQueryValueToServerFormat: convertAddQueryValueToServerFormat };
 });
+/*    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue,fkConfig,currentPage){
+        let formattedValue={}
+        if(Object.keys(activateQueryFieldAndValue).length>0){
+            for(let fieldName in activateQueryFieldAndValue){
+                let aValue //应用需要加入值的数组（外键和非外键的结构不一致）
+                //1. 创建必要的结构
+                //如果是外键
+                if(true===fieldName in fkConfig){
+                    if(undefined===formattedValue[fieldName]){
+                        formattedValue[fieldName]={}
+                    }
+                    let redundancyField=fkConfig[fieldName]['fields'][0]//当前冗余字段虽然是数组，但是其实只有一个元素
+                    if(undefined===formattedValue[fieldName][redundancyField]){
+                        formattedValue[fieldName][redundancyField]=[]
+                    }
+                    aValue=formattedValue[fieldName][redundancyField]
+                }else{
+                    if(undefined===formattedValue[fieldName]){
+                        formattedValue[fieldName]=[]    //非外键直接数组
+                    }
+                    aValue=formattedValue[fieldName]
+                }
+
+                for(let singleValue of activateQueryFieldAndValue[fieldName]){
+                    let newValue={value:singleValue}
+                    aValue.push(newValue)
+                }
+
+            }
+        }
+
+
+
+        return {'currentPage':currentPage,'searchParams':formattedValue}
+    }
+    return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat}
+})*/
 
 app.factory('inputAttrHelper', function (contEnum) {
     //对某个input设置errorMsg（errorMsg隐式设置input样式）
@@ -603,44 +723,6 @@ app.factory('commonHelper', function () {
         }
     }
 
-    /*  /!*                  操作modalCommon                   *!/
-      function setTop(modalId){
-          //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
-          var top=parseInt((document.body.clientHeight-174)/2)
-          $(modalId+'>div').css('top',top)
-      }
-        function modalHide(modalId){
-          $('#'+modalId+'_msg').text('')
-          $('#'+modalId).removeClass('show')
-          $('#'+modalId+'_title').text('').removeClass('text-danger').removeClass('text-info')
-          $('#'+modalId+'_close_button').removeClass('btn-danger').removeClass('btn-info').unbind('click')
-          $('#'+modalId+'_close_symbol').unbind('click')
-      }
-        function modalShowErrMsg(modalId,msg){
-          setTop()
-          $('#'+modalId+'_msg').text(msg)
-          //$('#modal_msg').text=msg
-          $('#'+modalId).addClass('show')
-          $('#'+modalId+'_title').text('错误').addClass('text-danger')
-          $('#'+modalId+'_close_button').addClass('btn-danger').bind('click',function(){
-              modalHide(modalId)
-          })
-          $('#'+modalId+'_close_symbol').bind('click',function(){
-              modalHide(modalId)
-          })
-      }
-      function modalShowInfoMsg(modalId,msg) {
-          $('#' + modalId + '_msg').text(msg)
-          $('#' + modalId ).addClass('show')
-          $('#' + modalId + '_title').text('信息').addClass('text-info')
-          $('#' + modalId + '_close_button').addClass('btn-info').bind('click', function () {
-              hide()
-          })
-          $('#' + modalId + '_close_symbol').bind('click', function () {
-              hide()
-          })
-      }*/
-
     return {
         convertDateTime: convertDateTime
     };
@@ -654,8 +736,8 @@ app.service('modal', function () {
         _modalCloseSymbolId = void 0;
     function _setTop() {
         //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
-        var top = parseInt((document.body.clientHeight - 174) / 2);
-        $('#' + _modalId).css('top', top);
+        //var top=parseInt((document.body.clientHeight-174)/2)
+        $('#' + _modalId).css('top', 100);
     }
     function _modalHide() {
         $('#' + _modalMsgId).text('');
@@ -718,6 +800,125 @@ app.service('modal', function () {
         $('#' + _modalCloseSymbolId).bind('click', function () {
             //console.log(`click symbol id is ${_modalCloseSymbolId}`)
             _modalHide(_modalId);
+        });
+    };
+});
+
+app.service('modalChoice', function (htmlHelper) {
+    var _modalId = void 0,
+        _modalMsgId = void 0,
+        _modalTitleId = void 0,
+        _modalYesButtonId = void 0,
+        _modalNoButtonId = void 0,
+        _modalCloseSymbolId = void 0;
+    function _setTop() {
+        //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
+        //var top=parseInt(($(window).height()-174)/2)
+        $('#' + _modalId).css('top', 100);
+        //htmlHelper.verticalModalCenter(_modalId)
+    }
+    function _modalHide() {
+        $('#' + _modalMsgId).text('');
+        $('#' + _modalId).removeClass('show');
+        $('#' + _modalTitleId).text('').removeClass('text-danger').removeClass('text-info');
+        $('#' + _modalYesButtonId).removeClass('btn-danger').removeClass('btn-info').unbind('click');
+        $('#' + _modalNoButtonId).removeClass('btn-danger').removeClass('btn-info').unbind('click');
+        $('#' + _modalCloseSymbolId).unbind('click');
+    }
+    /*                  设置id            */
+    //modal的id
+    this.setModalId = function (modalId) {
+        _modalId = modalId;
+        //默认是如下格式，可以通过set覆盖
+        _modalMsgId = modalId + '_msg';
+        _modalTitleId = modalId + '_title';
+        _modalYesButtonId = modalId + '_yes_button';
+        _modalNoButtonId = modalId + '_no_button';
+        _modalCloseSymbolId = modalId + '_close_symbol';
+    };
+
+    /*//choice is yes/no, string
+    function setChoice(choice){
+        //采用jquery的deferred，以便全局操作
+        let deferred=$q.defer()
+        if('yes'===choice.toLowerCase()){
+            deferred.resolve(true)
+        }else{
+            deferred.resolve(false)
+        }
+        return deferred.promise
+    }*/
+    //modalMsg：显示信息的元素
+    this.setModalMsgId = function (modalMsgId) {
+        _modalMsgId = modalMsgId;
+    };
+
+    this.setModalTitleId = function (modalTitleId) {
+        _modalTitleId = modalTitleId;
+    };
+
+    this.setModalYesButtonId = function (modalYesButtonId) {
+        _modalYesButtonId = modalYesButtonId;
+    };
+
+    this.setModalNoButtonId = function (modalNoButtonId) {
+        _modalNoButtonId = modalNoButtonId;
+    };
+
+    this.setModalCloseSymbolId = function (modalCloseSymbolId) {
+        _modalCloseSymbolId = modalCloseSymbolId;
+    };
+
+    /*              设置信息            */
+    //currentPage:删除后要重新获得当前页的数据
+    this.showChoiceMsg = function (msg, yesDelFunc, idx, recorder, currentPage) {
+        /*        console.log(  `enter show choice msg`)
+                console.log(  `_modalId is ${_modalId}`)*/
+        _setTop();
+        $('#' + _modalMsgId).text(msg);
+        $('#' + _modalId).addClass('show');
+        $('#' + _modalTitleId).text('删除').addClass('text-danger');
+        $('#' + _modalYesButtonId).addClass('btn-danger').bind('click', function () {
+            _modalHide(_modalId);
+            yesDelFunc(idx, recorder, currentPage);
+            //return setChoice('yes')
+        });
+        $('#' + _modalNoButtonId).addClass('').bind('click', function () {
+            _modalHide(_modalId);
+            //return setChoice('no')
+        });
+        $('#' + _modalCloseSymbolId).bind('click', function () {
+            //console.log(`click symbol id is ${_modalCloseSymbolId}`)
+            _modalHide(_modalId);
+        });
+    };
+});
+
+//采用jquery的方式对指定的input进行初始化，以及设置获得日期时间
+app.service('dateTimePickerHelper', function () {
+    var _dateTimeEleId = void 0;
+    this.initEle = function (eleId) {
+        _dateTimeEleId = eleId;
+        console.log('dateTimePicker init in');
+        console.log('id is ' + _dateTimeEleId);
+        /*
+                $(function () {
+                    console.log(`date tiem picker is id ${_dateTimeEleId}`)
+                    $('#' + _dateTimeEleId).datetimepicker()
+                })*/
+        $('#' + _dateTimeEleId).datetimepicker({
+            locale: 'zh-cn', // 根据moment的定义，https://github.com/moment/moment/tree/develop/locale
+            /*            default:function(){
+                            
+                        },*/
+            viewMode: 'days', //default days, accept decades/years/months/
+            format: 'YYYY-MM-DD', //http://momentjs.com/docs/#/displaying/format/ 'YYYY-MM-DD HH:mm'
+            icons: {
+                time: "fa fa-clock-o",
+                date: "fa fa-calendar",
+                up: "fa fa-arrow-up",
+                down: "fa fa-arrow-down"
+            }
         });
     };
 });

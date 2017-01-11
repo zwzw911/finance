@@ -4,7 +4,7 @@
 'use strict'
 var app=angular.module('finance',['component']);
 
-app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal){
+app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,htmlHelper){
 /*    //根据inputAttr的内容，生成合适的values，以便server处理
     var generateInputValue=function(inputAttr){
         let values={}
@@ -18,15 +18,18 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
     }*/
     modal.setModalId('modalCommon')
 
+    modalChoice.setModalId('modalChoice')
 
     var dataOperator=
     {
         //billType: {
         //idx无用，只是为了统一使用参数(create和update同样在modal上操作，使用同一个按钮)
-        'create': function (idx, inputAttr, recorder, selectAC, fkConfig, eColl, aDateToBeConvert) {
+        //成功添加一个记录后，无论当前页码是多少，都要返回第一页
+        'create': function (idx, inputAttr, recorder, selectAC, fkConfig, eColl, aDateToBeConvert,paginationInfo) {
             //首先加入db（加入db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
             //从inputAttr提取数据，转换成{field1:{value1:xxx},field2:{value2:yyy}}
             let value = inputAttrHelper.convertedInputAttrFormatCreate(inputAttr)
+            //convertedValue['newAddedRecorder']=value
             //转换外键的格式
             for (let singleFKField in fkConfig) {
                 inputAttrHelper.convertSingleACFormat(singleFKField, selectAC, value)
@@ -45,21 +48,22 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                             let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
                             delete data.msg[nestedPrefix]
                         }
-                        /*                            for(let singleFKField in fkConfig){
-                         let aRedundancyFields=fkConfig[singleFKField]['fields']
-                         //每个fk可能对应多个冗余field
-                         for(let singleField of aRedundancyFields){
-                         if(data.msg[singleFKField] && data.msg[singleFKField][singleField]){
-                         if(undefined===data.msg[singleFKField]){
-                         data.msg[singleFKField]={}
-                         }
-                         data.msg[singleFKField]=data.msg[singleFKField][singleField]
-                         }
-                         }
-                         }*/
 
                         console.log(`after FK format result ${JSON.stringify(data.msg)}`)
-                        recorder.push(data.msg)
+
+                        recorder.splice(0,0,data.msg)
+                        //添加后，记录数量超过pageSize，删除多余记录（可能不止一条？）
+                        if(recorder.length>paginationInfo.pageSize){
+                            let startIdx=paginationInfo.pageSize
+                            let deleteNum=recorder.length-paginationInfo.pageSize
+                            recorder.splice(startIdx,deleteNum)
+                        }
+/*                        else{
+                            recorder.splice(recorder.length-1,1)
+                        }*/
+
+
+                        //recorder.push(data.msg)
                         modal.showInfoMsg('记录添加成功')
                     }
 
@@ -73,16 +77,59 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
             //然后加入client数据，防止多次返回
             //_angularDataOp.create(idx,inputAttr,recorder)
         },
-        'delete': function (idx, recorder, eColl) {
+
+        //delete返回的是删除记录后，当前页 的数据
+        //fkConfig: 清楚数组中多余的字段
+        //dateField: 转换日期格式
+        'delete': function (idx, recorder, eColl,convertedValue,fkConfig,aDateToBeConvert,pagination) {
             //首先更新数据到db
             //设置要发送的数据（objId）
             //let value={}
             //value['_id']=recorder[idx]['_id']
-            //console.log(`construct delete values is ${JSON.stringify(value)}`)
-            let url = '/' + eColl + '/' + recorder[idx]['_id']
-            $http.delete(url, {}).success(function (data, status, header, config) {
+            console.log(`convertedValue is ${JSON.stringify(convertedValue)}`)
+            let url = '/' + eColl + '/delete/' + recorder[idx]['_id']
+
+            $http.post(url, {values:convertedValue}).success(function (data, status, header, config) {
                 if (0 === data.rc) {
-                    recorder.splice(idx, 1)
+                    recorder.splice(0, recorder.length)   //清空数组
+                    //console.log(`after empty array is ${JSON.stringify(recorder)}`)
+                    data.msg['recorder'].forEach(function (e) {
+                        commonHelper.convertDateTime(e, aDateToBeConvert)
+                        //需要删除nestedPrefix字段
+                        for (let singleFKField in fkConfig) {
+                            let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
+                            delete data.msg[nestedPrefix]
+                        }
+                        /*                            if(e.parentBillType && e.parentBillType.name){
+                         console.log('in')
+                         e.parentBillType=e.parentBillType.name
+                         }*/
+                        recorder.push(e)
+                    })
+                    console.log(`after push array is ${JSON.stringify(recorder)}`)
+
+                    pagination.paginationInfo=data.msg['paginationInfo']
+
+                    if(null===pagination.pageRange){
+                        pagination.pageRange=[]
+                    }
+                    if(null!==pagination.pageRange){
+                        pagination.pageRange.splice(0, pagination.pageRange.length)
+                    }
+                    for(let i=pagination.paginationInfo.start;i<=pagination.paginationInfo.end;i++){
+                        let ele={}
+                        ele['pageNo']=i
+                        ele['active']=false
+                        if(i===pagination.paginationInfo.currentPage){
+                            ele['active']=true
+                        }
+
+                        pagination.pageRange.push(ele)
+                    }
+                    //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
+                    // recorder=data.msg
+                    console.log(`page info is ${JSON.stringify(pagination)}`)
+
                 } else {
                     modal.showErrMsg(data.msg)
                 }
@@ -145,36 +192,6 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                 console.log('err')
             })
         },
-        //read合并到serach中
-       /* 'read': function (recorder, fkConfig, eColl, aDateToBeConvert) {
-            let url = '/' + eColl
-            $http.get(url, {}).success(function (data, status, header, config) {
-                if (0 === data.rc) {
-                    //对server返回的数据中的日期进行格式化
-                    //console.log(`read result is ${JSON.stringify(data.msg)}`)
-                    recorder.splice(0, recorder.length)   //清空数组
-                    data.msg.forEach(function (e) {
-                        commonHelper.convertDateTime(e, aDateToBeConvert)
-                        //需要删除nestedPrefix字段
-                        for (let singleFKField in fkConfig) {
-                            let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
-                            delete data.msg[nestedPrefix]
-                        }
-                        /!*                            if(e.parentBillType && e.parentBillType.name){
-                         console.log('in')
-                         e.parentBillType=e.parentBillType.name
-                         }*!/
-                        recorder.push(e)
-                    })
-                    // recorder=data.msg
-                    //console.log(`date format result ${JSON.stringify(returnResult.msg)}`)
-                } else {
-                    modal.showErrMsg(JSON.stringify(data.msg))
-                }
-            }).error(function () {
-                console.log('err')
-            })
-        },*/
         'readName': function (name, eColl) {
             let url = '/' + eColl + '/name/'
             return $http.post(url, {values: name}, {})
@@ -182,7 +199,7 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
         'search': function (recorder, queryValue, fkConfig, eColl, aDateToBeConvert,pagination) {
 
             let url = '/' + eColl + "/" + "search"
-            $http.post(url, {values: queryValue}).success(function (data, status, header, config) {
+            return  $http.post(url, {values: queryValue}).success(function (data, status, header, config) {
                 if (0 === data.rc) {
                     //对server返回的数据中的日期进行格式化
                     //console.log(`read result is ${JSON.stringify(data.msg)}`)
@@ -202,7 +219,7 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                          }*/
                         recorder.push(e)
                     })
-                    console.log(`after push array is ${JSON.stringify(recorder)}`)
+                    //console.log(`after push array is ${JSON.stringify(recorder)}`)
 
                     pagination.paginationInfo=data.msg['paginationInfo']
 
@@ -225,6 +242,8 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                     //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
                     // recorder=data.msg
                     console.log(`page info is ${JSON.stringify(pagination)}`)
+
+                    // htmlHelper.adjustFooterPosition()
                 } else {
                     modal.showErrMsg(JSON.stringify(data.msg))
                 }

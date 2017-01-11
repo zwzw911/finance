@@ -95,7 +95,8 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
             }
         }
     }
-    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage}
+    //pageSize;返回给前端使用
+    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize}
 }
 
 module.exports={

@@ -195,17 +195,6 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
         }
     )
     return Promise.resolve({rc:0,msg:result})
-    /*return new Promise(function(resolve,reject){
-        //dbModel.findById(id,selectedFields,function(err,result){
-        dbModel.findById('a',function(err,result){
-            if(err){
-                console.log(`findByID err is ${err}`)
-                resolve( mongooseErrorHandler(err))
-            }
-            //console.log(`find by id result is ${JSON.stringify(result)}`)
-            resolve({rc:0,msg:result})
-        })
-    })*/
 }
 
 async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,currentPage}) {
@@ -228,7 +217,7 @@ async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,cur
     }
 
     //finalParams
-    let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('cDate')
+    let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('-cDate')
         .populate(populateOpt)   //populate外键，以便直接在client显示
     .catch(
         (err)=>{

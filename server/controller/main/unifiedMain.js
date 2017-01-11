@@ -170,7 +170,7 @@ router.put('/employee',function(req,res,next){
     )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
-router.delete('/employee/:id',function(req,res,next){
+router.post('/employee/delete/:id',function(req,res,next){
     //console.log(req.params)
     unifiedRouterController.remove({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
         (v)=>{
@@ -265,7 +265,7 @@ router.put('/department',function(req,res,next){
     )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
-router.delete('/department/:id',function(req,res,next){
+router.post('/department/delete/:id',function(req,res,next){
     //console.log(req.params)
     unifiedRouterController.remove({eCurrentColl:coll.department, 'req':req,'res':res}).then(
         (v)=>{
@@ -360,7 +360,7 @@ router.put('/billType',function(req,res,next){
     )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
-router.delete('/billType/:id',function(req,res,next){
+router.post('/billType/delete/:id',function(req,res,next){
     //console.log(req.params)
     unifiedRouterController.remove({eCurrentColl:coll.billType, 'req':req,'res':res}).then(
         (v)=>{
@@ -455,7 +455,7 @@ router.put('/bill',function(req,res,next){
     )
 })
 //angular的delete无法像post一样传递额外数据，所以id要放在URL
-router.delete('/bill/:id',function(req,res,next){
+router.post('/bill/delete/:id',function(req,res,next){
     //console.log(req.params)
     unifiedRouterController.remove({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
         (v)=>{

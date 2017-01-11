@@ -9,9 +9,28 @@
         <link rel="stylesheet" href="stylesheets/own/finance.css"/>
         <link rel="stylesheet" href="stylesheets/3rd/bootstrap.css"/>
         <link rel="stylesheet" href="stylesheets/3rd/font-awesome.min.css"/>
-
+        <link rel="stylesheet" href="stylesheets/3rd/Eonasdan/bootstrap-datetimepicker.min.css"/>
         <!--移动到common。less中-->
         <!--<link rel="stylesheet" href="stylesheets/3rd/massautocomplete.theme.css"/>-->
+
+        <script src="javascripts/3rd/angular.min.js"></script>
+        <script  src="javascripts/3rd/jquery-2.2.3.min.js"></script>
+        <script  src="javascripts/3rd/bootstrap.min.js"></script>
+
+        <script  src="javascripts/3rd/angular-sanitize.min.js"></script>
+        <script  src="javascripts/3rd/massautocomplete.js"></script>
+        <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
+        <script  src="javascripts/3rd/event.js"></script>
+        <script  src="javascripts/3rd/moment_with_locals.js"></script>
+        <!--moment;s locale file-->
+        <script  src="javascripts/3rd/zh-cn.js"></script>
+        <script  src="javascripts/3rd/angular-moment.min.js"></script>
+        <script  src="javascripts/3rd/Eonasdan_datetimepicker/bootstrap-datetimepicker.min.js"></script>
+
+        <script  src="javascripts/own/main/constant.js"></script>
+        <script  src="javascripts/own/component/finance.js"></script>
+        <script  src="javascripts/own/component/component-compiled.js"></script>
+        <script  src="javascripts/own/main/mainController.js"></script>
 
         <title><%= title %></title>
 
@@ -19,7 +38,9 @@
 
     </head>
     <body class="row page_bg"  >
+    <%- include('../component/modalChoice') -%>
         <%- include('../component/modalCommon') -%>
+
         <header id="test" >
             <%- include('../component/header') -%>
         </header>
@@ -31,7 +52,21 @@
                 <span class="center radius1 paddingV_2 paddingH_2  marginL_3 cursor_pointer"  ui-sref="configuration" ui-sref-active="aside-hover-choosen" >配置信息</span>
                 <span class="center radius1 paddingV_2 paddingH_2  marginL_3 cursor_pointer" ui-sref="bill" ui-sref-active="aside-hover-choosen" >报销记录</span>
             </div>
-            <div class=" col-lg-12 marginT_7" >
+
+<!--            <div class='col-sm-6'>
+                <div class="form-group">
+                    <div class='input-group date' id='datetimepicker1'>
+                        <input type='text' class="form-control" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+            </div>-->
+
+
+
+            <div class=" col-lg-12" >
                 <div id="detail" ui-view class="  col-lg-12" style="display:flex;flex-flow: column nowrap;justify-content: center;align-items: center;align-content: space-around;">
                 </div>
             </div>
@@ -41,22 +76,9 @@
         </footer>
     </body>
 
-    <script src="javascripts/3rd/angular.min.js"></script>
-    <script  src="javascripts/3rd/jquery-2.2.3.min.js"></script>
-    <script  src="javascripts/3rd/bootstrap.min.js"></script>
-
-    <script  src="javascripts/3rd/angular-sanitize.min.js"></script>
-    <script  src="javascripts/3rd/massautocomplete.js"></script>
-    <script  src="javascripts/3rd/angular-ui-router.min.js"></script>
-    <script  src="javascripts/3rd/event.js"></script>
-    <script  src="javascripts/3rd/moment.min.js"></script>
-    <script  src="javascripts/3rd/angular-moment.min.js"></script>
 
 
-    <script  src="javascripts/own/main/constant.js"></script>
-    <script  src="javascripts/own/component/finance.js"></script>
-    <script  src="javascripts/own/component/component-compiled.js"></script>
-    <script  src="javascripts/own/main/mainController.js"></script>
 
+    <!--<script  src="javascripts/3rd/bootstrap-datetimepicker.zh-CN.js"></script>-->
 
 </html>

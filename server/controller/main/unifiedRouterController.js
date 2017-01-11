@@ -362,7 +362,13 @@ var remove=async function  ({eCurrentColl,req,res}){
     let result=await unifiedModel.remove({'dbModel':dbModel[eCurrentColl],updateOptions:updateOpt[eCurrentColl],'id':id})
     //console.log(`db op result is ${result}`)
     //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错
-    return Promise.resolve(unifiedHelper.returnResult(result))
+    if(result.rc>0){
+        return Promise.resolve(unifiedHelper.returnResult(result))
+    }
+
+
+    let readAgainResult=await search({eCurrentColl,req,res})
+    return Promise.resolve(unifiedHelper.returnResult(readAgainResult))
 }
 
 

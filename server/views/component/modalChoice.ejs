@@ -1,0 +1,21 @@
+<!--普通对话框，提示是否进行下一步操作-->
+<!--将操作的步骤放在app.factory中，以便可以注入到任意使用的地方-->
+<!--使用jquery进行操作，以便摆脱对controller的依赖-->
+<div id="modalChoice" class="modal  bs-example-modal-sm " tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button id="modalChoice_close_symbol" type="button" class="close" data-dismiss="modal" aria-label="Close" ><span aria-hidden="true">&times;</span></button>
+                <h4 id="modalChoice_title" class="modal-title"></h4>
+            </div>
+            <div id="modalChoice_msg" class="modal-body" >
+
+            </div>
+            <div class="modal-footer">
+                <button id="modalChoice_yes_button" type="button" class="btn btn-default" data-dismiss="modal" >确定</button>
+                <button id="modalChoice_no_button" type="button" class="btn " data-dismiss="modal" >取消</button>
+                <!--<button type="button" class="btn btn-primary">Save changes</button>-->
+            </div>
+        </div>
+    </div>
+</div>
