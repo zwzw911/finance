@@ -82,6 +82,7 @@ var assistError={
             valueNotDefineWithRequireTrue:{rc:69706,msg:'待检测的输入值未定义，而rule中require为true'},
             valueEmpty:{rc:69708,msg:'待检测的输入值不能为空'},
             valueRelatedRuleNotDefine:{rc:69710,msg:'待检测的输入值没有对应的检测规则'},
+            includeSkipFiled:{rc:69711,msg:'不能包含需要略过的字段'},
             objectIdEmpty:{rc:69712,msg:'objectId不能为空'},
             objectIdWrong:{rc:69714,msg:'objectId的格式不正确'},
             typeWrong:{rc:69716,msg:'类型不正确'},

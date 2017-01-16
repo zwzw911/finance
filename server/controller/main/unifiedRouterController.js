@@ -496,7 +496,7 @@ var search=async function ({eCurrentColl,req,res}){
     let currentPage=req.body.values['currentPage']
     let clientSearchParams=req.body.values['searchParams']
     let searchParams=validateFunc.genNativeSearchCondition(clientSearchParams,eCurrentColl,fkConfig,inputRule)
-    // console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    console.log(`convert search params id ${JSON.stringify(searchParams)}`)
     let recorder=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'pageSize':paginationSetting[eCurrentColl]['pageSize'],'pageLength':paginationSetting[eCurrentColl]['pageLength'],'currentPage':currentPage})
 
     //async中，所有调度的函数都必须是wait，以便返回一个promise对象；最终return的是一个函数，也必须是promise对象，否则会出错

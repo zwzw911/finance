@@ -373,12 +373,13 @@ app.factory('queryHelper',function(contEnum) {
             activateQueryFieldAndValue[field] = []
         }
         //如果是select传递过来的值
-        if (value.key) {
-            activateQueryFieldAndValue[field].push(value.key)
-        } else {
-            activateQueryFieldAndValue[field].push(value)
+        let inputValue
+        if (value.key){
+            inputValue=value.key
+        }else{
+            inputValue=value
         }
-
+        activateQueryFieldAndValue[field].push(inputValue)
     }
 
     //无论字段类型，使用同一个函数进行处理，得到统一格式
@@ -473,7 +474,18 @@ app.factory('queryHelper',function(contEnum) {
 
         return {'currentPage':currentPage,'searchParams':formattedValue}
     }
-    return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat}
+
+
+    //实际要传送到server端的 查询 数据，可能在前端显示给用户看的时候需要格式化（例如时间，可能只要显示YYYY-DD-MM，而不要HH:mm）
+    let formatQueryValue={
+        date:function(fieldValue){
+            console.log(`date tiem stamp ${fieldValue}`)
+            return moment(fieldValue,'X').format('YYYY-MM-DD')
+        },
+        dateTime:function(){}
+    }
+
+    return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat,formatQueryValue}
 })
 /*    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue,fkConfig,currentPage){
         let formattedValue={}
@@ -866,17 +878,19 @@ app.service('modalChoice',function(htmlHelper){
 
 //采用jquery的方式对指定的input进行初始化，以及设置获得日期时间
 app.service('dateTimePickerHelper',function(){
-    let _dateTimeEleId
+    // let _dateTimeEleId
     this.initEle=function(eleId){
-        _dateTimeEleId=eleId
-        console.log(`dateTimePicker init in`)
-        console.log(`id is ${_dateTimeEleId}`)
+        //_dateTimeEleId=eleId
+        // console.log(`dateTimePicker init in`)
+        // console.log(`id is ${eleId}`)
+        // console.log(typeof moment('asdf').format('YYYY-MM-DD'))
+        // console.log(moment('2013').format('YYYY-MM-DD'))
 /*
         $(function () {
             console.log(`date tiem picker is id ${_dateTimeEleId}`)
             $('#' + _dateTimeEleId).datetimepicker()
         })*/
-        $('#'+_dateTimeEleId).datetimepicker(
+        $('#'+eleId).datetimepicker(
             {
             locale:'zh-cn', // 根据moment的定义，https://github.com/moment/moment/tree/develop/locale
 /*            default:function(){
@@ -891,6 +905,46 @@ app.service('dateTimePickerHelper',function(){
                 down: "fa fa-arrow-down"
             }
         }
+        ).on(
+            'dp.change',function(e){
+                //$('#'+eleId+'>input').val(e.date)
+                console.log(`ele ${eleId} on change result is ${JSON.stringify(e.date)}`)
+        }
         )
+
+        // $('#'+_dateTimeEleId).data("DateTimePicker").date("2016-02-01")
+    }
+
+    this.getCurrentDate=function(eleId){
+        return $('#'+eleId).data("DateTimePicker").date()
+    }
+    this.getCurrentDateInTimeStamp=function(eleId){
+        let currentDate= $('#'+eleId).data("DateTimePicker").date()
+        return moment(currentDate).unix()
+    }
+
+
+
+    this.setFirstDay=function(eleId){
+        // let [year,month]=[moment().get('year'),moment().get('month')]
+        // let firstDay=year+'-'+month+'-01'
+        let d=moment().startOf("month")
+        $('#'+eleId).data("DateTimePicker").date(d)
+    }
+    this.setLastDay=function(eleId){
+        // let [year,month]=[moment().get('year'),moment().get('month')]
+        // let firstDay=year+'-'+month+'-01'
+        let d=moment().endOf("month")
+        $('#'+eleId).data("DateTimePicker").date(d)
+    }
+
+    this.validateDate=function(eleId){
+        let datetobecheck=$('#'+eleId).data("DateTimePicker").date()
+        // console.log(`date to be check is ${datetobecheck}`)
+        // console.log(`date to be checked result is ${moment(datetobecheck).format("YYYY-MM-DD")}`)
+        if("Invalid date"===moment(datetobecheck).format("YYYY")){
+            return false
+        }
+        return true
     }
 })

@@ -294,6 +294,10 @@ app.constant('cont',{
                     "msg": "报销员工包含的字符数不能少于2个"
                 },
                 "type": "string"
+            },
+            //手工加入，只为query时提供类型
+            'cDate':{
+                "type": "date"
             }
         }
     },
@@ -619,6 +623,9 @@ app.constant('cont',{
                 "chineseName": "报销员工",
                 "errorMsg": "",
                 "validated": "undefined"
+            },
+            'cDate':{
+                chineseName:'报销日期',
             }
         }
     },
@@ -705,6 +712,10 @@ app.constant('cont',{
             {
                 "value": "报销员工",
                 "key": "reimburser"
+            },
+            {
+                "value": "报销日期",
+                "key": "cDate"
             }
         ]
     },

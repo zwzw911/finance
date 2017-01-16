@@ -711,6 +711,7 @@ var valueMatchRuleDefineCheck={
 * 4. 检查key数量是否合适（不能超过最大定义）
 * 5. 每个key的value必须是object，且有key为value的key-value对
 * 6. 是否包含rule中未定义字段（防止用户随便输入字段名）.。如果是外键，要查找外键对应的rule是否存在,
+* 7. 某些即使放在inputRule中，但也不能作为输入字段（比如，cDate复用作为查询 创建日期）
 * 7. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
 * */
 function validateInputFormat(values,rule,maxFieldNum){
@@ -746,7 +747,9 @@ function validateInputFormat(values,rule,maxFieldNum){
 
     //console.log(`fkconfig is ${JSON.stringify(fkConfig)}`)
     //6 inputValue中所有field，是否为rule中定义的（阻止传入额外字段）
+    //7. 即使在inputRule中，但是也不能作为输入字段
     for(let singleFieldName in values){
+        let skipFiled=['cDate','uDate','dDate']
         //必须忽略id或者_id，因为没有定义在rule中（在创建doc时，这是自动生成的，所以创建上传的value，无需对此检测；如果rule中定义了，就要检测，并fail）
         if(singleFieldName!=='_id' && singleFieldName !=='id'){
 /*            let [newColl,newFieldName]=[eColl,singleFieldName]
@@ -762,10 +765,16 @@ function validateInputFormat(values,rule,maxFieldNum){
                 //rc[singleFieldName]=validateInputFormatError.valueRelatedRuleNotDefine
                 return validateInputFormatError.valueRelatedRuleNotDefine
             }
+            if(skipFiled.indexOf(singleFieldName)>-1){
+                return validateInputFormatError.includeSkipFiled
+            }
         }
 
     }
-    //7. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
+
+
+
+    //8. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
     let tmpValue={}
     for(let key in values){
         // console.log(`current key is ${key}`)
@@ -1583,16 +1592,22 @@ function subGenNativeSearchCondition(fieldValue,fieldRule){
         //存储所有数值
         let gtArray=[],ltArray=[],eqArray=[]
         for(let singleElement of fieldValue){
-            console.log(`singleElement is ${JSON.stringify(singleElement)}`)
+            let valueToBePush=singleElement['value']
+            if(dataType.date===fieldDataType){
+                console.log(`date  orig is ${valueToBePush}`)
+                valueToBePush=new Date(valueToBePush*1000)
+                console.log(`date  converted is ${valueToBePush}`)
+            }
+            // console.log(`singleElement is ${JSON.stringify(singleElement)}`)
             switch (singleElement['compOp']){
                 case compOp.gt:
-                    gtArray.push(singleElement['value'])
+                    gtArray.push(valueToBePush)
                     break
                 case compOp.lt:
-                    ltArray.push(singleElement['value'])
+                    ltArray.push(valueToBePush)
                     break
                 case compOp.eq:
-                    ltArray.push(singleElement['value'])
+                    ltArray.push(valueToBePush)
                     break
             }
         }

@@ -142,8 +142,8 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
             selectedQueryFieldOperator: undefined, //如果是数字，当前选中的比较符
             selectedQueryFieldValue: undefined, //如果选择的字段是字符或者数字，对应设置的值
             //如果是日期，需要2个变量确定，此时不能使用selectedQueryFieldValue
-            selectedStartDateValue: undefined,
-            selectedEndDateValue: undefined,
+            // selectedStartDateValue:undefined,
+            // selectedEndDateValue:undefined,
 
             queryField: cont.queryField[eColl], //可选的查询字段
 
@@ -159,6 +159,7 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
             selectedAC: appCont.selectedAC[eColl],
 
             currentOpType: null
+
         };
     };
 
@@ -214,6 +215,9 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
 
         var allFuncResult = {
 
+            onchange: function onchange() {
+                console.log('date change result is ' + JSON.stringify($scope.allData.selectedStartDateValue));
+            },
             //在对记录进行update的时候，根据idx，将recorder中的一个载入到inputAttr
             loadCurrentData: function loadCurrentData(idx, inputAttr, recorder) {
                 inputAttrHelper.loadCurrentData(idx, inputAttr, recorder, fkConfig);
@@ -366,29 +370,42 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
             },
             // $scope.addQueryValue=queryHelper.addQueryValue
             addQueryValue: function addQueryValue() {
-                console.log('add query in');
+                // console.log(`add query in`)
+                // console.log(`value is ${$scope.allData.selectedQueryFieldValue}`)
+                // console.log(`startDate is ${$scope.allData.selectedStartDateValue}`)
+                // console.log(`startDate is ${$scope.allData.selectedEndDateValue}`)
                 var selectedQueryFiled = $scope.allData.selectedQueryField['key'];
                 //判断queryField的类型，如果是date或者数字，要做特殊处理
                 var queryFiledType = $scope.allData.inputRule[selectedQueryFiled]['type'];
                 console.log('queryFiledType is ' + queryFiledType);
                 //对于日期，operator是根据开始/结束日期固定
                 if ('date' === queryFiledType) {
-                    if ($scope.allData.selectedStartDateValue && validateHelper.dataTypeCheck.isDate($scope.allData.selectedStartDateValue)) {
-                        var value = $scope.allData.selectedStartDateValue;
-                        queryHelper.addQueryValue(selectedQueryFiled, value, $scope.allData.activeQueryValue, 'gt'); //开始日期，操作符为gt
+                    var startDateEleId = appCont.dateInputId[eColl]['queryStartDate'];
+                    var endDateEleId = appCont.dateInputId[eColl]['queryEndDate'];
+                    var startDateValue = dateTimePickerHelper.getCurrentDateInTimeStamp(startDateEleId);
+                    var endDateValue = dateTimePickerHelper.getCurrentDateInTimeStamp(endDateEleId);
+                    // console.log(`startDateEleId is ${JSON.stringify(startDateEleId)}`)
+                    // console.log(`endDateEleId is ${JSON.stringify(endDateEleId)}`)
+                    // console.log(`startDateValue is ${JSON.stringify(startDateValue)}`)
+                    // console.log(`endDateValue is ${JSON.stringify(endDateValue)}`)
+                    // console.log(`validate reuyslt is ${dateTimePickerHelper.validateDate(startDateEleId)}`)
+                    if (dateTimePickerHelper.validateDate(startDateEleId)) {
+                        // let value=$scope.allData.selectedStartDateValue
+                        queryHelper.addQueryValue(selectedQueryFiled, startDateValue, $scope.allData.activeQueryValue, 'gt'); //开始日期，操作符为gt
                     }
-                    if ($scope.allData.selectedEndDateValue && validateHelper.dataTypeCheck.isDate($scope.allData.selectedEndDateValue)) {
-                        var _value = $scope.allData.selectedEndDateValue;
-                        queryHelper.addQueryValue(selectedQueryFiled, _value, $scope.allData.activeQueryValue, 'lt'); //开始日期，操作符为gt
+                    if (dateTimePickerHelper.validateDate(endDateEleId)) {
+                        // let value=$scope.allData.selectedEndDateValue
+                        queryHelper.addQueryValue(selectedQueryFiled, endDateValue, $scope.allData.activeQueryValue, 'lt'); //开始日期，操作符为gt
                     }
+                    console.log('after selectedQueryOperator is ' + JSON.stringify($scope.allData.activeQueryValue));
                 } else if (['float', 'int', 'number'].indexOf(queryFiledType) > -1) {
                     console.log('selectedQueryOperator is ' + $scope.allData.selectedQueryFieldOperator);
                     //对于日期，如果operator不存在
-                    var _value2 = $scope.allData.selectedQueryFieldValue;
+                    var value = $scope.allData.selectedQueryFieldValue;
                     if (false === $scope.allData.selectedQueryFieldOperator in contEnum.operator) {
                         $scope.allData.selectedQueryFieldOperator = contEnum.operator.eq;
                     }
-                    queryHelper.addQueryValue(selectedQueryFiled, _value2, $scope.allData.activeQueryValue, $scope.allData.selectedQueryFieldOperator);
+                    queryHelper.addQueryValue(selectedQueryFiled, value, $scope.allData.activeQueryValue, $scope.allData.selectedQueryFieldOperator);
                     console.log('after selectedQueryOperator is ' + JSON.stringify($scope.allData.activeQueryValue));
                 } else {
                     //字符
@@ -397,21 +414,46 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
                     }
                 }
 
+                $scope.allData.selectedQueryFieldValue = undefined;
+                $scope.allData.selectedStartDateValue = undefined;
+                $scope.allData.selectedEndDateValue = undefined;
                 console.log('after add query value ' + JSON.stringify($scope.allData.activeQueryValue));
             },
 
-            queryFieldChange: function queryFieldChange(selectedQueryField) {
+            formatQueryValue: function formatQueryValue(fieldName, fieldValue) {
+                var fieldType = $scope.allData.inputRule[fieldName]['type'];
+                switch (fieldType) {
+                    case 'date':
+                        console.log('orig date is ' + fieldValue);
+                        // console.log(`orig date is ${queryHelper.formatQueryValue.date(fieldValue)}`)
+                        return queryHelper.formatQueryValue.date(fieldValue);
+                        break;
+                    default:
+                        return fieldValue;
+                }
+            },
+
+            queryFieldChange: function queryFieldChange() {
                 //初始清空值
                 $scope.allData.selectedQueryFieldValue = undefined;
                 $scope.allData.selectedStartDateValue = undefined;
                 $scope.allData.selectedEndDateValue = undefined;
                 //判断选择字段的类型，如果是日期，则进行初始化(按需初始化)
+                var selectedQueryField = void 0;
+                if ($scope.allData.selectedQueryField && '' !== $scope.allData.selectedQueryField) {
+                    selectedQueryField = $scope.allData.selectedQueryField;
+                }
+                console.log('selected query field is ' + JSON.stringify(selectedQueryField));
+                console.log('selected query field rle is ' + JSON.stringify($scope.allData.inputRule[selectedQueryField['key']]));
                 if ('date' === $scope.allData.inputRule[selectedQueryField['key']]['type']) {
                     console.log('date filed choose');
                     console.log('id is ' + appCont.dateInputId[eColl]['queryStartDate']);
-                    // $("#queryStartDate").datetimepicker();
+                    //根据date input的id，通过datetimepicker进行初始化
                     dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryStartDate']);
+                    dateTimePickerHelper.setFirstDay(appCont.dateInputId[eColl]['queryStartDate']);
+
                     dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryEndDate']);
+                    dateTimePickerHelper.setLastDay(appCont.dateInputId[eColl]['queryEndDate']);
                 }
             },
 
@@ -547,6 +589,12 @@ app.factory('templateFunc', function ($q, $sce, appCont, cont, contEnum, inputAt
         var startDate = appCont.dateInputId[eColl].queryStartDate;
         var endDate = appCont.dateInputId[eColl].queryStartDate;
 
+
+        dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryStartDate']);
+        dateTimePickerHelper.setFirstDay(appCont.dateInputId[eColl]['queryStartDate']);
+
+        dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryEndDate']);
+        dateTimePickerHelper.setLastDay(appCont.dateInputId[eColl]['queryEndDate']);
         /*        // let startDate=
                 dateTimePickerHelper.initEle(startDate)
                 dateTimePickerHelper.initEle(endDate)*/

@@ -171,7 +171,13 @@ var inputRule = {
             'chineseName': '报销员工',
             'type': inputDataType.objectId,
             'require': { define: true, error: { rc: 10884 }, mongoError: { rc: 20084, msg: '报销员工不能为空' } },
-            'format': { define: regex.objectId, error: { rc: 10086 }, mongoError: { rc: 20086, msg: '报销员工的id格式不正确' } } }
+            'format': { define: regex.objectId, error: { rc: 10086 }, mongoError: { rc: 20086, msg: '报销员工的id格式不正确' } } },
+        //dDate只用于查询，不能用于create和update
+        cDate: {
+            'chineseName': '报销日期',
+            'type': inputDataType.date,
+            'require': { define: false, error: { rc: 10090 }, mongoError: { rc: 20090, msg: '报销日期不能为空' } }
+        }
     }
 };
 
