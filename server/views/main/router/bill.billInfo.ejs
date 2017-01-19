@@ -33,7 +33,7 @@
 
 <div class="flex-vertical">
 
-  <div class="page-header h3 text-primary col-lg-12" sytle="">
+  <div class="page-header-narrow h3 text-primary col-lg-12" sytle="">
     设置查询条件
     <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.queryFieldEnable" ng-init="allData.queryFieldEnable=false" ng-click="allFunc.clickQueryFlag()"></span>
     <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===allData.queryFieldEnable" ng-click="allFunc.clickQueryFlag()"></span>
@@ -120,7 +120,7 @@
 
 <div class="flex-vertical">
 <!--<div class="col-lg-12">-->
-    <div class="page-header h3 text-primary col-lg-12" sytle="">
+    <div class="page-header-narrow h3 text-primary col-lg-12" sytle="">
         数据
     </div>
 
@@ -146,7 +146,7 @@
             </thead>
             <tbody>
             <tr ng-repeat="(idx,value) in allData.recorder">
-                <td>{{idx+1}}</td>
+                <td >{{1+idx+(pagination.paginationInfo.currentPage-1)*pagination.paginationInfo.pageSize}}</td>
                 <td>{{value.title}}</td>
                 <td class="hidden-xs hidden-sm">{{value.content}}</td>
                 <td class="hidden-xs hidden-sm">{{value.billType.name}}</td>

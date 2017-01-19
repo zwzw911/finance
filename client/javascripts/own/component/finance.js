@@ -4,7 +4,7 @@
 'use strict'
 var app=angular.module('finance',['component']);
 
-app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,htmlHelper){
+app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,paginationHelper){
 /*    //根据inputAttr的内容，生成合适的values，以便server处理
     var generateInputValue=function(inputAttr){
         let values={}
@@ -220,8 +220,9 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                         recorder.push(e)
                     })
                     //console.log(`after push array is ${JSON.stringify(recorder)}`)
-
-                    pagination.paginationInfo=data.msg['paginationInfo']
+let a=paginationHelper.generateClientPagination(data.msg['paginationInfo'])
+                    Object.assign(pagination,a)
+                    /*pagination.paginationInfo=data.msg['paginationInfo']
 
                     if(null===pagination.pageRange){
                         pagination.pageRange=[]
@@ -238,7 +239,7 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                         }
 
                         pagination.pageRange.push(ele)
-                    }
+                    }*/
                     //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
                     // recorder=data.msg
                     console.log(`page info is ${JSON.stringify(pagination)}`)

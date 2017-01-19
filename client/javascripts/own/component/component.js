@@ -948,3 +948,45 @@ app.service('dateTimePickerHelper',function(){
         return true
     }
 })
+
+//分页函数
+app.service('paginationHelper',function(){
+    //根据serve传递过来的数据，产生用于页面的分页 数据
+    //serverData：从server端获得的原始分页数据
+    //返回：angular用于渲染页面的 分页 数据
+    this.generateClientPagination=function(serverPaginationInfo){
+        let clientPagination= {
+            'paginationInfo': null,//存储server返回的pagination信息。{"start":1,"end":2,"currentPage":1,"showPrevious":false,"showNext":true,"totalPage":2,"pageSize":6}
+            'pageRange': null,//根据server传递的start和end产生一个连续数组，标识页码
+            'goToPageNo': null,//go to page no
+            'goToButtonEnable': false,//go to button是否enable（只有填入了合格的页码，才能enable button）
+        }
+
+        //console.log(`clientPagination is ${JSON.stringify(clientPagination)}`)
+        clientPagination.paginationInfo=serverPaginationInfo
+
+        if(null===clientPagination.pageRange){
+            clientPagination.pageRange=[]
+        }
+        if(null!==clientPagination.pageRange){
+            clientPagination.pageRange.splice(0, clientPagination.pageRange.length)
+        }
+        for(let i=clientPagination.paginationInfo.start;i<=clientPagination.paginationInfo.end;i++){
+            let ele={}
+            ele['pageNo']=i
+            ele['active']=false
+            if(i===clientPagination.paginationInfo.currentPage){
+                ele['active']=true
+            }
+
+            clientPagination.pageRange.push(ele)
+        }
+// console.log(`clientPagination is ${JSON.stringify(clientPagination)}`)
+        return clientPagination
+    }
+
+    //判读页码是否为整数
+    this.validateGoToPageNo=function(goToPageNo){
+        return validateHelper.dataTypeCheck.isInt(goToPageNo)
+    }
+})

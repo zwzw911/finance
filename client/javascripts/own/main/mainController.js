@@ -142,7 +142,7 @@ app.controller('configurationController',function($scope,htmlHelper){
 
 })
 
-app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper){
+app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper,paginationHelper){
     var generateControllerData=function(eColl){
         return {
             inputAttr:cont.inputAttr[eColl],//CRUD记录的时候，对输入进行设置
@@ -193,13 +193,19 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
     function generatePaginationFunc($scope){
         let allFuncResult={}
         allFuncResult={
+            //移动到某页
             validateGoToPageNo:function(){
-                if(false===validateHelper.dataTypeCheck.isInt($scope.pagination.goToPageNo)){
+                //判断页码是否为整数（返回boolean值）
+                $scope.pagination.goToButtonEnable=paginationHelper.validateGoToPageNo($scope.pagination.goToPageNo)
+                if(false===$scope.pagination.goToButtonEnable){
                     $scope.pagination.goToPageNo=null
-                    $scope.pagination.goToButtonEnable=false
-                }else{
-                    $scope.pagination.goToButtonEnable=true
                 }
+                //if(false===validateHelper.dataTypeCheck.isInt($scope.pagination.goToPageNo)){
+                //    $scope.pagination.goToPageNo=null
+                //    $scope.pagination.goToButtonEnable=false
+                //}else{
+                //    $scope.pagination.goToButtonEnable=true
+                //}
                 console.log($scope.pagination.goToButtonEnable)
             }
         }
@@ -316,7 +322,8 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 /*                    if(0===Object.keys($scope.allData.activeQueryValue).length){
                         financeHelper.dataOperator.read(recorder,fkConfig,eColl,dateField)
                     }else{*/
-                    return financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField,$scope.pagination);
+                    financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField,$scope.pagination);
+                    console.log(`after search pagination is ${JSON.stringify($scope.pagination)}`)
                     //}
 
                     //$scope.switchDialogStatus();
@@ -484,8 +491,8 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
             //选择查询条件完毕，并添加完成后，selectedField/selectedFieldValue设成空
             initSelectedQueryField:function(){
-                $scope.allData.selectedQueryField=''
-                $scope.allData.selectedQueryFieldValue=''
+                $scope.allData.selectedQueryField=undefined
+                $scope.allData.selectedQueryFieldValue=undefined
             },
 
 
@@ -612,7 +619,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
         //financeHelper.dataOperator.search($scope.allData.recorder,appCont.fkRedundancyFields[eColl],appCont.coll[eColl],appCont.dateField[eColl])
         var promise=financeHelper.dataOperator.search($scope.allData.recorder,{'currentPage':1,'searchParams':{}},appCont.fkRedundancyFields[eColl],eColl,appCont.dateField[eColl],$scope.pagination);
         promise.then(function(v){
-            // console.log(`search done`)
+             console.log(`search done pagination is ${JSON.stringify($scope.pagination)}`)
             htmlHelper.adjustFooterPosition()
         })
         let [startDate,endDate]=[appCont.dateInputId[eColl].queryStartDate,appCont.dateInputId[eColl].queryStartDate]
@@ -705,7 +712,9 @@ app.controller('billController',function($scope,htmlHelper){
 app.controller('bill.billInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('bill')
-    $scope.pagination=templateFunc.generatePaginationData('bill')
+    //$scope.pagination=templateFunc.generatePaginationData('bill')
+    //初始化为任意类型，因为调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    $scope.pagination={}
     $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
     $scope.modal=templateFunc.generateCreateUpdateModalInfo()
     $scope.allFunc=templateFunc.allFunc($scope,'bill')
