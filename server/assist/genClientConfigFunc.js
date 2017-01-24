@@ -102,6 +102,7 @@ var generateClientRule=function(){
             for(let singleRule in clientRuleType){
                 // console.log(`ready coll field is ${newColl}  ${newField}`)
                 if(inputRule[newColl][newField][singleRule]){
+                    //此地的type是指数据类型（而不是html中input type的类型）
                     if('type'===singleRule){
                         result[coll][field]['type']=inputRule[newColl][newField][singleRule]
                     }else{
@@ -148,6 +149,8 @@ var deleteNonNeededObject=function(origObj,skipList){
 //origObj: generateClientRule或者generateClientInputAttr产生的结果
 //matchList：指定对应的filed连接到的coll.field(db中字段是objectID，但是用作外键，实际代表字符等，所以需要修改checkRule和inputAttr的chineseName)
 var objectIdToRealField=function(origObj,matchList){
+    //console.log(`inputRule obj is ${JSON.stringify(origObj)}`)
+    //console.log(`err obj is ${JSON.stringify(origObj['department']['parentDepartment'])}`)
     if(false===dataTypeCheck.isObject(origObj)) {
         return miscError.objectIdToRealField.origObjTypeWrong
     }
@@ -156,6 +159,7 @@ var objectIdToRealField=function(origObj,matchList){
     }
     let tmp,tmpColl,tmpField
     //let tmpValue
+//console.log(`match list is ${JSON.stringify(matchList)}`)
     for(let coll in matchList){
         if(undefined===matchList[coll]){
             continue
@@ -165,7 +169,9 @@ var objectIdToRealField=function(origObj,matchList){
             tmp=matchList[coll][field].split('.')
             tmpColl=tmp[0]
             tmpField=tmp[1]
-
+            //console.log(`coll is ${JSON.stringify(coll)}`)
+            //console.log(`field is ${JSON.stringify(field)}`)
+//console.log(`origObj is ${JSON.stringify(origObj[coll][field])}`)
             //如果是attr（通过判断是否有chineseName），保存原始的chineseName，但是inputDataType换成相关字段的类型
             if(origObj[coll][field]['chineseName']){
                 origObj[coll][field]['inputDataType']=origObj[tmpColl][tmpField]['inputDataType']
@@ -186,13 +192,24 @@ var objectIdToRealField=function(origObj,matchList){
                     if('require'===rule){
                         continue
                     }
+
+
                     //console.log(tmpField+" "+rule)
                     //其他rule的定义和msg采用关联字段的定义和msg（在客户端使用，没有rc）
                     //如果关联字段中 有某个rule，但是原始字段中 没有，那么在原始字段设置一个空rule
                     if(undefined===origObj[coll][field][rule]){
                         origObj[coll][field][rule]={}
                     }
+                    //console.log(origObj[coll][field][rule]['define'])
                     //console.log(origObj[tmpColl][tmpField][rule]['define'])
+
+                    //外键的类型，从objectId转化成对应coll.field的类型（string/int等）
+                    if('type'===rule){
+                        //console.log(rule)
+                        //console.log(origObj[coll][field][rule])
+                        origObj[coll][field][rule]=origObj[tmpColl][tmpField][rule]
+                        continue
+                    }
                     origObj[coll][field][rule]['define']=origObj[tmpColl][tmpField][rule]['define']
                     origObj[coll][field][rule]['msg']=origObj[tmpColl][tmpField][rule]['msg']
                 }
@@ -240,7 +257,19 @@ var generateClientInputAttr=function(obj,level,resultObj){
                 //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
                 //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
                 //isSelect:input是否为select
-                resultObj[key]={value:'',originalValue:'',isSelect:false,selectOption:[],isQueryAutoComplete:false,isCRUDAutoComplete:false,autoCompleteCollField:'',suggestList:{},blur:false,focus:true,inputDataType:temInputDataType,inputIcon:"",chineseName:tmpChineseName,errorMsg:"",validated:'undefined'}
+                resultObj[key]={
+                    value:'',
+                    originalValue:'',
+                    isSelect:false,selectOption:[],
+                    isQueryAutoComplete:false,
+                    isCRUDAutoComplete:false,
+                    autoCompleteCollField:'',
+                    suggestList:{},
+                    inputDataType:temInputDataType, //html元素中，input type=？  和inputRule中的type概念不一样
+                    inputIcon:"",
+                    chineseName:tmpChineseName,
+                    errorMsg:"",
+                    validated:'undefined'}
             }else{
                 //如果值是对象，递归调用
                 if('object'===typeof obj[key]){

@@ -235,6 +235,9 @@ var inputRule={
             'require': {define: true, error: {rc: 10884},mongoError:{rc:20084,msg:'报销员工不能为空'}},
             'format':{define:regex.objectId,error:{rc:10086},mongoError:{rc:20086,msg:'报销员工的id格式不正确'}},//format == mongodb_match
         },
+        /*      以下为patch，cDate实际不应出现在inputRule，而是应该新建一个field来记录 创建时间
+        *       cDate作为server内部输入值的field，不应该出现在inputRule中（inputRule只对client输入的值进行检测）
+        * */
         //dDate只用于查询，不能用于create和update
         cDate:{
             'chineseName':'报销日期',

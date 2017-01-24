@@ -181,7 +181,7 @@ var create=async function ({eCurrentColl,req,res}){
     //  console.log(`before san ${JSON.stringify(req.body.values)}`)
     //try{
     //1. 对输入进行检查，确保是合格的输入
-    let sanitizedInputValue=unifiedHelper.sanityInput(req.body.values,inputRule[eCurrentColl],false,maxFieldNum[eCurrentColl])
+    let sanitizedInputValue=unifiedHelper.sanityInput(req.body.values.recorderInfo,inputRule[eCurrentColl],false,maxFieldNum[eCurrentColl])
     // console.log(`1st san ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
         // returnResult(sanitizedInputValue)
@@ -192,7 +192,7 @@ var create=async function ({eCurrentColl,req,res}){
     //从{name:{value:'11'}}====>{name:'11'}
     //     console.log(`before sant ${sanitizedInputValue.msg}`)
     //  console.log(`after sant ${validateFunc.convertClientValueToServerFormat(req.body.values)}`)
-    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values))
+    arrayResult.push(validateFunc.convertClientValueToServerFormat(req.body.values.recorderInfo))
 
     //3 删除null的字段（null说明字段为空，所以无需传入db
     for(let doc of arrayResult){

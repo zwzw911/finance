@@ -4,9 +4,9 @@
 'use strict'
 require("babel-polyfill");
 require("babel-core/register")
-var testModule=require('../../server/assist/validateFunc').func;
-var miscError=require('../../server/define/error/nodeError').nodeError.assistError
-var ruleFormatCheckFormatError=miscError.validateFunc.validateInputRuleFormat
+var testModule=require('../../server/assist/validateInput/validateHelper');
+//var miscError=require('../../server/define/error/nodeError').nodeError.assistError
+var ruleFormatCheckFormatError=require('../../server/define/error/node/validateError').validateError.validateHelper
 /*          for generateRandomString test       */
 var regex=require('../../server/define/regex/regex').regex
 var dataType=require('../../server/define/enum/validEnum').enum.dataType

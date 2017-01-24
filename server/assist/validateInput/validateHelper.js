@@ -1,16 +1,11 @@
 /**
  * Created by wzhan039 on 2016-02-25.
- * 把前端传入的input的检查工作全部放在一个文件进行处理
- * 前端传入分成2种格式：
- *          1. 普通的输入（一般为create或者update delete），格式为{field1:{value:'val1'}}
- *          2. 查询：因为update可能涉及到对外键的更新，而外键一般为objectId，显然不能在client端显示给用户objectId（客户也不可能看懂）
- *                          所以需要用一个或者多个额外的字段代表外键,同时，每个额外字段可能有多个值
- *                          格式为{normalField1:['val1'], fkField1:[{fkRelatedField1:'val1',fkRelatedField2:'val2'}, {fkRelatedField1:'val3'}]}
- *
- * 每个validate由2部分组成：input的定义和根据定义对输入进行检测
- *                  input定义包括：require,minLength,maxLength,exactLength,format,equalTo（format只在server处理）
- *                                  新增定义：min，max，file，folder：min/max：整数大小；file/folder：文件/文件夹是否存在
- *
+* validate用到的辅助函数
+ * 1. dataTypeCheck：判断数据类型和数据是否为空
+ * 2. valueTypeCheck: 根据数据类型，自动调用对应的dataTypeCheck进行检查
+ * 3. ruleFormatCheck： 检查手工定义的rule文件（根据mongodb的定义），是否有错
+ * 4. generateErrorMsg：产生可读的错误信息
+ * 5. valueMatchRuleDefineCheck：出入值和某个rule（min/max/minLenght/maxLength），是否符合
  */
 'use strict'
 require("babel-polyfill");
@@ -24,34 +19,31 @@ var fs=require('fs')
 
 
 
-var regex=require('../define/regex/regex').regex
-
-/*var ioredis=require('ioredis')
-var ioredisClient=new ioredis()*/
+var regex=require('../../define/regex/regex').regex
 
 
 /*      for CRUDGlobalSetting       */
-var defaultSetting=require('../config/global/globalSettingRule').defaultSetting
-var searchSetting=require('../config/global/globalSettingRule').searchSetting
+// var defaultSetting=require('../config/global/globalSettingRule').defaultSetting
+// var searchSetting=require('../config/global/globalSettingRule').searchSetting
 //use redis to save get golbalSetting
 
 /*var dataTypeCheck=require('../../../assist/misc').func.dataTypeCheck
-var redisError=require('../../../define/error/redisError').redisError*/
+ var redisError=require('../../../define/error/redisError').redisError*/
 //var inputValid=require('./valid').inputValid
 
 /*              for input valid         */
 //var regex=require('../define/regex/regex').regex.regex
-var validateInputRuleError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputRuleFormat
-var validateInputFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputFormat
-var validateInputSearchFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputSearchFormat
+var validateHelperError=require('../../define/error/node/validateError').validateError.validateHelper
+// var validateInputFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputFormat
+// var validateInputSearchFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputSearchFormat
 
 /*var dataTypeCheck=require('../assist/misc').func.dataTypeCheck
-var valueMatchRuleDefineCheck=require('../assist/misc').func.valueMatchRuleDefineCheck*/
+ var valueMatchRuleDefineCheck=require('../assist/misc').func.valueMatchRuleDefineCheck*/
 
 //var fs=require('fs')
-var dataType=require('../define/enum/validEnum').enum.dataType
-var ruleType=require('../define/enum/validEnum').enum.ruleType
-var compOp=require('../define/enum/node').node.compOp
+var dataType=require('../../define/enum/validEnum').enum.dataType
+var ruleType=require('../../define/enum/validEnum').enum.ruleType
+// var compOp=require('../../define/enum/node').node.compOp
 
 //var otherFiledNameEnum=require('../define/enum/validEnum').enum.otherFiledName
 
@@ -74,9 +66,9 @@ var rightResult={rc:0,msg:null}
 
 
 /*
-* 除了checkInputValue使用，其他地方也可能使用，所以单独作为一个函数
-* 数值123.0复制后，实际变成123，影响程序处理方式
-* */
+ * 除了checkInputValue使用，其他地方也可能使用，所以单独作为一个函数
+ * 数值123.0复制后，实际变成123，影响程序处理方式
+ * */
 var dataTypeCheck= {
     //是否已经赋值
     isSetValue(variant){
@@ -214,9 +206,9 @@ var dataTypeCheck= {
     isPositive(value) {
 
         let parsedValue = parseFloat(value)
-/*        if(isNaN(parsedValue)){
-            return false
-        }*/
+        /*        if(isNaN(parsedValue)){
+         return false
+         }*/
         return parsedValue > 0
     },
     isFolder(path) {
@@ -252,7 +244,7 @@ function valueTypeCheck(value, type){
         case dataType.number:
             return dataTypeCheck.isNumber(value)
         default:
-            return validateInputFormatError.unknownDataType
+            return validateHelperError.unknownDataType
     }
 }
 
@@ -265,15 +257,15 @@ function valueTypeCheck(value, type){
  * 2
  * */
 /*
-* 对单个字段的所有rule定义进行检查
-* coll/singleFieldName:如果字段错误，为返回值提供错误coll/field的名称（其他错误，可以使用chineseName）；singleFieldInputRules：field的rule定义
-* 返回：{rc:0}或者{rc:xxxx,msg:'field的rule定义错误'}
-* */
+ * 对单个字段的所有rule定义进行检查
+ * coll/singleFieldName:如果字段错误，为返回值提供错误coll/field的名称（其他错误，可以使用chineseName）；singleFieldInputRules：field的rule定义
+ * 返回：{rc:0}或者{rc:xxxx,msg:'field的rule定义错误'}
+ * */
 function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
     let rc={}
     //0 检测rle必须是object
     if(false==dataTypeCheck.isObject(singleFieldInputRules)){
-        return validateInputRuleError.ruleMustBeObject
+        return validateHelperError.ruleMustBeObject
     }
 
     //1 检查必须的field
@@ -282,20 +274,20 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
         //console.log(inputRules[inputRule][mandatoryField])
         if(false===dataTypeCheck.isSetValue(singleFieldInputRules[mandatoryField])){
             //console.log()
-            rc['rc']=validateInputRuleError.mandatoryFiledNotExist.rc
-            rc['msg']=`${singleFieldName}的规则${mandatoryField}${validateInputRuleError.mandatoryFiledNotExist.msg}`
+            rc['rc']=validateHelperError.mandatoryFiledNotExist.rc
+            rc['msg']=`${singleFieldName}的规则${mandatoryField}${validateHelperError.mandatoryFiledNotExist.msg}`
             return rc
         }
     }
     //2 检查chineseName是否为字符，是否空，type是否在指定范围内（require由后面的rule check统一处理）
     if(false===dataTypeCheck.isString(singleFieldInputRules['chineseName'])){
-        rc['rc']=validateInputRuleError.chineseNameNotString.rc
-        rc['msg']=`${singleFieldName}的${validateInputRuleError.chineseNameNotString.msg}`
+        rc['rc']=validateHelperError.chineseNameNotString.rc
+        rc['msg']=`${singleFieldName}的${validateHelperError.chineseNameNotString.msg}`
         return rc
     }
     if(dataTypeCheck.isEmpty(singleFieldInputRules['chineseName'])){
-        rc['rc']=validateInputRuleError.chineseNameEmpty.rc
-        rc['msg']=`${singleFieldName}的${validateInputRuleError.chineseNameEmpty.msg}`
+        rc['rc']=validateHelperError.chineseNameEmpty.rc
+        rc['msg']=`${singleFieldName}的${validateHelperError.chineseNameEmpty.msg}`
         return rc
     }
 
@@ -309,12 +301,12 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
         continue
     }
     if(true===unknownDataType){
-        rc['rc']=validateInputRuleError.unknownDataType.rc
-        rc['msg']=`${singleFieldName}的type的${validateInputRuleError.unknownDataType.msg}`
+        rc['rc']=validateHelperError.unknownDataType.rc
+        rc['msg']=`${singleFieldName}的type的${validateHelperError.unknownDataType.msg}`
         return rc
     }
 
-        //singleFieldName可以用chineseName代替，如此，更容易查看错误
+    //singleFieldName可以用chineseName代替，如此，更容易查看错误
     let chineseName=singleFieldInputRules['chineseName']
     //4 某些类型必须有关联rule
     //console.log(inputRules[inputRule]['type'])
@@ -322,36 +314,36 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 
         case dataType.int:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['min'])){
-                rc['rc']=validateInputRuleError.needMin.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needMin.msg}`
+                rc['rc']=validateHelperError.needMin.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needMin.msg}`
                 return rc
 
             }
             if( false===dataTypeCheck.isSetValue(singleFieldInputRules['max'])){
-                rc['rc']=validateInputRuleError.needMax.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needMax.msg}`
+                rc['rc']=validateHelperError.needMax.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needMax.msg}`
                 return rc
             }
             break;
         //和int处理方式一样
         case dataType.float:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['min'])){
-                rc['rc']=validateInputRuleError.needMin.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needMin.msg}`
+                rc['rc']=validateHelperError.needMin.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needMin.msg}`
                 return rc
 
             }
             if( false===dataTypeCheck.isSetValue(singleFieldInputRules['max'])){
-                rc['rc']=validateInputRuleError.needMax.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needMax.msg}`
+                rc['rc']=validateHelperError.needMax.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needMax.msg}`
                 return rc
             }
             break;
         case dataType.number:
             //console.log(inputRules[inputRule]['maxLength'])
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
-                rc['rc']=validateInputRuleError.needMaxLength.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needMaxLength.msg}`
+                rc['rc']=validateHelperError.needMaxLength.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needMaxLength.msg}`
                 //console.log(rc)
                 return rc
             };
@@ -360,8 +352,8 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
             //string: 如果即没有format，也没有enum，则必须有maxLenght
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['format']) && false===dataTypeCheck.isSetValue(singleFieldInputRules['enum'])){
                 if(false===dataTypeCheck.isSetValue(singleFieldInputRules['maxLength'])){
-                    rc['rc']=validateInputRuleError.needMaxLength.rc
-                    rc['msg']=`${chineseName}的${validateInputRuleError.needMaxLength.msg}`
+                    rc['rc']=validateHelperError.needMaxLength.rc
+                    rc['msg']=`${chineseName}的${validateHelperError.needMaxLength.msg}`
                     return rc
                 };
             };
@@ -370,8 +362,8 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
         //ObjectId必须有format，用来出错时返回错误
         case dataType.objectId:
             if(false===dataTypeCheck.isSetValue(singleFieldInputRules['format'])){
-                rc['rc']=validateInputRuleError.needFormat.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.needFormat.msg}`
+                rc['rc']=validateHelperError.needFormat.rc
+                rc['msg']=`${chineseName}的${validateHelperError.needFormat.msg}`
                 //console.log(rc)
                 return rc
             };
@@ -388,20 +380,21 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
             continue
         }
         //检查rule中必须的字段是否存在（rule定义是否正确）
+        //因为inputRule的msg是通过函数产生的，所以无需这个key
         if (true === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule])) {
             if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['define'])) {
-                rc['rc'] = validateInputRuleError.ruleDefineNotDefine.rc
-                rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.ruleDefineNotDefine.msg}`
+                rc['rc'] = validateHelperError.ruleDefineNotDefine.rc
+                rc['msg'] = `${chineseName}的${singleRule}的${validateHelperError.ruleDefineNotDefine.msg}`
                 return rc
             }
             if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['error'])) {
-                rc['rc'] = validateInputRuleError.errorFieldNotDefine.rc
-                rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.errorFieldNotDefine.msg}`
+                rc['rc'] = validateHelperError.errorFieldNotDefine.rc
+                rc['msg'] = `${chineseName}的${singleRule}的${validateHelperError.errorFieldNotDefine.msg}`
                 return rc
             }
             if (false === dataTypeCheck.isSetValue(singleFieldInputRules[singleRule]['error']['rc'])) {
-                rc['rc'] = validateInputRuleError.rcFieldNotDefine.rc
-                rc['msg'] = `${chineseName}的${singleRule}的${validateInputRuleError.rcFieldNotDefine.msg}`
+                rc['rc'] = validateHelperError.rcFieldNotDefine.rc
+                rc['msg'] = `${chineseName}的${singleRule}的${validateHelperError.rcFieldNotDefine.msg}`
                 return rc
             }
         }
@@ -420,8 +413,8 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
         let singleRuleDefine=singleFieldInputRules[singleRule]['define']
         if(ruleType.require===singleRule){
             if(false!==singleRuleDefine && true!==singleRuleDefine){
-                rc['rc']=validateInputRuleError.requireDefineNotBoolean.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.requireDefineNotBoolean.msg}`
+                rc['rc']=validateHelperError.requireDefineNotBoolean.rc
+                rc['msg']=`${chineseName}的${validateHelperError.requireDefineNotBoolean.msg}`
                 return rc
             }else{
                 continue
@@ -434,15 +427,26 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
             //首先检查是不是为int
             let result=dataTypeCheck.isStrictInt(singleRuleDefine)
             if(false===result){
-                rc['rc']=validateInputRuleError.lengthDefineNotInt.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.lengthDefineNotInt.msg}`
+                //根据不同的类型，返回不同的rc以便区分具体的错误
+                if(ruleType.minLength===singleRule || ruleType.maxLength===singleRule || ruleType.exactLength===singleRule){
+                    rc['rc']=validateHelperError.lengthDefineNotInt.rc
+                    rc['msg']=`${chineseName}的${validateHelperError.lengthDefineNotInt.msg}`
+                }
+                if(ruleType.min===singleRule){
+                    rc['rc']=validateHelperError.minDefineNotInt.rc
+                    rc['msg']=`${chineseName}的${validateHelperError.minDefineNotInt.msg}`
+                }
+                if(ruleType.max===singleRule){
+                    rc['rc']=validateHelperError.maxDefineNotInt.rc
+                    rc['msg']=`${chineseName}的${validateHelperError.maxDefineNotInt.msg}`
+                }
                 return rc
             }
             //如果是min/max/exactLength，还要检查值是否小于0
             if(ruleType.minLength===singleRule || ruleType.maxLength===singleRule || ruleType.exactLength===singleRule){
                 if(singleRuleDefine<=0){
-                    rc['rc']=validateInputRuleError.lengthDefineMustLargeThanZero.rc
-                    rc['msg']=`${chineseName}的规则${singleRule}的${validateInputRuleError.lengthDefineMustLargeThanZero.msg}`
+                    rc['rc']=validateHelperError.lengthDefineMustLargeThanZero.rc
+                    rc['msg']=`${chineseName}的规则${singleRule}的${validateHelperError.lengthDefineMustLargeThanZero.msg}`
                     return rc
                 }
             }
@@ -464,14 +468,14 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 
         if(ruleType.enum===singleRule){
             if(false===dataTypeCheck.isArray(singleRuleDefine)){
-                rc['rc']=validateInputRuleError.enumDefineNotArray.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.enumDefineNotArray.msg}`
+                rc['rc']=validateHelperError.enumDefineNotArray.rc
+                rc['msg']=`${chineseName}的${validateHelperError.enumDefineNotArray.msg}`
                 return rc
             }
             //数组lenght是否大于1
             if(singleRuleDefine.length<1){
-                rc['rc']=validateInputRuleError.enumDefineLengthMustLargerThanZero.rc
-                rc['msg']=`${chineseName}的${validateInputRuleError.enumDefineLengthMustLargerThanZero.msg}`
+                rc['rc']=validateHelperError.enumDefineLengthMustLargerThanZero.rc
+                rc['msg']=`${chineseName}的${validateHelperError.enumDefineLengthMustLargerThanZero.msg}`
                 return rc
             }
             continue
@@ -490,20 +494,20 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
         switch (singleFiledDataType) {
             case dataType.string:
                 if (false === dataTypeCheck.isString(singleFieldInputRules['default'])) {
-                    return validateInputRuleError.ruleDefineWrong(collName, singleFieldName, 'default')
+                    return validateHelperError.ruleDefineWrong(collName, singleFieldName, 'default')
                 }
                 break;
             case dataType.int:
                 checkResult = dataTypeCheck.isStrictInt(singleFieldInputRules['default'])
                 if (false === checkResult) {
-                    return validateInputRuleError.ruleDefineWrong(collName, singleFieldName, 'default')
+                    return validateHelperError.ruleDefineWrong(collName, singleFieldName, 'default')
                 }
 
                 break
             case dataType.float:
                 checkResult = dataTypeCheck.isStrictFloat(singleFieldInputRules['default'])
                 if (false === checkResult) {
-                    return validateInputRuleError.ruleDefineWrong(collName, singleFieldName, 'default')
+                    return validateHelperError.ruleDefineWrong(collName, singleFieldName, 'default')
                 } else {
                     singleFieldInputRules['default'] = checkResult
                 }
@@ -511,7 +515,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
             case dataType.number:
                 checkResult = dataTypeCheck.isNumber(singleFieldInputRules['default'])
                 if (false === checkResult) {
-                    return validateInputRuleError.ruleDefineWrong(collName, singleFieldName, 'default')
+                    return validateHelperError.ruleDefineWrong(collName, singleFieldName, 'default')
                 } else {
                     singleFieldInputRules['default'] = checkResult
                 }
@@ -527,7 +531,7 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 }
 
 /*
-*   如果某个rule检查失败，返回对应的 msg（可读性更强点）
+ *   如果某个rule检查失败，返回对应的 msg（可读性更强点）
  */
 var generateErrorMsg={
     //itemDefine无用，只是为了格式统一
@@ -612,7 +616,7 @@ var generateErrorMsg={
 }
 
 /*
-*   值是否满足对应的rule
+ *   值是否满足对应的rule
  */
 var valueMatchRuleDefineCheck={
     exceedMaxLength(value, maxLength) {
@@ -683,294 +687,12 @@ var valueMatchRuleDefineCheck={
         return fs.existsSync(value)
     },
 }
-/**
- * Created by wzhan039 on 2016-02-25.
- * 把前端传入的input的检查工作全部放在一个文件进行处理
- * 2部分：input的定义（require,minLength,maxLength,exactLength,format,equalTo），format只在server处理
- * 新增定义：min，max，file，folder：min/max：整数大小；file/folder：文件/文件夹是否存在
- *         对应的函数处理
- */
 
-
-/*          value
-* 1. 如贵value=notSet，那么require=true && default isSet，value=default
-* 2. 如果value=notSet，那么require=true && default notSet，返回错误
-* 3. 如果value=notSet，那么require=false,返回rc=0
-* */
-
-
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-
-/*      delete的参数包含在URL中
-*   此函数只是验证express是否get到了这个参数，其余的验证，通过将其放入{field:{value:'delValue'}}后，复用validateInputVale实现
-*   多次一举，为了防止在mainRouterController中require nodeError.js这个文件
-*
-* */
-function validateDeleteInput(values){
-/*    console.log(`values isj ${values}`)
-    console.log(`type is ${typeof values}`)
-    console.log(`isSetValue ${dataTypeCheck.isSetValue(values)}`)
-    console.log(`isEmpty ${dataTypeCheck.isEmpty(values)}`)*/
-    //null和undefine无法通过软件模拟：null被当成字符传入，undefine无法找到对应的route
-    if(false===dataTypeCheck.isSetValue(values) || true===dataTypeCheck.isEmpty(values)){
-        return validateInputFormatError.deleteFormatWrong
-    }
-    return rightResult
-}
-
-
-
-
-
-
-
-
-//前端传入的数据是{filed:{value:'xxx'}}的格式，需要转换成普通的key:value mongoose能辨认的格式{filed:'xxx'}
-var convertClientValueToServerFormat=function(values){
-    let result={}
-    for(let key in values){
-        if(values[key]['value'] || null===values[key]['value'] ){
-            result[key]=values[key]['value']
-        }
-    }
-    return result
-}
-
-
-/*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
-*  返回一个object {field；{condition}}
- * 分成2个函数，好处是层次清楚：
- *       主函数负责把输入拆解成field:[{value:xx,compOp:'gt'},{value:yyy,compOp:'lt'}]的格式，
- *       子函数负责处理元素中所有的值，并转换成对应的condition
- * 输入参数：
- *           1.inputSearch
- *           name:[{value:'name1'},{value:'name2'}],
-                 age:[{value:18,compOp:'gt'},{value:20,compOp:'eq'}],
-                 parentBillType:
-                 {
-                     name:[{value:'asdf'},{value:'fda'}],
-                     age:[{value:12, compOp:'gt'}, {value:24, compOp:'lt'}]
-                }
-            }
- *           client传入的搜索参数，以coll为单位。因为使用独立的函数进行处理，所以可以和validateInput的输入参数不一致.如此可以简化对格式的检查步骤
- *           2. fkAdditionalFieldsConfig：：{parentBillType:{relatedColl:billtye, forSetValue:['name']}}
- *           搜索参数，如果有外键，从中获得外键对应的coll.field，查询得知对应inputRule。以coll为单位
- *           3. collName
- *           当前对哪一个coll进行搜索
- *           4 inputRules
- *           整个inputRule，因为外键可能对应在其他coll
-* */
-var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFieldsConfig,rules){
-    //所有的查询条件都是 或
-    let fieldsType={} //{name:dataType.string,age:dataType.int}  普通字段，只有一个key，外键：可能有一个以上的key
-    let result={}
-
-    //有search参数传入，则进行转换
-    if(false===dataTypeCheck.isEmpty(clientSearchParams)){
-        result={'$or':[]}
-        for(let singleField in clientSearchParams){
-
-            //普通字段
-            if(false===singleField in fkAdditionalFieldsConfig){
-                //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
-                let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
-                fieldValue=clientSearchParams[singleField]
-                fieldRule=rules[collName][singleField]
-                /*            fieldValueType=fieldRule['type']
-                 if(dataType.string===fieldValueType){
-                 fieldValue=new RegExp(fieldValue,'i')
-                 }*/
-                fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
-                fieldResult[singleField]=fieldCondition
-                result['$or'].push(fieldResult)
-            }
-            //外键字段
-            if(fkAdditionalFieldsConfig[singleField]){
-                let fkConfig=fkAdditionalFieldsConfig[singleField]
-                for(let fkRedundantField in clientSearchParams[singleField]){
-                    //每个外键字段的变量要重新定义，否则fieldResult会重复push
-                    let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
-                    fieldValue=clientSearchParams[singleField][fkRedundantField]
-                    fieldRule=rules[fkConfig['relatedColl']][fkRedundantField]
-                    // console.log(`rules is ${JSON.stringify(rules)}`)
-                    // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
-                    /*                console.log(`field value is ${JSON.stringify(fieldValue)}`)
-                     fieldValueType=fieldRule['type']
-                     console.log(fieldValueType)
-                     // console.log(`field type is ${fieldRule['type']}`)
-                     if(dataType.string===fieldValueType){
-                     fieldValue=new RegExp(fieldValue,'i')
-                     }
-                     console.log(fieldValue)*/
-                    fieldCondition=subGenNativeSearchCondition(fieldValue,fieldRule)
-                    //外键对应的冗余父字段.子字段
-                    fieldResult[`${fkConfig['nestedPrefix']}.${fkRedundantField}`]=fieldCondition
-                    //使用冗余字段进行查找
-                    result['$or'].push(fieldResult)
-                }
-            }
-        }
-    }
-
-    return result
-}
-
-//放回field对应的condition（不包含fieldname，需要在主函数中自己组装）
-//fieldValue是数组，其中每个元素是object：   name:[{value:‘name1’},{value:’name2’}]
-function subGenNativeSearchCondition(fieldValue,fieldRule){
-    let fieldDataType=fieldRule.type
-    //保存最终的查询条件
-    let conditionResult={}
-    //如果是字符，那么把所有的值都放到$in中
-    if(dataType.string===fieldDataType){
-        let inArray=[]
-        for(let singleElement of fieldValue){
-
-            inArray.push(new RegExp(singleElement['value'],'i'))
-        }
-        conditionResult['$in']=inArray
-    }
-    //如果是数值，需要3个数组gt/lt/eq进行判别
-    if(dataType.date===fieldDataType || dataType.number===fieldDataType || dataType.float===fieldDataType || dataType.int===fieldDataType){
-        //存储所有数值
-        let gtArray=[],ltArray=[],eqArray=[]
-        for(let singleElement of fieldValue){
-            let valueToBePush=singleElement['value']
-            if(dataType.date===fieldDataType){
-                console.log(`date  orig is ${valueToBePush}`)
-                valueToBePush=new Date(valueToBePush*1000)
-                console.log(`date  converted is ${valueToBePush}`)
-            }
-            // console.log(`singleElement is ${JSON.stringify(singleElement)}`)
-            switch (singleElement['compOp']){
-                case compOp.gt:
-                    gtArray.push(valueToBePush)
-                    break
-                case compOp.lt:
-                    ltArray.push(valueToBePush)
-                    break
-                case compOp.eq:
-                    ltArray.push(valueToBePush)
-                    break
-            }
-        }
-/*        console.log(gtArray)
-        console.log(ltArray)
-        console.log(eqArray)*/
-        //如果是gt/lt，只取出最小/最大值
-        if(false===dataTypeCheck.isEmpty(gtArray)){
-            conditionResult['$gt']=Math.min.apply(null,gtArray)
-        }
-        if(false===dataTypeCheck.isEmpty(ltArray)){
-            conditionResult['$lt']=Math.min.apply(null,ltArray)
-        }
-        //如果eq，则放在$in中
-        if(false===dataTypeCheck.isEmpty(eqArray)){
-            conditionResult['$in']=eqArray
-        }
-    }
-    return conditionResult
-}
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-
-//对update传入的参数进行检测，如果设置为null，就认为是控制端，无需传入db
-var constructCreateCriteria=function(formattedValues){
-    for(let key in formattedValues){
-        //如果不是null，而是""或者"   "等，会在checkInput被检测到并拒绝
-        if(formattedValues[key]===null){
-            delete formattedValues[key]
-        }
-    }
+module.exports={
+    dataTypeCheck,
+    valueTypeCheck,
+    ruleFormatCheck,
+    generateErrorMsg,
+    valueMatchRuleDefineCheck,
 
 }
-
-//对update传入的参数进行检测，如果设置为null，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
-//formattedValues: 经过convertClientValueToServerFormat处理的输入条件
-var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
-    //console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
-    for(let key in formattedValues){
-        if(formattedValues[key]===null){
-            //当前键设为$undefine
-            if(undefined===formattedValues['$unset']){
-                formattedValues['$unset']={}
-            }
-            //formattedValues['$unset'][key]=formattedValues[key]
-            //$unset的话，字段后的值就无所谓了
-            formattedValues['$unset'][key]=1
-            delete formattedValues[key]
-            //检查当前键是否有对应的外键设置，有的话删除对应的冗余字段
-            if(true=== key in singleCollFKConfig){
-                let redundancyField=singleCollFKConfig[key]['nestedPrefix']
-                formattedValues['$unset'][redundancyField]=1
-            }
-        }
-    }
-    //console.log(`constructUpdateCriteria result is ${JSON.stringify(formattedValues)}`)
-
-}
-
-
-
-exports.func={
-    dataTypeCheck,//对象
-    valueTypeCheck,//对datatTypeCheck进行进一步封装。函数
-
-    ruleFormatCheck,//对rule定义进行检查，格式是否正确。函数
-
-    generateErrorMsg,//对不同的ru类型可读性更强的msg。对象
-
-    valueMatchRuleDefineCheck,//value是否满足某个特定rule的定义。对象
-    // valueMatchRuleDefineCheck, //移动到validateInputRule中
-    // CRUDGlobalSetting, //全局设置直接通过require方式（反正都是存储在内存中）
-    // generateRandomString,
-    // leftMSInDay,
-    // leftSecondInDay,
-    //validateInputRule,
-
-    validateInputFormat,//检测普通inputValue的格式是否正确
-    validateInputValue,
-
-
-    checkSearchValue,//检查搜索字符串，因为是URL的一部分，所以默认是字符，直接通过rule进行验证
-    // parseGmFileSize,
-    // convertImageFileSizeToByte,
-    // convertURLSearchString,
-    validateInputSearchFormat,//对通过post上传的查询参数的 格式 进行验证，对于每个field，调用subValidateInputSearchFormat进行验证
-    subValidateInputSearchFormat,
-
-    validateInputSearchValue,//对POST的参数进行检查
-    checkSingleSearchValue,//被validateInputSearchValue调用，对单个value进行检测
-
-    genNativeSearchCondition,//根据输入的searchValue，产生mongodb的查询参数（方便调试）
-
-    validateDeleteInput,//判断express是否在URL中获得了objectID参数；如果错误，直接返回错误，防止mainRouteController require nodeError这个文件
-    // encodeHtml,
-    constructCreateCriteria,
-    constructUpdateCriteria,
-    // populateSingleDoc,
-    convertClientValueToServerFormat,
-    //convertClientSearchValueToServerFormat,
-    // formatRc,
-}
-
-// CRUDGlobalSetting.setDefault()
-/*CRUDGlobalSetting.getSingleSetting('search','maxKeyNum1',function(err,result){
-    console.log(err)
-    console.log(result)
-})*/
-
-
-//console.log(test())
-//test()

@@ -35,7 +35,8 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                 inputAttrHelper.convertSingleACFormat(singleFKField, selectAC, value)
             }
             let url = '/' + eColl
-            $http.post(url, {values: value}).success(function (data, status, header, config) {
+            // value['currentPage']=
+            $http.post(url, {values:{recorderInfo:value,'currentPage':paginationInfo.currentPage}}).success(function (data, status, header, config) {
                 if (0 === data.rc) {
                     //对server返回的数据中的日期进行格式化
                     //只返回一个数据，而不是数组，所以只要判断是否null
@@ -220,7 +221,7 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                         recorder.push(e)
                     })
                     //console.log(`after push array is ${JSON.stringify(recorder)}`)
-let a=paginationHelper.generateClientPagination(data.msg['paginationInfo'])
+                    let a=paginationHelper.generateClientPagination(data.msg['paginationInfo'])
                     Object.assign(pagination,a)
                     /*pagination.paginationInfo=data.msg['paginationInfo']
 

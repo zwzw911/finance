@@ -102,13 +102,13 @@ var pageSetting={
 
 var paginationSetting = {
     department: {
-        pageSize: 10, //每页最多读取的记录数
+        pageSize: 6, //每页最多读取的记录数
         pageLength: 10 },
     employee: {
-        pageSize: 10, //每页最多读取的记录数
+        pageSize: 6, //每页最多读取的记录数
         pageLength: 10 },
     billType: {
-        pageSize: 10, //每页最多读取的记录数
+        pageSize: 6, //每页最多读取的记录数
         pageLength: 10 },
     bill: {
         pageSize: 6, //每页最多读取的记录数

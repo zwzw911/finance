@@ -10,10 +10,21 @@
         <!--<div >-->
         <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id'" ng-class="{'has-error': 0<value.errorMsg.length}">
           <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
-          <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr)'}" >
 
-          <div mass-autocomplete ng-if="value.isCRUDAutoComplete">
+            <!--非日期，且非外键-->
+            <input ng-if="'date'!==allData.inputRule[field]['type'] && !value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr)'}" >
+
+            <!--非日期，且是外键-->
+          <div mass-autocomplete ng-if="'date'!==allData.inputRule[field]['type'] && value.isCRUDAutoComplete">
             <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
+          </div>
+
+         <!--如果是日期-->
+          <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputRule[field]['type']">
+              <input type='text' class="form-control" />
+              <span class="input-group-addon" >
+                        <span class="fa fa-calendar" ></span>
+                    </span>
           </div>
 
           <p class="text-danger" style="height:4px">{{value.errorMsg}}</p>
@@ -74,8 +85,8 @@
 
 
           <!--日期，提供起始结束日期-->
-          <div class="col-lg-7 col-md-12 " ng-show="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect'] && 'date'===allData.inputRule[allData.selectedQueryField['key']]['type']">
-              <div class=" flex-horizontal"   ng-show="'date'===allData.inputRule[allData.selectedQueryField['key']]['type']">
+          <div class="col-lg-7 col-md-12 " ng-show="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">
+              <div class=" flex-horizontal"   ng-show="'date'===allData.selectedQueryField['type']">
                   <span class="col-lg-2 col-sm-12 col-xs-12">开始日期</span>
                   <div class='input-group date col-lg-4 col-sm-12 col-xs-12' id='queryStartDate'>
                       <input type='text' class="form-control" />
@@ -101,7 +112,7 @@
           </select>
         <!--</div>-->
           <!--因为查询日期有默认值，所以类型是日期，button直接可用-->
-        <button class="btn  btn-primary btn-sm col-lg-1" ng-if="undefined!==allData.selectedQueryField" ng-class="{disabled:undefined==allData.selectedQueryFieldValue && ('date'!==allData.inputRule[allData.selectedQueryField['key']]['type']),enable:undefined!==allData.selectedQueryFieldValue || ('date'===allData.inputRule[allData.selectedQueryField['key']]['type']) }" ng-click="allFunc.addQueryValue();allFunc.CRUDOperation.search(allData.recorder,1);allFunc.initSelectedQueryField()">确定</button>
+        <button class="btn  btn-primary btn-sm col-lg-1" ng-if="undefined!==allData.selectedQueryField" ng-class="{disabled:undefined==allData.selectedQueryFieldValue && ('date'!==allData.selectedQueryField['type']),enable:undefined!==allData.selectedQueryFieldValue || ('date'===allData.selectedQueryField['type']) }" ng-click="allFunc.addQueryValue();allFunc.CRUDOperation.search(allData.recorder,1);allFunc.initSelectedQueryField()">确定</button>
           <!--<button class="btn  btn-primary btn-sm col-lg-1" ng-if="undefined!==allData.selectedQueryField"  ng-click="allFunc.addQueryValue();allFunc.CRUDOperation.search(allData.recorder,1);allFunc.initSelectedQueryField()">确定</button>-->
 
       </div>
@@ -111,7 +122,15 @@
     <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
     <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
       <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
-      <span ng-repeat="(idx,queryValue) in values  track by $index" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue">{{queryValue.compSymbol}}{{allFunc.formatQueryValue(key,queryValue.value)}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,idx,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder,1)"></span></span>
+      <span ng-repeat="(idx,queryValue) in values  track by $index" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue label label-info">
+          {{queryValue.compSymbol}}{{allFunc.formatQueryValue(key,queryValue.value)}}
+          <!--<span ng-if="'date'=allData.inputRule[key]['type']">-->
+
+          <!--</span>-->
+
+          <span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,idx,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder,1)">
+          </span>
+      </span>
     </div>
     <!--<button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.CRUDOperation.search(allData.recorder)">查询</button>-->
   </div>

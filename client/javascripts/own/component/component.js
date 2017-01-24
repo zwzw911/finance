@@ -90,7 +90,7 @@ app.factory('validateHelper',function(){
     // inputRule/inputAttr是coll级别
     function checkInput(field,inputRule,inputAttr){
         // console.log(`inputAttr is ${JSON.stringify(inputAttr)}`)
-        // console.log(`field to be checked is ${JSON.stringify(field)}`)
+        console.log(`field to be checked is ${JSON.stringify(field)}`)
         //id不需要检测
         if('id'===field){
             return true
@@ -126,7 +126,6 @@ app.factory('validateHelper',function(){
                 break;
             case 'float':
                 dataTypeCheckResult=dataTypeCheck.isNumber(currentValue)
-                console.log(`resulr is ${JSON.stringify(dataTypeCheckResult)}`)
                 break;
             case 'number':
                 dataTypeCheckResult=dataTypeCheck.isNumber(currentValue)
@@ -135,9 +134,11 @@ app.factory('validateHelper',function(){
                 dataTypeCheckResult=dataTypeCheck.isString(currentValue)
                 break;
             case 'date':
+                console.log(`value to be check is ${JSON.stringify(currentValue)}`)
                 dataTypeCheckResult=dataTypeCheck.isDate(currentValue)
                 break;
         }
+        console.log(`type check result is ${JSON.stringify(dataTypeCheckResult)}`)
 
         if(false===dataTypeCheckResult){
             if('int'===tmpFieldDataType || 'float'===tmpFieldDataType || 'number'===tmpFieldDataType){
@@ -156,7 +157,7 @@ app.factory('validateHelper',function(){
         if(''!==currentValue){
             for(let singleRule in inputRule[field]){
                 let ruleCheckFunc
-                if('require'===singleRule){
+                if('require'===singleRule || 'type'===singleRule){
                     continue
                 }
 
@@ -176,7 +177,7 @@ app.factory('validateHelper',function(){
                         ruleCheckFunc='exceedMinLength'
                         break;
                 }
-
+console.log(`rule check type is ${ruleCheckFunc}`)
                 if(true===ruleTypeCheck[ruleCheckFunc](currentValue,inputRule[field][singleRule]['define'])){
                     inputAttr[field]['errorMsg']=inputRule[field][singleRule]['msg']
                     inputAttr[field]['validated']=false
@@ -478,11 +479,11 @@ app.factory('queryHelper',function(contEnum) {
 
     //实际要传送到server端的 查询 数据，可能在前端显示给用户看的时候需要格式化（例如时间，可能只要显示YYYY-DD-MM，而不要HH:mm）
     let formatQueryValue={
-        date:function(fieldValue){
+        'date':function(fieldValue){
             console.log(`date tiem stamp ${fieldValue}`)
             return moment(fieldValue,'X').format('YYYY-MM-DD')
         },
-        dateTime:function(){}
+        'dateTime':function(){}
     }
 
     return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat,formatQueryValue}
@@ -923,13 +924,20 @@ app.service('dateTimePickerHelper',function(){
         return moment(currentDate).unix()
     }
 
-
+    this.setDate=function(eleId,date){
+        $('#'+eleId).data("DateTimePicker").date(date)
+    }
+    this.getDate=function(eleId){
+        return $('#'+eleId).data("DateTimePicker").date()
+    }
 
     this.setFirstDay=function(eleId){
         // let [year,month]=[moment().get('year'),moment().get('month')]
         // let firstDay=year+'-'+month+'-01'
         let d=moment().startOf("month")
+        console.log(`first day is ${d}`)
         $('#'+eleId).data("DateTimePicker").date(d)
+        //$('#'+eleId).data("DateTimePicker").setValue(d)
     }
     this.setLastDay=function(eleId){
         // let [year,month]=[moment().get('year'),moment().get('month')]

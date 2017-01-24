@@ -6,7 +6,7 @@
 
 require("babel-polyfill");
 require("babel-core/register");
-var miscFunc = require("../server/assist/misc-compiled").func;
+var genClientFunc = require("../server/assist/genClientConfigFunc");
 var ruleDefine = require("../server/define/validateRule/inputRule").inputRule;
 var fs = require('fs');
 
@@ -51,20 +51,28 @@ var matchList = {
     }
 };
 
-miscFunc.generateClientInputAttr(ruleDefine, 2, inputAttr);
+genClientFunc.generateClientInputAttr(ruleDefine, 2, inputAttr);
 console.log(inputAttr['department']);
-miscFunc.deleteNonNeededObject(inputAttr, skipListForAttr);
+genClientFunc.deleteNonNeededObject(inputAttr, skipListForAttr);
 console.log(inputAttr['department']);
-miscFunc.objectIdToRealField(inputAttr, matchList);
+genClientFunc.objectIdToRealField(inputAttr, matchList);
+console.log(inputAttr['department']);
 fs.writeFile('inputAttr.txt', JSON.stringify(inputAttr));
 
-miscFunc.generateClientRule(ruleDefine, 2, clientInputRule);
-miscFunc.deleteNonNeededObject(clientInputRule, skipListForRule);
-miscFunc.objectIdToRealField(clientInputRule, matchList);
+clientInputRule = genClientFunc.generateClientRule();
+genClientFunc.deleteNonNeededObject(clientInputRule, skipListForRule);
+genClientFunc.objectIdToRealField(clientInputRule, matchList);
 fs.writeFile('clientInputRule.txt', JSON.stringify(clientInputRule));
 
-//从inputAttr提取出用于ng-select(ng-select接受格式为数组，每个元素包含key,value，key为显示在页面上)
-var extractSelectKeyValueFromInputAttr = function extractSelectKeyValueFromInputAttr(inputAttr) {
+/*              不直接使用inputAttr/inputRule，而是新建一个对象进行queryFiled的设置
+*       因为inputRule用来检测create/update，inputAttr用来存储create/update对应的值
+*       而queryField可能包含比inputRule/Attr更多的字段
+* */
+//从inputAttr提取出用于选择queryField的键值对（用于ng-select，ng-select接受格式为数组，每个元素包含key,value，key为显示在页面上，value用于存储选择的字段名称)
+//key
+//value
+//type
+var extractQueryFieldFromInputAttr = function extractQueryFieldFromInputAttr(inputAttr, inputRule) {
     var result = {};
     for (var coll in inputAttr) {
         result[coll] = [];
@@ -72,12 +80,13 @@ var extractSelectKeyValueFromInputAttr = function extractSelectKeyValueFromInput
             var tmpResult = {};
             tmpResult['value'] = inputAttr[coll][field]['chineseName'];
             tmpResult['key'] = field;
+            tmpResult['type'] = inputRule[coll][field]['type'];
             result[coll].push(tmpResult);
         }
     }
     return result;
 };
-var result = extractSelectKeyValueFromInputAttr(inputAttr);
+var result = extractQueryFieldFromInputAttr(inputAttr, ruleDefine);
 // console.log(result)
 fs.writeFile('queryField.txt', JSON.stringify(result));
 

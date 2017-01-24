@@ -64,11 +64,17 @@ app.constant('appCont',{
 
     //当input为date时，如果需要使用datetimepicker，则需要提供id，以便进行初始化
     //所有的页面中，id都一样
-    dateInputId:{
+    dateInputIdInQuery:{
+        ////设置查询条件时，用作选择 起始日期 的input的Id
+        ////设置查询条件时，用作选择 结束日期 的input的Id
+        //"department": [ "queryStartDate","queryEndDate"],
+        //"employee": [ "queryStartDate","queryEndDate"],
+        //"billType": [ "queryStartDate","queryEndDate"],
+        //"bill": [ "queryStartDate","queryEndDate"],
+        //不采用数组，而是使用对象。因为除了初始化，还需要分别取值，设置月开始/结束日期
         "department": {
             "queryStartDate": "queryStartDate", //设置查询条件时，用作选择 起始日期 的input的Id
             "queryEndDate": "queryEndDate",//设置查询条件时，用作选择 结束日期 的input的Id
-
         },
         "employee": {
             "queryStartDate": "queryStartDate", //设置查询条件时，用作选择 起始日期 的input的Id
@@ -82,7 +88,7 @@ app.constant('appCont',{
             "queryStartDate": "queryStartDate", //设置查询条件时，用作选择 起始日期 的input的Id
             "queryEndDate": "queryEndDate",//设置查询条件时，用作选择 结束日期 的input的Id
         }
-    }
+    },
 })
 
 app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
@@ -241,9 +247,10 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
         let allFuncResult={
 
-            onchange:function(){
-                console.log(`date change result is ${JSON.stringify($scope.allData.selectedStartDateValue)}`)
-            },
+            // onchange:function(){
+            //     console.log(`date change result is ${JSON.stringify($scope.allData.selectedStartDateValue)}`)
+            // },
+
 //在对记录进行update的时候，根据idx，将recorder中的一个载入到inputAttr
             loadCurrentData:function (idx,inputAttr,recorder){
                 inputAttrHelper.loadCurrentData(idx,inputAttr,recorder,fkConfig);
@@ -258,6 +265,14 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 }
                 if(contEnum.opType.update===$scope.allData.currentOpType){
                     inputAttrHelper.initAllFieldInputAttrUpdate(inputAttr)
+                }
+                //对modal中（create/update中，数据为date的input进行初始化）
+                for(let fieldName in $scope.allData.inputAttr){
+                    console.log(`init field name is ${fieldName}`)
+                    if('date'===$scope.allData.inputRule[fieldName]['type']){
+                        console.log(`init inpot name is ${fieldName}`)
+                        dateTimePickerHelper.initEle(fieldName)
+                    }
                 }
             },
 
@@ -275,6 +290,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             },
             //因为create和update公用一个modal，所以需要设置opType来区分操作类型
             setCurrentOpTypeCreate(){
+                console.log(`create enter`)
                 $scope.allData.currentOpType=contEnum.opType.create
             },
             setCurrentOpTypeUpdate(){
@@ -296,6 +312,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                             $scope.allFunc.switchDialogStatus()
                             //操作完成（无论成功失败），将操作类型 复位
                             $scope.allData.currentOpType=null
+                            console.log(`pagi info of create is ${JSON.stringify($scope.pagination)}`)
                         }
                     }
                     if(contEnum.opType.update===$scope.allData.currentOpType){
@@ -383,6 +400,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
             allCheckInput:function(inputRule,inputAttr){
                 console.log(`input rule is ${JSON.stringify(inputRule)}`)
+                console.log(`input attr is ${JSON.stringify(inputAttr)}`)
                 validateHelper.allCheckInput(inputRule,inputAttr)
             },
 
@@ -403,12 +421,12 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 // console.log(`startDate is ${$scope.allData.selectedEndDateValue}`)
                 let selectedQueryFiled=$scope.allData.selectedQueryField['key']
                 //判断queryField的类型，如果是date或者数字，要做特殊处理
-                let queryFiledType=$scope.allData.inputRule[selectedQueryFiled]['type']
+                let queryFiledType=$scope.allData.selectedQueryField['type']
                 console.log(`queryFiledType is ${queryFiledType}`)
                 //对于日期，operator是根据开始/结束日期固定
                 if('date'===queryFiledType){
-                    let startDateEleId=appCont.dateInputId[eColl]['queryStartDate']
-                    let endDateEleId=appCont.dateInputId[eColl]['queryEndDate']
+                    let startDateEleId=appCont.dateInputIdInQuery[eColl]['queryStartDate']
+                    let endDateEleId=appCont.dateInputIdInQuery[eColl]['queryEndDate']
                     let startDateValue=dateTimePickerHelper.getCurrentDateInTimeStamp(startDateEleId)
                     let endDateValue=dateTimePickerHelper.getCurrentDateInTimeStamp(endDateEleId)
                     // console.log(`startDateEleId is ${JSON.stringify(startDateEleId)}`)
@@ -449,10 +467,11 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             },
 
             formatQueryValue:function(fieldName,fieldValue){
+                //console.log(`field name is ${fieldName}`)
+                //console.log(`orig date is ${fieldValue}`)
                 let fieldType=$scope.allData.inputRule[fieldName]['type']
                 switch (fieldType){
                     case 'date':
-                        console.log(`orig date is ${fieldValue}`)
                         // console.log(`orig date is ${queryHelper.formatQueryValue.date(fieldValue)}`)
                         return queryHelper.formatQueryValue.date(fieldValue)
                         break;
@@ -471,17 +490,20 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 if($scope.allData.selectedQueryField && ''!==$scope.allData.selectedQueryField){
                     selectedQueryField=$scope.allData.selectedQueryField
                 }
+                console.log(`activate value is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                 console.log(`selected query field is ${JSON.stringify(selectedQueryField)}`)
                 console.log(`selected query field rle is ${JSON.stringify($scope.allData.inputRule[selectedQueryField['key']])}`)
-                if('date'===$scope.allData.inputRule[selectedQueryField['key']]['type']){
+                if('date'===selectedQueryField['type']){
                     console.log(`date filed choose`)
-                    console.log(`id is ${appCont.dateInputId[eColl]['queryStartDate']}`)
+                    console.log(`id is ${appCont.dateInputIdInQuery[eColl]['queryStartDate']}`)
                     //根据date input的id，通过datetimepicker进行初始化
-                    dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryStartDate'])
-                    dateTimePickerHelper.setFirstDay(appCont.dateInputId[eColl]['queryStartDate'])
+                    //appCont.dateInputIdInQuery[eColl].map((v)=>dateTimePickerHelper.initEle(v))
+                    //dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
+                    //只需初始化一次
+                    dateTimePickerHelper.setFirstDay(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
 
-                    dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryEndDate'])
-                    dateTimePickerHelper.setLastDay(appCont.dateInputId[eColl]['queryEndDate'])
+                    //dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryEndDate'])
+                    dateTimePickerHelper.setLastDay(appCont.dateInputIdInQuery[eColl]['queryEndDate'])
                 }
             },
 
@@ -497,8 +519,10 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
 
             switchDialogStatus:function(){
+                console.log(`CU diag flag is ${$scope.allData.recorderDialogShow}`)
                 $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
                 htmlHelper.verticalModalCenter('CRUDRecorder')
+
 /*                alert($('table').attr('height'))
                 alert($('table').attr('width'))*/
             },
@@ -622,16 +646,23 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
              console.log(`search done pagination is ${JSON.stringify($scope.pagination)}`)
             htmlHelper.adjustFooterPosition()
         })
-        let [startDate,endDate]=[appCont.dateInputId[eColl].queryStartDate,appCont.dateInputId[eColl].queryStartDate]
+        //let [startDate,endDate]=[appCont.dateInputIdInQuery[eColl].queryStartDate,appCont.dateInputIdInQuery[eColl].queryStartDate]
 
-        dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryStartDate'])
-        dateTimePickerHelper.setFirstDay(appCont.dateInputId[eColl]['queryStartDate'])
+        //appCont.dateInputIdInQuery[eColl].map((v)=>{console.log(`map is is ${v}`);dateTimePickerHelper.initEle(v)})
+        ////dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
+        //dateTimePickerHelper.setFirstDay(appCont.dateInputIdInQuery[eColl][0])
+        //
+        ////dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryEndDate'])
+        //dateTimePickerHelper.setLastDay(appCont.dateInputIdInQuery[eColl][1])
+        dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
+        dateTimePickerHelper.setFirstDay(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
 
-        dateTimePickerHelper.initEle(appCont.dateInputId[eColl]['queryEndDate'])
-        dateTimePickerHelper.setLastDay(appCont.dateInputId[eColl]['queryEndDate'])
+        dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryEndDate'])
+        dateTimePickerHelper.setLastDay(appCont.dateInputIdInQuery[eColl]['queryEndDate'])
 /*        // let startDate=
         dateTimePickerHelper.initEle(startDate)
         dateTimePickerHelper.initEle(endDate)*/
+
     }
 
     
@@ -659,6 +690,9 @@ app.controller('configuration.billType.Controller',function($scope,templateFunc)
     //appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,templateFunc
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('billType')
+    //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    $scope.pagination={}
+    $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
 
     $scope.modal=templateFunc.generateCreateUpdateModalInfo()
     $scope.allFunc=templateFunc.allFunc($scope,'billType')
@@ -666,9 +700,6 @@ app.controller('configuration.billType.Controller',function($scope,templateFunc)
     templateFunc.setACConfig($scope,'billType')
     //初始化调用
     templateFunc.init($scope,'billType')
-
-
-
 })
 
 
@@ -676,7 +707,11 @@ app.controller('configuration.billType.Controller',function($scope,templateFunc)
 app.controller('configuration.departmentInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('department')
-    //console.log($scope.allData.queryFieldEnable)
+
+    //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    $scope.pagination={}
+    $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
+
     $scope.modal=templateFunc.generateCreateUpdateModalInfo()
     $scope.allFunc=templateFunc.allFunc($scope,'department')
 
@@ -690,6 +725,10 @@ app.controller('configuration.departmentInfo.Controller',function($scope,templat
 app.controller('configuration.employeeInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('employee')
+    //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    $scope.pagination={}
+    $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
+
     $scope.modal=templateFunc.generateCreateUpdateModalInfo()
     $scope.allFunc=templateFunc.allFunc($scope,'employee')
 
@@ -713,7 +752,7 @@ app.controller('bill.billInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('bill')
     //$scope.pagination=templateFunc.generatePaginationData('bill')
-    //初始化为任意类型，因为调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
     $scope.pagination={}
     $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
     $scope.modal=templateFunc.generateCreateUpdateModalInfo()

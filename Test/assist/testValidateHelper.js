@@ -4,14 +4,16 @@
 'use strict'
 /*require("babel-polyfill");
 require("babel-core/register")*/
-var testModule=require('../../server/assist/validateFunc').func;
-var miscError=require('../../server/define/error/nodeError').nodeError.assistError
-var validateInputFormatError=miscError.validateFunc.validateInputFormat
+var testModule=require('../../server/assist/validateInput/validateHelper');
+// var miscError=require('../../server/define/error/nodeError').nodeError.assistError
+var validateHelperError=require('../../server/define/error/node/validateError').validateError.validateHelper
 /*          for generateRandomString test       */
 var regex=require('../../server/define/regex/regex').regex
 var dataType=require('../../server/define/enum/validEnum').enum.dataType
 //var randomStringTypeEnum=require('../../server/define/enum/node').node.randomStringType
 var moment=require('moment')
+
+
 /*          数据类型的检测         */
 var dataTypeCheck=function(test){
     test.expect(55);
@@ -208,6 +210,66 @@ var dataTypeCheck=function(test){
     test.done()
 }
 
+/***************************************************************************/
+/*******     辅助函数，根据预定义dataType，检测value是否合格      **********/
+/***************************************************************************/
+var valueTypeCheck=function(test){
+    let func=testModule.valueTypeCheck
+    let value,tmpDataType,result,tmp
+
+    test.expect(9)
+
+    value='randomString'
+    tmpDataType='noEnumDataType'
+    result=func(value,tmpDataType)
+    test.equal(result.rc,validateHelperError.unknownDataType.rc,'unknown data type check failed');
+
+    value='0'
+    tmpDataType=dataType.int
+    result=func(value,tmpDataType)
+    test.equal(result,0,'data type int check failed');
+
+    value='1.1'
+    tmpDataType=dataType.float
+    result=func(value,tmpDataType)
+    test.equal(result,1.1,'data type float check failed');
+
+    value='randomString'
+    tmpDataType=dataType.string
+    result=func(value,tmpDataType)
+    test.equal(result,true,'data type string check failed');
+
+
+
+    value=new Date('2016').getTime()
+    tmpDataType=dataType.date
+    result=func(value,tmpDataType)
+    test.equal(result.toLocaleString(),new Date(value).toLocaleString(),'data type date check failed');
+
+    value=[]
+    tmpDataType=dataType.array
+    result=func(value,tmpDataType)
+    test.equal(result,true,'data type array check failed');
+
+    value={}
+    tmpDataType=dataType.object
+    result=func(value,tmpDataType)
+    test.equal(result,true,'data type object check failed');
+
+    value='C:/Windows/System32/drivers/etc/hosts'
+    tmpDataType=dataType.file
+    result=func(value,tmpDataType)
+    test.equal(result,true,'data type file check failed');
+
+    value='C:/Program Files'
+    tmpDataType=dataType.folder
+    result=func(value,tmpDataType)
+    test.equal(result,true,'data type folder check failed');
+
+    test.done()
+
+}
+
 var valueMatchRuleDefineCheck=function(test){
     let func=testModule.valueMatchRuleDefineCheck
     test.expect(40)
@@ -353,65 +415,7 @@ var valueMatchRuleDefineCheck=function(test){
 
     test.done()
 }
-/***************************************************************************/
-/*******     辅助函数，根据预定义dataType，检测value是否合格      **********/
-/***************************************************************************/
-var valueTypeCheck=function(test){
-    let func=testModule.valueTypeCheck
-    let value,tmpDataType,result,tmp
 
-    test.expect(9)
-
-    value='randomString'
-    tmpDataType='noEnumDataType'
-    result=func(value,tmpDataType)
-    test.equal(result.rc,validateInputFormatError.unknownDataType.rc,'unknown data type check failed');
-
-    value='0'
-    tmpDataType=dataType.int
-    result=func(value,tmpDataType)
-    test.equal(result,0,'data type int check failed');
-
-    value='1.1'
-    tmpDataType=dataType.float
-    result=func(value,tmpDataType)
-    test.equal(result,1.1,'data type float check failed');
-
-    value='randomString'
-    tmpDataType=dataType.string
-    result=func(value,tmpDataType)
-    test.equal(result,true,'data type string check failed');
-
-
-
-    value=new Date('2016').getTime()
-    tmpDataType=dataType.date
-    result=func(value,tmpDataType)
-    test.equal(result.toLocaleString(),new Date(value).toLocaleString(),'data type date check failed');
-
-    value=[]
-    tmpDataType=dataType.array
-    result=func(value,tmpDataType)
-    test.equal(result,true,'data type array check failed');
-
-    value={}
-    tmpDataType=dataType.object
-    result=func(value,tmpDataType)
-    test.equal(result,true,'data type object check failed');
-
-    value='C:/Windows/System32/drivers/etc/hosts'
-    tmpDataType=dataType.file
-    result=func(value,tmpDataType)
-    test.equal(result,true,'data type file check failed');
-
-    value='C:/Program Files'
-    tmpDataType=dataType.folder
-    result=func(value,tmpDataType)
-    test.equal(result,true,'data type folder check failed');
-
-    test.done()
-
-}
 
 var convertClientSearchValueToServerFormat=function(test){
     test.expect(2)
@@ -444,8 +448,9 @@ var convertClientSearchValueToServerFormat=function(test){
 
 exports.validate={
      dataTypeCheck,//数据类型检测
-    // valueMatchRuleDefineCheck,
-    // valueTypeCheck,
+     valueTypeCheck,
+     valueMatchRuleDefineCheck,
+
     //convertClientSearchValueToServerFormat//只是用来查看结果
 /*    _private:{
         valueTypeCheck,

@@ -27,6 +27,8 @@ var updateOptions={
     setDefaultsOnInsert:false,//当upsert为true && 设为true，则插入文档时，使用default。
     'sort':'_id',//如果找到多个文档（应该不太可能），按照什么顺序选择第一个文档进行update。
 }
+
+//无需返回任何paginationInfo，因为search已经返回，并存储在client端了
 var create=async function ({dbModel,values}){
 //使用Promise方式，以便catch可能的错误
     let result=await dbModel.insertMany(values).catch((err)=>{

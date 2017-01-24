@@ -91,7 +91,7 @@ app.constant('cont',{
             },
             "parentDepartment": {
                 "require": {
-                    "define": true,
+                    "define": false,
                     "msg": "上级部门不能为空"
                 },
                 "maxLength": {
@@ -123,7 +123,7 @@ app.constant('cont',{
             },
             "leader": {
                 "require": {
-                    "define": true,
+                    "define": false,
                     "msg": "上级主管不能为空"
                 },
                 "maxLength": {
@@ -198,7 +198,7 @@ app.constant('cont',{
             },
             "parentBillType": {
                 "require": {
-                    "define": true,
+                    "define": false,
                     "msg": "父类别不能为空"
                 },
                 "maxLength": {
@@ -295,8 +295,11 @@ app.constant('cont',{
                 },
                 "type": "string"
             },
-            //手工加入，只为query时提供类型
-            'cDate':{
+            /*      patch, 只是用来判断input是否为date，以便用datetimepicker进行初始化
+            *       更好的解决方法是，设置一个额外的字段，而不是复用cDate
+            *       更好的解决方式是：把cDate字段暴露出来，放在inputRule中进行检测
+            * */
+            "cDate":{
                 "type": "date"
             }
         }
@@ -624,99 +627,119 @@ app.constant('cont',{
                 "errorMsg": "",
                 "validated": "undefined"
             },
-            'cDate':{
-                chineseName:'报销日期',
-            }
+            // 'cDate':{
+            //     chineseName:'报销日期',
+            // }
         }
     },
     
     //用来给查询字段select提供option，详见angularjs。md
+    //可以通过在inputAttr中使用asQueryField替代
     queryField:{
         "user": [
             {
                 "value": "用户名",
-                "key": "name"
+                "key": "name",
+                "type": "string"
             },
             {
                 "value": "密码",
-                "key": "password"
+                "key": "password",
+                "type": "string"
             }
         ],
         "department": [
             {
                 "value": "部门名称",
-                "key": "name"
+                "key": "name",
+                "type": "string"
             },
             {
                 "value": "上级部门",
-                "key": "parentDepartment"
+                "key": "parentDepartment",
+                "type": "objectId"
             }
         ],
         "employee": [
             {
                 "value": "员工姓名",
-                "key": "name"
+                "key": "name",
+                "type": "string"
             },
             {
                 "value": "上级主管",
-                "key": "leader"
+                "key": "leader",
+                "type": "objectId"
             },
             {
                 "value": "性别",
-                "key": "gender"
+                "key": "gender",
+                "type": "string"
             },
             {
                 "value": "出生日期",
-                "key": "birthDay"
+                "key": "birthDay",
+                "type": "date"
             },
             {
                 "value": "所属部门",
-                "key": "department"
+                "key": "department",
+                "type": "objectId"
             },
             {
                 "value": "入职日期",
-                "key": "onBoardDate"
+                "key": "onBoardDate",
+                "type": "date"
             }
         ],
         "billType": [
             {
                 "value": "单据类别",
-                "key": "name"
+                "key": "name",
+                "type": "string"
             },
             {
                 "value": "父类别",
-                "key": "parentBillType"
+                "key": "parentBillType",
+                "type": "objectId"
             }
         ],
         "bill": [
             {
                 "value": "单据抬头",
-                "key": "title"
+                "key": "title",
+                "type": "string"
             },
             {
                 "value": "单据内容",
-                "key": "content"
+                "key": "content",
+                "type": "string"
             },
             {
                 "value": "单据类别",
-                "key": "billType"
+                "key": "billType",
+                "type": "objectId"
             },
             {
                 "value": "单据日期",
-                "key": "billDate"
+                "key": "billDate",
+                "type": "date"
             },
             {
                 "value": "报销金额",
-                "key": "amount"
+                "key": "amount",
+                "type": "float"
             },
             {
                 "value": "报销员工",
-                "key": "reimburser"
+                "key": "reimburser",
+                "type": "objectId"
             },
             {
                 "value": "报销日期",
-                "key": "cDate"
-            }
+                "key": "cDate",
+                "type": "date"
+            },
         ]
     },
 

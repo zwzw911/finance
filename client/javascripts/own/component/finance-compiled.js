@@ -35,7 +35,8 @@ app.factory('financeHelper', function ($http, $q, inputAttrHelper, commonHelper,
                 inputAttrHelper.convertSingleACFormat(singleFKField, selectAC, value);
             }
             var url = '/' + eColl;
-            $http.post(url, { values: value }).success(function (data, status, header, config) {
+            // value['currentPage']=
+            $http.post(url, { values: { recorderInfo: value, 'currentPage': paginationInfo.currentPage } }).success(function (data, status, header, config) {
                 if (0 === data.rc) {
                     //对server返回的数据中的日期进行格式化
                     //只返回一个数据，而不是数组，所以只要判断是否null

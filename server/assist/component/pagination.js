@@ -95,8 +95,10 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
             }
         }
     }
+    ////当前在客户端显示的所有页数对应的总记录数（以便client可以在不要求server的信息时，直接计算分页信息。用于添加记录时在client直接计算分页信息）
+    let totalRecorderNumberForShownPage=total >= end*pageSize ? end*pageSize:total
     //pageSize;返回给前端使用
-    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize}
+    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize,totalRecorderNumberForShownPage:totalRecorderNumberForShownPage}
 }
 
 module.exports={

@@ -702,14 +702,23 @@ aside>div>span:not(:first-of-type){
 
 //
 .activeQueryValue:hover{
-  .bg-warning;
+ // .bg-warning;
 
 }
 .activeQueryValue>span.fa{
   color: transparent;
 }
 .activeQueryValue:hover>span.fa {
-  color: black;
+  color: red;
+}
+
+
+/*    为了计算当前内容，以便决定footer的位置
+*     直接使用col-lg-12，因为是float，无法获得内容的高度，所以新设no-float
+*/
+.col-lg-12-no-float,.col-md-12-no-float,.col-sm-12-no-float,.col-xs-12-no-float{
+  width:100%;
+  padding:0 15px;
 }
 //让footer保持在最底部，结合js一起使用
 .fixed-footer {position: fixed;bottom: 0;left:0;width:100%;}

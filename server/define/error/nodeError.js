@@ -23,41 +23,7 @@ var assistError={
     },
     validateFunc:{
         validateInputRuleFormat:{
-            //以下是检查rule，所以错误只需在server端现实，因此只要msg:'error'的格式，而不要client/server
-            unknownDataType:{rc:69800,msg:'未知数据类型'},
-            ruleMustBeObject:{rc:69801,msg:'rule定义必须是对象'},
-            mandatoryFiledNotExist:{rc:69802,msg:'字段必需存在'},
-            chineseNameNotString:{rc:68804,msg:'chineseName字段必须是字符串'},
-            chineseNameEmpty:{rc:68806,msg:'chineseName字段不能为空'},
 
-            needMin:{rc:69810,msg:'type为int时，必需包含Min属性'},
-            needMax:{rc:69812,msg:'type为int时，必需包含Max属性'},
-            needMaxLength:{rc:69814,msg:'type为string或者number时，必需包含maxLength属性'},
-            needFormat:{rc:69815,msg:'type为objectId是，必须包含format属性'},
-
-            ruleDefineNotRight:{rc:69816,msg:'rule的定义不正确'},
-            /*            maxLengthDefineNotInt:{rc:69818,msg:'maxLength的定义不是整数'},
-             minLengthDefineNotInt:{rc:69820,msg:'minLength的定义不是整数'},
-             exactLengthDefineNotInt:{rc:69822,msg:'exactLengt的定义不是整数'},*/
-            lengthDefineNotInt:{rc:69818,msg:'minLength的定义不是整数'},
-            lengthDefineMustLargeThanZero:{rc:69823,msg:'length的定义必须大于0'},
-            maxDefineNotInt:{rc:69824,msg:'max的定义不是整数'},
-            minDefineNotInt:{rc:69826,msg:'min的定义不是整数'},
-            requireDefineNotBoolean:{rc:69828,msg:'require的定义不是布尔值'},
-            enumDefineNotArray:{rc:69829,msg:'enum的定义不是数组'},
-            enumDefineLengthMustLargerThanZero:{rc:69830,msg:'enum的定义数组不能为空'},
-
-            ruleDefineNotDefine:{rc:69831,msg:'define字段没有定义'},
-            errorFieldNotDefine:{rc:69832,msg:'error字段不存在'},
-            rcFieldNotDefine:{rc:698234,msg:'rc字段不存在'},
-            msgFieldNotDefine:{rc:69836,msg:'msg字段不存在'},
-
-            defaultNotDefine:{rc:69837,msg:'default字段不存在'},
-            //以下只需返回给server，因此只要msg:'error'的格式，而不要client/server
-            /*              sanity rule             */
-            ruleDefineWrong:function(collName,fieldName,ruleName){return {rc:69840,msg:`${collName}的字段${fieldName}中的rule ${ruleName}的define值不正确`}},
-
-            rcFormatWrong:{rc:69842,msg:'错误代码格式不正确'},
 
 
         },
@@ -75,52 +41,10 @@ var assistError={
             //mongo的id没有在rule中定义，需要在misc中单独定义一个函数进行判别，如果格式不正确，返回如下错误
             //idWrong:{rc:68870,msg:'id格式不正确'},
             //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
-            /*              checkInput              */
-            unknownDataType:{rc:69700,msg:'未知数据类型'},
-            //illegalField:function(fieldName){return {rc:69702,msg:`字段${fieldName}非法`}},
-            valueNotDefine:{rc:69704,msg:'待检测的输入值未定义'},
-            valueNotDefineWithRequireTrue:{rc:69706,msg:'待检测的输入值未定义，而rule中require为true'},
-            valueEmpty:{rc:69708,msg:'待检测的输入值不能为空'},
-            valueRelatedRuleNotDefine:{rc:69710,msg:'待检测的输入值没有对应的检测规则'},
-            includeSkipFiled:{rc:69711,msg:'不能包含需要略过的字段'},
-            objectIdEmpty:{rc:69712,msg:'objectId不能为空'},
-            objectIdWrong:{rc:69714,msg:'objectId的格式不正确'},
-            typeWrong:{rc:69716,msg:'类型不正确'},
-            inputValuesTypeWrong:{rc:69718,msg:{client:'参数格式不正确',server:'参数格式不正确，必须是JSON'}},
-            // inputValuesParseFail:{rc:69720,msg:{client:'参数格式不正确',server:'参数无法解析成JSON'}},
-            inputValuesFormatWrong:{rc:69722,msg:{client:'参数格式不正确',server:'参数格式必须是field:{value:val}'}},
-            //inputValuesFiledValueNotSet:{rc:69723,msg:{client:'参数格式不正确',server:'参数中字段的value没有定义'}},
 
-            inputValueFieldNumExceed:{rc:69724,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
-            inputValueHasDuplicateField:{rc:69726,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
-
-            deleteFormatWrong:{rc:69728,msg:{client:"格式不正确，无法删除失败",server:"删除的参数必须在URL中"}},
         },
         validateInputSearchFormat:{
-            inputSearchNotObject:{rc:69500,msg:{client:`查询参数格式不正确`,server:`查询参数必须是对象`}},
-            inputSearchCanNotEmpty:{rc:69502,msg:{client:`查询参数格式不正确`,server:`查询参数不能为空对象`}},
-            inputSearchNotContainCurrentPage:{rc:69504,msg:{client:`查询参数格式不正确`,server:`查询参数缺少currentPage`}},
-            inputSearchCurrentPageMustBeInt:{rc:69506,msg:{client:`查询参数格式不正确`,server:`查询参数中currentPage必须是整数`}},
-            inputSearchNotContainSearchParams:{rc:69508,msg:{client:`查询参数格式不正确`,server:`查询参数缺少searchParams`}},
-            inputSearchSearchParamsMustBeObject:{rc:69510,msg:{client:`查询参数格式不正确`,server:`查询参数中searchParams必须是对象`}},
-            inputSearchValueMustBeArray:{rc:69512,msg:{client:`查询参数格式不正确`,server:`查询参数的键值必须是数组`}},
-            inputSearchValueCanNotEmpty:{rc:69514,msg:{client:`查询参数格式不正确`,server:`查询参数的键值不能为空`}},
-            inputSearchFKFiledValueCanNotEmpty:{rc:69516,msg:{client:`查询参数格式不正确`,server:`查询参数的外键字段不能为空`}},
-            inputSearchFKFiledValueNotObject:{rc:69518,msg:{client:`查询参数格式不正确`,server:`查询参数的外键字段值必须是对象不能为空`}},
-            inputSearchValueLengthExceed:{rc:69520,msg:{client:`查询参数数量过多`,server:`查询参数的键值中的值数量过多`}},
-            inputSearchValueElementMustBeObject:{rc:69522,msg:{client:`查询字符不正确`,server:`查询参数的键值中的查询字符必须是对象`}},
-            inputSearchValueElementKeysLengthExceed:{rc:69524,msg:{client:`查询字符不正确`,server:`查询参数的键值中的查询元素的键数量超出`}},
-            inputSearchValueElementCanNotEmpty:{rc:69526,msg:{client:`查询字符不能为空`,server:`查询参数的键值中的查询字符不能为空`}},
-            inputSearchValueElementKeyNotDefined:{rc:69528,msg:{client:`查询字符不正确`,server:`查询参数的键值中的key没有在fkAdditionalConfig中定义`}},
-            inputSearchNoRelatedRule:{rc:69530,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
-            inputSearchFKNoRelatedRule:{rc:69532,msg:{client:`查询字符不正确`,server:`查询参数的外键无对应的rule`}},
-            inputSearchValueElementMustBeStringNumberDate:{rc:69534,msg:{client:`查询字符不正确`,server:`查询参数中非外键的键值值，其中每个元素必须是字符数字日期`}},
-            //inputSearchValueElementSpecialTypeShouldBeObject:{rc:69517,msg:{client:`查询字符格式不正确`,server:`查询参数为数字日期，值应该为对象`}},
-            inputSearchValueElementStringCantBeObject:{rc:69536,msg:{client:`查询字符格式不正确`,server:`查询参数的键值中的查询字符必须是对象`}},
-            inputSearchValueElementNeedCompOp:{rc:69538,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含操作符`}},
-            inputSearchValueElementNeedKeyValue:{rc:69540,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含value`}},
-            inputSearchValueElementCompOpWrong:{rc:69542,msg:{client:`查询字符格式不正确`,server:`查询参数中，操作符不是预定义的符号之一`}},
-            inputSearchValueElementCantContainCompOp:{rc:69544,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为字符，不能为对象`}},
+
         },
     },
     misc:{
