@@ -23,7 +23,7 @@ var unifiedRouterController=controller.billType
 var unifiedRouterController=controller.bill*/
 
 // import * as unifiedRouterController from './unifiedRouterController-compiled'
-var unifiedRouterController=require('./unifiedRouterController-compiled')
+var unifiedRouterController=require('./unifiedRouterController')
 router.use(function(req,res,next){
 /*    console.log(req.ips)
     console.log(req.ip)*/

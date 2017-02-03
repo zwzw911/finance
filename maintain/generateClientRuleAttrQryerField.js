@@ -7,6 +7,8 @@ require("babel-polyfill");
 require("babel-core/register")
 var genClientFunc=require("../server/assist/genClientConfigFunc")
 var ruleDefine=require("../server/define/validateRule/inputRule").inputRule
+var fieldDefine=require("../server/model/mongo/common/structure").fieldDefine
+
 var fs=require('fs')
 
 var inputAttr={}
@@ -52,7 +54,7 @@ var matchList={
     }
 }
 
-genClientFunc.generateClientInputAttr(ruleDefine,2,inputAttr)
+inputAttr=genClientFunc.generateClientInputAttr(ruleDefine,fieldDefine)
 console.log(inputAttr['department'])
 genClientFunc.deleteNonNeededObject(inputAttr,skipListForAttr)
 console.log(inputAttr['department'])

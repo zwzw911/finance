@@ -25,7 +25,7 @@ app.factory('validateHelper',function(){
 
             },
             isStringEmpty(value){
-                return ( "" === value || 0 === value.length || "" === value.trim());
+                return ( "" === value || 0 === value.length || "" === value.trim() || null===value);
             },
             isDate(date) {
                 let parsedDate=new Date(date)
@@ -42,6 +42,12 @@ app.factory('validateHelper',function(){
                  }*/
                 return parsedValue > 0
             },
+/*            isSetValue(value){
+                return undefined===value
+            },
+            isEmpty(value){
+
+            }*/
         }
 
         var ruleTypeCheck=
@@ -84,6 +90,9 @@ app.factory('validateHelper',function(){
                 exceedMin(value, definedValue) {
                     return parseFloat(value) < parseFloat(definedValue)
                 },
+                'enum':function(value,definedValue){
+                    return definedValue.indexOf(value)===-1
+                },
             }
 
     //检查input value（对单个field进行检查，因为此函数在每个input发生blur就要调用）
@@ -103,7 +112,9 @@ app.factory('validateHelper',function(){
             requireFlag=false
         }
 
-        if(''===currentValue){
+        // if(''===currentValue){
+        //console.log(`currentValue is ${JSON.stringify(currentValue)}`)
+        if(true===dataTypeCheck.isStringEmpty(currentValue)){
             if(false===requireFlag){
                 inputAttr[field]['validated']=true
                 return true
@@ -176,8 +187,13 @@ app.factory('validateHelper',function(){
                     case 'minLength':
                         ruleCheckFunc='exceedMinLength'
                         break;
+                    case 'enum':
+                        ruleCheckFunc='enum'
+                        break;
                 }
 console.log(`rule check type is ${ruleCheckFunc}`)
+console.log(`tobe checked value is ${JSON.stringify(currentValue)}`)
+                console.log(`tobe checked value's rule defind  is ${JSON.stringify(inputRule[field][singleRule]['define'])}`)
                 if(true===ruleTypeCheck[ruleCheckFunc](currentValue,inputRule[field][singleRule]['define'])){
                     inputAttr[field]['errorMsg']=inputRule[field][singleRule]['msg']
                     inputAttr[field]['validated']=false
@@ -192,7 +208,7 @@ console.log(`rule check type is ${ruleCheckFunc}`)
     }
     //对所有的input进行检测
     function allCheckInput(inputRule,inputAttr){
-        // console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        console.log(`input attr is ${JSON.stringify(inputAttr)}`)
         // console.log('check input in')
         let tmpResult
         for(let singleField in inputAttr){
@@ -526,34 +542,55 @@ app.factory('queryHelper',function(contEnum) {
     return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat}
 })*/
 
-app.factory('inputAttrHelper',function(contEnum) {
+app.factory('inputAttrHelper',function(contEnum,validateHelper) {
     //对某个input设置errorMsg（errorMsg隐式设置input样式）
     function setSingleInputAttrErrorMsg(field,inputAttr,errMsg){
         inputAttr[field]['errorMsg']=errMsg
         inputAttr[field]['validated']=false
     }
-    //对inputAttr中的一个字段进行初始化
-    function initSingleFieldInputAttrCreate(field,inputAttr){
-        // console.log(opType)
-        // if(contEnum.opType.create===opType){
-            inputAttr[field]['value']=''
-        // }
-        inputAttr[field]['originalValue']=''
-        inputAttr[field]['validated']='undefined'
-        inputAttr[field]['errorMsg']=''
-    }
+
     //对一个inputAttr中所有field进行初始化
-    function initAllFieldInputAttrCreate(inputAttr){
+    function initAllFieldInputAttrCreate(inputAttr,inputRule){
         // console.log(inputAttr)
         for(let singleField in inputAttr){
             // console.log(singleField)
-            initSingleFieldInputAttrCreate(singleField,inputAttr)
+            initSingleFieldInputAttrCreate(singleField,inputAttr,inputRule)
         }
         // console.log(inputAttr)
     }
-
-    function initSingleFieldInputAttrUpdate(field,inputAttr){
+    //对inputAttr中的一个字段进行初始化
+    //除了被initAllFieldInputAttrUpdate调用，也会在mainController中被直接调用，所以参数必须是field/inputAttr
+    function initSingleFieldInputAttrCreate(singleField,inputAttr,inputRule){
         // console.log(opType)
+        // if(contEnum.opType.create===opType){
+        inputAttr[singleField]['value']=''
+        // }
+        inputAttr[singleField]['originalValue']=''
+        //无需默认设成false，因为点击 确定按钮的时候，需要通过undefined来判断是否 需要进行validate
+/*        //在create的时候，如果字段是必须的，则validated初始设为false（防止直接点击确定提交POST请求）；否则设为undefined
+        if(true===inputAttr[singleField]['require']){
+            inputAttr[singleField]['validated']='false'
+        }else{
+            inputAttr[singleField]['validated']='undefined'
+        }*/
+
+        inputAttr[singleField]['errorMsg']=''
+    }
+
+
+
+    //对一个inputAttr中所有field进行初始化
+    function initAllFieldInputAttrUpdate(inputAttr){
+        console.log(`inputAttrinputAttr is ${JSON.stringify(inputAttr)}`)
+        for(let singleField in inputAttr){
+            // console.log(singleField)
+            initSingleFieldInputAttrUpdate(singleField,inputAttr)
+        }
+        // console.log(inputAttr)
+    }
+    //除了被initAllFieldInputAttrUpdate调用，也会在mainController中被直接调用，所以参数必须是field/inputAttr
+    function initSingleFieldInputAttrUpdate(field,inputAttr){
+        // console.log(`singleFieldInputAttr is ${JSON.stringify(singleFieldInputAttr)}`)
         // if(contEnum.opType.create===opType){
         //     inputAttr[field]['value']=''
         // }
@@ -561,18 +598,16 @@ app.factory('inputAttrHelper',function(contEnum) {
         inputAttr[field]['validated']='undefined'
         inputAttr[field]['errorMsg']=''
     }
-    //对一个inputAttr中所有field进行初始化
-    function initAllFieldInputAttrUpdate(inputAttr){
-        // console.log(inputAttr)
-        for(let singleField in inputAttr){
-            // console.log(singleField)
-            initSingleFieldInputAttrUpdate(singleField,inputAttr)
-        }
-        // console.log(inputAttr)
-    }
-    //是否所有的input检测都通过了（或者无需）
-    function allInputValidCheck(inputAttr){
+
+
+    //是否所有的input检测都通过了，如果是require，且validated属性为undefined的字段，需要进行validate
+    function allInputValidCheck(inputAttr,inputRule){
+        console.log(`all input check validate in`)
         for(let field in inputAttr){
+/*            if(undefined===inputAttr[field]['validated']){
+                validateHelper.checkInput(field,inputRule,inputAttr)
+
+            }*/
             if(false===inputAttr[field]['validated']){
                 // console.log(inputAttr[field])
                 return false
@@ -582,6 +617,7 @@ app.factory('inputAttrHelper',function(contEnum) {
     }
     //将当前的记录载入到inputAttr
     function loadCurrentData(idx,inputAttr,recorder,fkConfig){
+        console.log(`recorder to be loaded is ${JSON.stringify(recorder[idx])}`)
         for(var field in inputAttr){
 
             if(undefined===recorder[idx][field] || null===recorder[idx][field]){
@@ -598,6 +634,7 @@ app.factory('inputAttrHelper',function(contEnum) {
             }
 
         }
+        console.log(`inputAttr to be loaded is ${JSON.stringify(inputAttr)}`)
     }
 
     //为未在inputRule中定义的字段，在inputAttr中产生对应的field，以便显示在页面
@@ -612,6 +649,15 @@ app.factory('inputAttrHelper',function(contEnum) {
         }
     }
 
+    //如果是select传递进来的值，是inputAttr[field][value]={key:'in',value:'取入'}   ===> inputAttr[field][value]={'in'}
+    function convertReadableToEnum(inputAttr){
+        for(let field in inputAttr){
+            if(true===inputAttr[field]['isSelect']){
+                inputAttr[field]['value']=inputAttr[field]['value']['key']
+            }
+        }
+    }
+
     //将inputAttr的value转换成values:{f1:{value:1},f2:{value:2}}的格式，以便在传递到server
 //如果无值，则设成null，server会自动进行处理
     function convertedInputAttrFormatCreate(inputAttrs){
@@ -621,7 +667,13 @@ app.factory('inputAttrHelper',function(contEnum) {
             //console.log(`current field is ${singleInputAttr}`)
             //console.log(`current field value is ${JSON.stringify(inputAttrs[singleInputAttr]) }`)
             if(undefined!==inputAttrs[singleInputAttr]['value'] &&  null!==inputAttrs[singleInputAttr]['value'] && ''!==inputAttrs[singleInputAttr]['value']){
-                value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']
+/*                //如果是枚举类型（性别，支取类型）,那么值取其中的key （key:'in',value:'取入'）
+                if(true===inputAttrs[singleInputAttr]['isSelect']){
+                    value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']['key']
+                }else{*/
+                    value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']
+                //}
+
             }else{
                 value[singleInputAttr]['value']=null
             }
@@ -637,13 +689,18 @@ app.factory('inputAttrHelper',function(contEnum) {
             value[singleInputAttr]={}
             //console.log(`current field is ${singleInputAttr}`)
             //console.log(`current field value is ${JSON.stringify(inputAttrs[singleInputAttr]) }`)
-            if(inputAttr[singleInputAttr]['value']!==inputAttr[singleInputAttr]['originalValue']){
+            //if(inputAttrs[singleInputAttr]['value']!==inputAttrs[singleInputAttr]['originalValue']){
                 if(undefined!==inputAttrs[singleInputAttr]['value'] &&  null!==inputAttrs[singleInputAttr]['value'] && ''!==inputAttrs[singleInputAttr]['value']){
-                    value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']
+                    //如果是枚举类型（性别，支取类型）,那么值取其中的key （key:'in',value:'取入'）
+/*                    if(true===inputAttrs[singleInputAttr]['isSelect']){
+                        value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']['key']
+                    }else{*/
+                        value[singleInputAttr]['value']=inputAttrs[singleInputAttr]['value']
+                    //}
                 }else{
                     value[singleInputAttr]['value']=null
                 }
-            }
+            //}
         }
         return value
     }
@@ -688,6 +745,7 @@ app.factory('inputAttrHelper',function(contEnum) {
         allInputValidCheck,
         loadCurrentData,
         generateAdditionalFieldIntoInputAttr,
+        convertReadableToEnum,
         convertedInputAttrFormatCreate,
         convertedInputAttrFormatUpdate,
         convertSingleACFormat,
@@ -709,10 +767,63 @@ app.factory('commonHelper',function(){
         }
     }
 
+    /*      从db读取的数据，如果是select方式的，则从key（英文）转换成value（中文）     */
+    //recorder：search返回的记录（数组）
+    //inputAttr:recorder对应的inputAttr（以coll为单位）
+    //遍历每个记录的每个字段，如果是select，调用convertEnumData进行转换
+    function convertSingleRecorderEnumData(singleRecorder,inputAttr){
+        //遍历inputAttr，获得select的字段名和字段值（防止每个记录都重遍历）
+        //存储是select的字段名
+        let fieldIsSelect=[]
+        for(let fieldName in inputAttr){
+            // console.log(`fiedls name is ${fieldName}`)
+            if(true===inputAttr[fieldName]['isSelect']){
+                fieldIsSelect.push(fieldName)
+            }
+        }
+        // console.log(`select field to ve convert is ${JSON.stringify(fieldIsSelect)}`)
+/*        recorder.map(
+            (singleRecorder,idx)=>{*/
+                fieldIsSelect.map(
+                    (isSelectFieldName,idx)=>{
+                        // console.log(`orig value is ${JSON.stringify(singleRecorder)}`)
+                        // let convertedValue=convertEnumDataToReadable(singleRecorder[isSelectFieldName],inputAttr[isSelectFieldName]['selectOption'])
+                        // console.log(`convtered value is ${JSON.stringify(convertedValue)}`)
+                        singleRecorder[isSelectFieldName]=convertEnumDataToReadable(singleRecorder[isSelectFieldName],inputAttr[isSelectFieldName]['selectOption'])
+                        // console.log(`convtered value is ${JSON.stringify(singleRecorder)}`)
+                    }
+                )
+/*            }
+        )*/
+    }
 
+    /*                  如果某个字段是select，那么显示的时候，是中文，而不是英文                            */
+    //例如 性别，读取到的是male/female，需要翻译成男/女
+    //ecodedValue: male
+    //selectOption: inputAttr中的selectOption [{key:'male',value:'男'}]
+    function convertEnumDataToReadable(encodedValue,selectOption){
+        // console.log( `select value is ${encodedValue}`)
+        // console.log( `select option is ${JSON.stringify(selectOption)}`)
+        let matchedValue
+        selectOption.forEach(
+            (ele)=>{
+                if(encodedValue===ele.key){
+                    matchedValue= ele.value
+                }
+            }
+        )
+        return matchedValue
+/*        selectOption.map(
+            (ele,idx)=>{
+                console.log(`single ele is ${JSON.stringify(ele)}`)
+
+            }
+        )*/
+    }
 
     return {
         convertDateTime,
+        convertSingleRecorderEnumData,
     }
 })
 
@@ -958,7 +1069,7 @@ app.service('dateTimePickerHelper',function(){
 })
 
 //分页函数
-app.service('paginationHelper',function(){
+app.service('paginationHelper',function(validateHelper){
     //根据serve传递过来的数据，产生用于页面的分页 数据
     //serverData：从server端获得的原始分页数据
     //返回：angular用于渲染页面的 分页 数据

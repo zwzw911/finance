@@ -80,7 +80,7 @@ let fieldDefine={
     employee:{
         name:{type:String,unique:true},
         leader:{type:mongoose.Schema.Types.ObjectId,ref:"employees"},
-        gender:{type:String},
+        gender:{type:String,enum:['male','female']}, //是枚举，但是设置的时候还是要设成string，只是在检测的时候使用枚举的方法来检测
         birthDay:{type:Date},
         department:{type:mongoose.Schema.Types.ObjectId,ref:"departments"},
         onBoardDate:{type:Date},
@@ -97,9 +97,9 @@ let fieldDefine={
     },
     billType:{
         name:{type:String,unique:true},
+        inOut:{type:String,enum:['in','out']}, //是枚举，但是设置的时候还是要设成string，只是在检测的时候使用枚举的方法来检测
         parentBillType:{type:mongoose.Schema.Types.ObjectId,ref:"billTypes"},
         //而外信息，简化查询处理。无validator（无inputRule），因为由程序自动处理，保证了正确性
-        //
         parentBillTypeFields:{
             name:{type:String}
         },
@@ -120,6 +120,7 @@ let fieldDefine={
         //外键冗余字段
         billTypeFields:{
             name:{type:String},
+            inOut:{type:String},//用来1. 计算总额的时候+-；2 显示在页面的时候是否有+-； 而无需在client中设置（用来选择 查询条件）
         },
         reimburserFields:{
             name:{type:String},
@@ -159,14 +160,27 @@ if(true===mongoSetting.schemaOptions.validateFlag){
                             continue
                         }
                     }
+                    //如果rule是enum，只需要define，而无需msg
+                    //enum:['in','out']
+                    if('enum'===singleItem){
+                        if(fieldDefine[singleCollectionsName][singleFiled]){//对应的field在mongo中有定义，则为此field添加validator
+                            fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]]=singleRuleValue['define']
+                            //fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]].push(singleRuleValue['define'])
+                            continue
+                        }
+                    }
 
+                    //"required":[true,"错误代码20041:单据类别不能为空"]
                     if(false!==singleRuleValue['define']) {//一般而言，有define就可以判断为有validator，但是require比较特殊，只有true才认为有对应的定义
                         if(fieldDefine[singleCollectionsName][singleFiled]){//对应的field在mongo中有定义，则为此field添加validator
                             fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]]=[]
                             fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]].push(singleRuleValue['define'])
                             //fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]].push(singleRuleValue['mongoError'])
-                            let errorMsg=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
-                            fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]].push(errorMsg)//只能接受字符串
+                            //if('enum'!==singleItem){
+                                let errorMsg=`错误代码${singleRuleValue['mongoError']['rc']}:${singleRuleValue['mongoError']['msg']}`
+                                fieldDefine[singleCollectionsName][singleFiled][ruleMatch[singleItem]].push(errorMsg)//只能接受字符串
+                            //}
+
                         }
                     }
                 }
@@ -177,10 +191,10 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 
 // fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
 // console.log(fieldDefine['department']['name'])
-//console.log(fieldDefine['employee']['gender']['enum'])
+console.log(fieldDefine['employee']['gender']['enum'])
 // console.log(JSON.stringify(fieldDefine['department']))
 // console.log(JSON.stringify(fieldDefine['employee']))
-// console.log(JSON.stringify(fieldDefine['billType']))
+ console.log(JSON.stringify(fieldDefine['billType']))
 
 var userSchema=new mongoose.Schema(
     fieldDefine['user'],

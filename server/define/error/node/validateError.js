@@ -39,13 +39,13 @@ var validateError={
     },
     validateFormat:{
         /*              checkInput              */
-        //CU总结构
-        CUValuesTypeWrong:{rc:69600,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
-        CUValuesFormatMissRecorderInfo:{rc:69602,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含recorderInfo'}},
-        CUValuesRecorderInfoMustBeObject:{rc:69604,msg:{client:'参数格式不正确',server:'参数格式不正确，recorderInfo必须是对象'}},
-        CUValuesFormatMisCurrentPage:{rc:69606,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
-        CUValuesCurrentPageMustBeInt:{rc:69608,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
-        //CU->recorderInfo
+        //CUD总结构
+        CUDValuesTypeWrong:{rc:69600,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
+        CUDValuesFormatMissRecorderInfo:{rc:69602,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含recorderInfo'}},
+        CUDValuesRecorderInfoMustBeObject:{rc:69604,msg:{client:'参数格式不正确',server:'参数格式不正确，recorderInfo必须是对象'}},
+        CUDValuesFormatMisCurrentPage:{rc:69606,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
+        CUDValuesCurrentPageMustBeInt:{rc:69608,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
+        //recorderInfo(独立的部分，可以在CDU中进行检查)
         recorderInfoCantEmpty:{rc:69610,msg:'待检测的输入值不能为空'},
         recorderInfoFieldNumExceed:{rc:69612,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
         recorderInfoFormatWrong:{rc:69614,msg:{client:'参数格式不正确',server:'参数格式必须是field:{value:val}'}},
@@ -60,7 +60,7 @@ var validateError={
         SValuesSearchParamsMustBeObject:{rc:69624,msg:{client:'参数格式不正确',server:'参数格式不正确，SearchParams必须是对象'}},
         SValuesFormatMisCurrentPage:{rc:69626,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
         SValuesCurrentPageMustBeInt:{rc:69628,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
-        //search->searchParams
+        //searchParams(独立的部分，可以在S中进行检查)
         searchParamsCantEmpty:{rc:69630,msg:{client:`查询参数格式不正确`,server:`查询参数不能为空对象`}},
         searchParamsFieldNoRelatedRule:{rc:69632,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
         searchParamsFiledValueCantEmpty:{rc:69633,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
@@ -131,10 +131,10 @@ var validateError={
     },
     validateValue:{
         //validateCreateUpdateInputValue
-        CUObjectIdEmpty:{rc:69700,msg:'objectId不能为空'},
-        CUObjectIdWrong:{rc:69702,msg:'objectId的格式不正确'},
-        CUValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
-        CUTypeWrong:{rc:69706,msg:'类型不正确'},
+        CUDObjectIdEmpty:{rc:69700,msg:'objectId不能为空'},
+        CUDObjectIdWrong:{rc:69702,msg:'objectId的格式不正确'},
+        CUDValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
+        CUDTypeWrong:{rc:69706,msg:'类型不正确'},
         STypeWrong:{rc:69708,msg:'类型不正确'},
     }
 }

@@ -8,11 +8,11 @@
 require("babel-polyfill");
 require("babel-core/register")
 // var func=require('../server/assist/component/shaLua-compiled').shaSingleFile
-var shaFunc=require('../../server/assist/component/shaLua-compiled')
+var shaFunc=require('../../server/assist/component/shaLua')
 //var execLua=shaFunc.execLua
 // var file='./Lua_check_interval.lua'
 var dir='../../server/model/redis/Lua'
-var validateSingleFieldRule=require('../../server/assist/misc-compiled').func.validateInputRule.checkSingleFieldRuleDefine
+var validateSingleFieldRule=require('../../server/assist/misc').func.validateInputRule.checkSingleFieldRuleDefine
 var inputRule=require("../../server/define/validateRule/inputRule").inputRule
 
 for(let singleColl in inputRule){

@@ -8,9 +8,9 @@
 var defaultSetting=require('../../../config/global/globalSettingRule').defaultSetting
 //use redis to save get golbalSetting
 var redisClient=require('../connection/redis_connection').ioredisClient
-var dataTypeCheck=require('../../../assist/validateFunc').func.dataTypeCheck
+var dataTypeCheck=require('../../../assist/not_used_validateFunc').func.dataTypeCheck
 var redisError=require('../../../define/error/redisError').redisError
-var inputValid=require('../../../assist/validateFunc').func.
+var inputValid=require('../../../assist/not_used_validateFunc').func.
 /*require('./redis_connections').redisClient1(function(err,result){
     redisClient=result
 })*/

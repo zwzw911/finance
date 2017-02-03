@@ -2,10 +2,10 @@
  * Created by Ada on 2016/9/28.
  */
 'use strict'
-var userModel=require('./common/structure-compiled').userModel
+var userModel=require('./common/structure').userModel
 var mongooseErrorHandler=require('../../define/error/mongoError').mongooseErrorHandler
 
-var pageSetting=require('../../config/global/globalSettingRule').pageSetting
+var paginationSetting=require('../../config/global/globalSettingRule').paginationSetting
 
 function create(values){
     //不能直接返回promise，而是通过callback捕获可能错误，并转换成可读格式
@@ -66,7 +66,7 @@ function readAll(){
         let condition={}
         let selectField=null
         let option={}
-        option.limit=pageSetting.billType.limit
+        option.limit=paginationSetting.user.limit
         userModel.find(condition,selectField,option,function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)
@@ -86,7 +86,7 @@ function readName(nameToBeSearched){
         }
         let selectField='name'
         let option={}
-        option.limit=pageSetting.billType.limit
+        option.limit=paginationSetting.user.limit
         userModel.find(condition,selectField,option,function(err,result){
             if(err){
                 //console.log(`db err is ${err}`)

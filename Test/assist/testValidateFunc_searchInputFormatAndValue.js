@@ -2,7 +2,7 @@
  * Created by wzhan039 on 2016-11-10.
  * 只测试search 的format和value函数
  */
-var testModule=require('../../server/assist/validateFunc').func;
+var testModule=require('../../server/assist/not_used_validateFunc').func;
 var miscError=require('../../server/define/error/nodeError').nodeError.assistError
 //var validateInputFormatError=
 /*          for generateRandomString test       */

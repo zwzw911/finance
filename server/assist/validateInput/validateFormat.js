@@ -1,8 +1,8 @@
 /**
  * Created by Ada on 2017/1/23.
  * 对输入到server端的数据格式进行检查（而不检查其中的值）
- * 1. validateCreateUpdateInputFormat：总体检查createUpdate输入参数（是否为对象，是否包含recorderInfo/currentPage的key，且为对象或者整数）
- * 2. validateCreateUpdateInputRecorderFormat： 检查recorderInfo（记录的输入值）是否符合inputRule的规定
+ * 1. validateCUDInputFormat：总体检查createUpdateDelete输入参数（是否为对象，是否包含recorderInfo/currentPage的key，且为对象或者整数）
+ * 2. validateRecorderInfoFormat： 检查recorderInfo（记录的输入值）是否符合inputRule的规定
  * 3. validateSearchInputFormat： 总体检查search（read）的输入参数，是否包含searchParams和currentPage
  * 4. validateSearchParamsFormat: 对search操作中的searchParams进行检查
  * 5. validateSingleSearchParamsFormat： 对searchParams中的单个字段的比较符值进行检测
@@ -26,35 +26,35 @@ var rightResult={rc:0}
   *     2. 必须包含currentPage，且其值为整数
   *
   * */
-function validateCreateUpdateInputFormat(values){
+function validateCUDInputFormat(values){
     //0 values必须是对像
     if(false===dataTypeCheck.isObject(values)){
-        return validateFormatError.CUValuesTypeWrong
+        return validateFormatError.CUDValuesTypeWrong
     }
     //1 必须包含recorderInfo，且为对象
     if(false==='recorderInfo' in values){
-        return validateFormatError.CUValuesFormatMissRecorderInfo
+        return validateFormatError.CUDValuesFormatMissRecorderInfo
     }
     if(false===dataTypeCheck.isObject(values['recorderInfo'])){
-        return validateFormatError.CUValuesRecorderInfoMustBeObject
+        return validateFormatError.CUDValuesRecorderInfoMustBeObject
     }
     //2 必须包含currentPage，且为整数
     if(false==='currentPage' in values){
-        return validateFormatError.CUValuesFormatMisCurrentPage
+        return validateFormatError.CUDValuesFormatMisCurrentPage
     }
     if(false===dataTypeCheck.isInt(values['currentPage'])){
-        return validateFormatError.CUValuesCurrentPageMustBeInt
+        return validateFormatError.CUDValuesCurrentPageMustBeInt
     }
     return rightResult
 }
 /*
- * validateCreateUpdateInputRecorderFormat:当为create/update的时候，检测client输入的记录格式是否正确》例如 {parentBillType:{value:'val1'}}
+ * validateRecorderInfoFormat:当为create/update/delete的时候，检测client输入的记录格式是否正确》例如 {parentBillType:{value:'val1'}}
  * eColl: 当前使用的coll
  * values: 传入的数据，所有rules（考虑到外键的情况）
  * rules：数据对应的rule define，以coll为基本单位
  * fkConfig: 外键的配置，以coll为单位
  * maxFieldNum：传入数据中，最大包含的字段数量（防止用户输入过大数据）
- * ******************  1/2 在validateCreateUpdateInputFormat已经做过     ***************************
+ * ******************  1/2 在validateCUDInputFormat已经做过     ***************************
  * 1.
  * 2. 必须是Object(隐含不能为undefined/null)
  * *************************************************************************************************
@@ -65,7 +65,7 @@ function validateCreateUpdateInputFormat(values){
  * 7. 某些即使放在inputRule中，但也不能作为输入字段（比如，cDate复用作为查询 创建日期）
  * 7. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
  * */
-function validateCreateUpdateInputRecorderFormat(recorderInfo,rule,maxFieldNum){
+function validateRecorderInfoFormat(recorderInfo,rule,maxFieldNum){
     console.log(`recorderInfo is ${JSON.stringify(recorderInfo)}`)
 /*    //1. 必须设值，不能为undefined/null
     if(false===dataTypeCheck.isSetValue(recorderInfo)){
@@ -81,7 +81,7 @@ function validateCreateUpdateInputRecorderFormat(recorderInfo,rule,maxFieldNum){
     }
     //4. 检查key数量是否合适（不能超过最大定义）
     let keys=Object.keys(recorderInfo)
-
+console.log(`recorderInfo leys is ${JSON.stringify(keys)},length is ${keys.length},max field is ${maxFieldNum}`)
     if(keys.length>maxFieldNum){
         return validateFormatError.recorderInfoFieldNumExceed
     }
@@ -333,8 +333,8 @@ function validateSingleSearchParamsFormat(fieldValue,fieldRule){
 }
 
 module.exports={
-    validateCreateUpdateInputFormat,
-    validateCreateUpdateInputRecorderFormat,
+    validateCUDInputFormat,
+    validateRecorderInfoFormat,
     validateSearchInputFormat,
     validateSearchParamsFormat,
     validateSingleSearchParamsFormat,

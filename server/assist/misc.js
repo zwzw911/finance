@@ -317,30 +317,8 @@ var populateSingleDoc=function(singleDoc,populateOpt,populatedFields){
 
 }
 
-//将server返回的rc格式化成client能接受的格式
-//server可能是{rc:xxxx,msg:{client:'yyy',server:'zzz'}======>client  {rc:xxx,msg:yyy}
-var  formatRc=function(rc,clientFlag=true){
-// console.log(`original rc is ${JSON.stringify(rc)}`)
-    if(rc.msg && (rc.msg.client || rc.msg.server)){
-        let result={}
-        result['rc']=rc['rc']
-        if(clientFlag){
-            result['msg']=rc.msg.client
-        }else{
-            result['msg']=rc.msg.server
-        }
-        return result
-    }
-    //其他格式的rc（正确结果，或者已经是{rc:xxx,msg:'yyy'}），直接返回
-    return rc
-    /*    //已经是{rc:xxx,msg:'yyy'}的格式，直接返回输入值
-     if(rc.msg && undefined===rc.msg.client &&  undefined===rc.msg.server){
-     return rc
-     }
 
-     return miscError.validate.rcFormatWrong*/
 
-}
 
 //1. 搜索字符串中的+转换成空格
 //2. 截取规定的字符数量
@@ -397,7 +375,7 @@ module.exports={
     encodeHtml,
 
     populateSingleDoc,
-    formatRc,
+    // formatRc,
 
     convertURLSearchString,
     escapeRegSpecialChar,

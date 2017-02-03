@@ -48,3 +48,7 @@
 4. 删除记录前使用提示框（提示框绑定一个异步函数，返回yes/no供其他函数调用）======》yes按钮的一个参数是需要执行的函数
 5. 查询日期设置
 6. bill添加一列：
+
+
+1. client中，取消selectAC，直接使用inputAttr，简化数据处理
+2. merge billType的modal到bill；merge bill的所有到其他

@@ -6,7 +6,7 @@
  * 类：使用redis作为db，虽然每次实例化都要读取db（可能速度慢，redis是内存db，其实速度挺快），但是可以随时获得最新更改，而无需重启app
  */
 var gm=require('gm')
-var CRUDGlobalSetting=require('../validateFunc').func.CRUDGlobalSetting
+var CRUDGlobalSetting=require('../not_used_validateFunc').func.CRUDGlobalSetting
 // var imageDefine=require('../assist/define_config/global_config').imageDefine
 var imageDefine
 /*CRUDGlobalSetting.getItemSetting('imageDefine').then(

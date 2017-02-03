@@ -2,8 +2,8 @@
  * Created by wzhan039 on 2017-01-24.
  * 对输入到server端的数据value进行检查（基于inputRule）
  * ×××1. checkSearchValue：对GET方法，通过URL传递search参数进行检测×××
- * 2. validateCreateUpdateInputValue: 对create/update的输入值进行检测（没有拆分，就是一个函数）
- * 3. validateSearchInputValue：遍历传入的searchParams，以字段为单位，调用validateSingleSearchFieldValue进行检测
+ * 2. validateRecorderInfoValue: 对recorderInfo(可能包含在create/update中)的输入值进行检测（没有拆分，就是一个函数）
+ * 3. validateSearchParamsValue：遍历传入的searchParams，然后以字段为单位，调用validateSingleSearchFieldValue进行检测
  * 4. validateSingleSearchFieldValue：以字段为单位检测searchParams输入
  */
 var validateHelper=require('./validateHelper')
@@ -69,7 +69,7 @@ function checkSearchValue(value,inputRule){
  *                   当update是，true，只对输入的字段进行检查
  * 返回值有2种：一种是common：{rc:xxx,msg:yyy}，另外一种是对全部输入的field都进行检查，返回{field1:{rc:xxx,msg,yyy},field2:{rc:zzz,msg:aaa}}
  * */
-function validateCreateUpdateInputValue(inputValue,collRules,basedOnInputValue=true){
+function validateRecorderInfoValue(inputValue,collRules,basedOnInputValue=true){
 
     let rc={}
     let tmpResult
@@ -98,13 +98,13 @@ function validateCreateUpdateInputValue(inputValue,collRules,basedOnInputValue=t
         //3.1 如果传入的是_id，那么通过regex直接判断（因为_id不定义在rule中，而是通过server端程序生成的）
         if('id'===itemName || '_id'===itemName){
             if(false===dataTypeCheck.isSetValue(inputValue[itemName]) || false===dataTypeCheck.isSetValue(inputValue[itemName]['value'])){
-                rc[itemName]['rc']=validateValueError.CUObjectIdEmpty.rc
-                rc[itemName]['msg']=validateValueError.CUObjectIdEmpty.msg
+                rc[itemName]['rc']=validateValueError.CUDObjectIdEmpty.rc
+                rc[itemName]['msg']=validateValueError.CUDObjectIdEmpty.msg
                 continue
             }
             if(false===regex.objectId.test(inputValue[itemName]['value'])) {
-                rc[itemName]['rc']=validateValueError.CUObjectIdWrong.rc
-                rc[itemName]['msg']=validateValueError.CUObjectIdWrong.msg
+                rc[itemName]['rc']=validateValueError.CUDObjectIdWrong.rc
+                rc[itemName]['msg']=validateValueError.CUDObjectIdWrong.msg
             }
             continue
         }
@@ -176,8 +176,8 @@ function validateCreateUpdateInputValue(inputValue,collRules,basedOnInputValue=t
                     emptyFlag=dataTypeCheck.isEmpty(currentItemValue)
                 }else{
 //console.log('default not defined')
-                    rc[itemName]['rc']=validateValueError.CUValueNotDefineWithRequireTrue.rc
-                    rc[itemName]['msg']=`${currentItemRule['chineseName']}:${validateValueError.CUValueNotDefineWithRequireTrue.msg}`
+                    rc[itemName]['rc']=validateValueError.CUDValueNotDefineWithRequireTrue.rc
+                    rc[itemName]['msg']=`${currentItemRule['chineseName']}:${validateValueError.CUDValueNotDefineWithRequireTrue.msg}`
                     //return validateError.valueNotDefineWithRequireTrue
                     continue
                 }
@@ -249,8 +249,8 @@ function validateCreateUpdateInputValue(inputValue,collRules,basedOnInputValue=t
             continue
         }
         if(false===result){
-            rc[itemName]['rc']=validateValueError.CUTypeWrong.rc
-            rc[itemName]['msg']=`${itemName}${validateValueError.CUTypeWrong.msg}`
+            rc[itemName]['rc']=validateValueError.CUDTypeWrong.rc
+            rc[itemName]['msg']=`${itemName}${validateValueError.CUDTypeWrong.msg}`
             continue
         }
 
@@ -393,7 +393,7 @@ function validateCreateUpdateInputValue(inputValue,collRules,basedOnInputValue=t
  *           整个inputRule，因为外键可能对应在其他coll
  * 返回: {field1:{rc:0},field2:{rc:9123.msg:'值不正确'}}
  * */
-function validateSearchInputValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
+function validateSearchParamsValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
     let result={}
     for(let singleFieldName in inputSearch){
         //如果是普通字段
@@ -416,7 +416,120 @@ function validateSearchInputValue(inputSearch,fkAdditionalFieldsConfig,collName,
 //对单个字段（普通和外键的冗余字段）进行遍历，为其中的每个元素进行检查
 //fieldValue：每个字段对应的值，为数组(数组中的每个元素是一个对象，对应此字段一个搜索条件)
 //singleFieldRule：此字段的rule
-function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
+//对单个字段（普通和外键的冗余字段）进行遍历，为其中的每个元素调用checkSingleSearchValue
+function validateSingleSearchFieldValue(fieldValue,fieldRule){
+    let chineseName=fieldRule['chineseName']
+    for(let singleSearchElement of fieldValue){
+        let value=singleSearchElement['value']
+        let result=validateSingleElementValue(chineseName,value,fieldRule)
+        if(result.rc>0){
+            return result
+        }
+    }
+    return {rc:0}
+}
+
+//需要单独定义成一个函数，在提供autoCoplete的时候，需要对单个搜索值（字符串）进行判断，就是用此函数
+//singleSearchString: 要检查的值（非数组或者对象）
+//singleFieldRule： 对应的rule定义
+function validateSingleElementValue(chineseName,singleSearchString,singleFieldRule){
+    // console.log(`function checkSingleSearchValue called`)
+
+    let result={rc:0}
+    /*    if(true===dataTypeCheck.isEmpty(singleSearchString)){
+     return
+     }*/
+    //console.log(`called func rule is ${JSON.stringify(singleFieldRule)}`)
+
+    /*                  不能使用format，因为不能使用minLength（只输入一个字符，也算有效的搜索值）    */
+    /*if(singleFieldRule['format']){
+     // console.log(`format defined`)
+     let currentRule=singleFieldRule['format']
+     let currentRuleDefine=currentRule['define']
+     // console.log(`format defined as ${currentRuleDefine.toString()}`)
+     if(false===valueMatchRuleDefineCheck.format(singleSearchString,currentRuleDefine)){
+     result['rc']=currentRule['error']['rc']
+     result['msg']=generateErrorMsg.format(chineseName,currentRuleDefine,false)
+     // console.log(    `format check failed result is ${JSON.stringify(result)}`)
+     return result
+     /!*                result[singleFieldName]['rc']=currentRule['error']['rc']
+     result[singleFieldName]['msg']=generateErrorMsg.format(currentRule['chineseName'],currentRuleDefine,false)*!/
+     // break
+     }
+     }*/
+
+    //1.2 检查value的类型是否符合type中的定义
+    //  console.log(`data is ${singleSearchString}`)
+    //   console.log(`data type is ${singleFieldRule['type'].toString()}`)
+
+    let typeCheckResult = valueTypeCheck(singleSearchString,singleFieldRule['type'])
+    //console.log(`data type check result is ${JSON.stringify(typeCheckResult)}`)
+    if(typeCheckResult.rc && 0<typeCheckResult.rc){
+        //当前字段值的类型未知
+        result['rc']=typeCheckResult.rc
+        result['msg']=`${chineseName}${typeCheckResult.msg}`
+        return result
+
+    }
+    if(false===typeCheckResult){
+        result['rc']=validateValueError.STypeWrong.rc
+        result['msg']=`${chineseName}${validateValueError.STypeWrong.msg}`
+        return result
+    }
+    //1.3 对field的每个rule检测
+    for(let singleRule in singleFieldRule){
+        let currentRule=singleFieldRule[singleRule]
+        let currentRuleDefine=currentRule['define']
+// console.log(`currentRule is ${JSON.stringify(currentRule)},currentRuleDefine is ${currentRuleDefine}`)
+        switch (singleRule){
+            case 'min':
+                if(true===valueMatchRuleDefineCheck.exceedMin(singleSearchString,currentRuleDefine)){
+                    result['rc']=currentRule['error']['rc']
+                    result['msg']=generateErrorMsg.min(chineseName,currentRuleDefine,false,currentRule['unit'])
+                    return result
+                    /*                        result[singleFieldName]['rc']=currentRule['error']['rc']
+                     result[singleFieldName]['msg']=generateErrorMsg.min(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])*/
+                }
+                break;
+            case 'max':
+                if(true===valueMatchRuleDefineCheck.exceedMax(singleSearchString,currentRuleDefine)){
+                    result['rc']=currentRule['error']['rc']
+                    result['msg']=generateErrorMsg.max(chineseName,currentRuleDefine,false,currentRule['unit'])
+                    return result
+                    // result[singleFieldName]['rc']=currentRule['error']['rc']
+                    // result[singleFieldName]['msg']=generateErrorMsg.max(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])
+                }
+                break;
+            //输入的参数不能为空，但是没有最小限制
+            /*            case 'minLength':
+             if(true===valueMatchRuleDefineCheck.exceedMinLength(singleSearchString,currentRuleDefine)){
+             result['rc']=currentRule['error']['rc']
+             result['msg']=generateErrorMsg.minLength(chineseName,currentRuleDefine,false)
+             return result
+             // result[singleFieldName]['rc']=currentRule['error']['rc']
+             // result[singleFieldName]['msg']=generateErrorMsg.minLength(currentRule['chineseName'],currentRuleDefine,false)
+             }
+             break;*/
+            case 'maxLength':
+                // console.log(`max`)
+                // console.log(`value is ${singleSearchString},define is ${currentRuleDefine}`)
+                if(true===valueMatchRuleDefineCheck.exceedMaxLength(singleSearchString,currentRuleDefine)){
+                    result['rc']=currentRule['error']['rc']
+                    result['msg']=generateErrorMsg.maxLength(chineseName,currentRuleDefine,false)
+                    return result
+                    // result[singleFieldName]['rc']=currentRule['error']['rc']
+                    // result[singleFieldName]['msg']=generateErrorMsg.maxLength(currentRule['chineseName'],currentRuleDefine,false)
+                }
+                break;
+        }
+        /*            //一个rule出错，ield的其他rule就无需检测
+         if(result[singleFieldName]['rc']>0){
+         break
+         }*/
+    }
+    return result
+}
+/*function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
     let chineseName=singleFieldRule['chineseName']
     let result={rc:0}
     //对字段的每个搜索值进行检测
@@ -427,13 +540,13 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
 
 
 
-        /*    if(true===dataTypeCheck.isEmpty(singleSearchString)){
+        /!*    if(true===dataTypeCheck.isEmpty(singleSearchString)){
          return
-         }*/
+         }*!/
         //console.log(`called func rule is ${JSON.stringify(singleFieldRule)}`)
 
-        /*                  不能使用format，因为不能使用minLength（只输入一个字符，也算有效的搜索值）    */
-        /*if(singleFieldRule['format']){
+        /!*                  不能使用format，因为不能使用minLength（只输入一个字符，也算有效的搜索值）    *!/
+        /!*if(singleFieldRule['format']){
          // console.log(`format defined`)
          let currentRule=singleFieldRule['format']
          let currentRuleDefine=currentRule['define']
@@ -447,7 +560,7 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
          result[singleFieldName]['msg']=generateErrorMsg.format(currentRule['chineseName'],currentRuleDefine,false)*!/
          // break
          }
-         }*/
+         }*!/
 
         //1.2 检查value的类型是否符合type中的定义
         //  console.log(`data is ${singleSearchString}`)
@@ -478,8 +591,8 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
                         result['rc']=currentRule['error']['rc']
                         result['msg']=generateErrorMsg.min(chineseName,currentRuleDefine,false,currentRule['unit'])
                         return result
-                        /*                        result[singleFieldName]['rc']=currentRule['error']['rc']
-                         result[singleFieldName]['msg']=generateErrorMsg.min(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])*/
+                        /!*                        result[singleFieldName]['rc']=currentRule['error']['rc']
+                         result[singleFieldName]['msg']=generateErrorMsg.min(currentRule['chineseName'],currentRuleDefine,false,currentRule['unit'])*!/
                     }
                     break;
                 case 'max':
@@ -492,7 +605,7 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
                     }
                     break;
                 //输入的参数不能为空，但是没有最小限制
-                /*            case 'minLength':
+                /!*            case 'minLength':
                  if(true===valueMatchRuleDefineCheck.exceedMinLength(singleSearchString,currentRuleDefine)){
                  result['rc']=currentRule['error']['rc']
                  result['msg']=generateErrorMsg.minLength(chineseName,currentRuleDefine,false)
@@ -500,7 +613,7 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
                  // result[singleFieldName]['rc']=currentRule['error']['rc']
                  // result[singleFieldName]['msg']=generateErrorMsg.minLength(currentRule['chineseName'],currentRuleDefine,false)
                  }
-                 break;*/
+                 break;*!/
                 case 'maxLength':
                     // console.log(`max`)
                     // console.log(`value is ${singleSearchString},define is ${currentRuleDefine}`)
@@ -513,20 +626,47 @@ function validateSingleSearchFieldValue(fieldValue,singleFieldRule){
                     }
                     break;
             }
-            /*            //一个rule出错，ield的其他rule就无需检测
+            /!*            //一个rule出错，ield的其他rule就无需检测
              if(result[singleFieldName]['rc']>0){
              break
-             }*/
+             }*!/
         }
 
 
     }
     return result
+}*/
+
+
+/*      delete的参数objectId包含在URL中，同时POST还需要包含searchParams和currentPage，以便停留在原来的页数上
+ *   此函数只是验证express是否get到了这个参数，其余的验证，通过将其放入{field:{value:'delValue'}}后，复用validateInputVale实现
+ *   多次一举，为了防止在mainRouterController中require nodeError.js这个文件
+ *
+ * */
+function validateDeleteObjectId(id){
+    /*    console.log(`values isj ${values}`)
+     console.log(`type is ${typeof values}`)
+     console.log(`isSetValue ${dataTypeCheck.isSetValue(values)}`)
+     console.log(`isEmpty ${dataTypeCheck.isEmpty(values)}`)*/
+    //null和undefine无法通过软件模拟：null被当成字符传入，undefine无法找到对应的route
+    //console.log(`id is ${id}`)
+    //console.log(`is set value result is  ${dataTypeCheck.isSetValue(id)}`)
+    //console.log(`is empty result is  ${dataTypeCheck.isEmpty(id)}`)
+    if(false===dataTypeCheck.isSetValue(id) || true===dataTypeCheck.isEmpty(id)){
+        return validateValueError.CUDObjectIdEmpty
+    }
+    if(false===regex.objectId.test(id)){
+        return validateValueError.CUDObjectIdWrong
+    }
+    return {rc:0}
 }
+
 
 module.exports={
     // checkSearchValue,
-    validateCreateUpdateInputValue,
-    validateSearchInputValue,
+    validateRecorderInfoValue,
+    validateSearchParamsValue,
     validateSingleSearchFieldValue,//辅助函数，一般不直接使用
+    validateSingleElementValue,//可在1，autoComplete的时候，使用   2. 被validateSingleSearchFieldValue调用
+    validateDeleteObjectId,//delete比较特殊，使用POST，URL带objectID指明要删除的记录，同时body中带searchParams和currentPage，以便删除后继续定位对应的页数
 }

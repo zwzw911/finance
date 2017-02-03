@@ -3,13 +3,13 @@
  */
     /*
     * total:记录总数
-    * curPage: 当前页码(数字)或者first/last（字符）
+    * currentPage: 当前页码(数字)或者first/last（字符）
     * pageSize：每页显示记录数
     * pageLength：显示页的数量
     *
     * 结果：返回分页html的起始页码和结束页码，以及 前一页 后一页是否可得
     * */
-var pagination=function({total,curPage,pageSize=10,pageLength=10}){
+var pagination=function({total,currentPage,pageSize=10,pageLength=10}){
 
     //如果输入参数不正确，设定默认值
 /*    if(pageSize<0 || undefined===pageSize){pageSize=10}
@@ -27,13 +27,13 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
         start=end=1;//不需要分页组件
         showPrevious=showNext=false;
     }
-    if('last'===curPage || curPage>totalPage){
-        curPage=totalPage
+    if('last'===currentPage || currentPage>totalPage){
+        currentPage=totalPage
     }
-    if('first'===curPage ||curPage<1){
-        curPage=1;
+    if('first'===currentPage ||currentPage<1){
+        currentPage=1;
     }
-    if(curPage>0 && curPage<=totalPage){
+    if(currentPage>0 && currentPage<=totalPage){
         //页码
         for(var i=0;i<maxLoop;i++){
             start=i*pageLength+1
@@ -42,8 +42,8 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
                 end=totalPage
             }
 
-            if(end>start && curPage>=start && curPage<=end){
-                if(curPage==start){
+            if(end>start && currentPage>=start && currentPage<=end){
+                if(currentPage==start){
                     //当前页位于第一个loop的第一页
                     if(start==1){
                         showPrevious=false;
@@ -58,37 +58,37 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
                         showNext=false
                     }
                 }
-                if(curPage==end){
-                    if(curPage<totalPage){
+                if(currentPage==end){
+                    if(currentPage<totalPage){
                         showNext=true
                     }else{
                         showNext=false
                     }
 
-                    if(curPage>start){
+                    if(currentPage>start){
                         showPrevious=true;
                     }else{
                         showPrevious=false;
                     }
 
                 }
-                if(curPage<end && curPage>start){
+                if(currentPage<end && currentPage>start){
                     showNext=true;
                     showPrevious=true;
                 }
                 break
             }
             //当前页码范围只有一个页码，说明此页码是最后一个页码
-            if(end===start && curPage===start ){
-                if(1===curPage){
+            if(end===start && currentPage===start ){
+                if(1===currentPage){
                     showNext=false
                     showPrevious=false;
                 }
-                 if(curPage>1 && curPage<totalPage){
+                 if(currentPage>1 && currentPage<totalPage){
                      showNext=true
                      showPrevious=true;
                  }
-                if(curPage>1 && curPage===totalPage){
+                if(currentPage>1 && currentPage===totalPage){
                     showNext=false
                     showPrevious=true;
                 }
@@ -96,9 +96,11 @@ var pagination=function({total,curPage,pageSize=10,pageLength=10}){
         }
     }
     ////当前在客户端显示的所有页数对应的总记录数（以便client可以在不要求server的信息时，直接计算分页信息。用于添加记录时在client直接计算分页信息）
-    let totalRecorderNumberForShownPage=total >= end*pageSize ? end*pageSize:total
+    // let totalRecorderNumberForShownPage=total >= end*pageSize ? end*pageSize:total
     //pageSize;返回给前端使用
-    return {start:start,end:end,currentPage:curPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize,totalRecorderNumberForShownPage:totalRecorderNumberForShownPage}
+    return {start:start,end:end,currentPage:currentPage,showPrevious:showPrevious,showNext:showNext,totalPage:totalPage,pageSize:pageSize,pageLength:pageLength,
+        // totalRecorderNumberForShownPage:totalRecorderNumberForShownPage
+    }
 }
 
 module.exports={

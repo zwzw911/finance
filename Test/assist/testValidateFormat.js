@@ -15,32 +15,32 @@ var dataType=require('../../server/define/enum/validEnum').enum.dataType
 /***************   validateCreateUpdateInputFormat   *******************/
 /***************************************************************************/
 var validateCreateUpdateInputFormat=function(test){
-    let func=testModule.validateCreateUpdateInputFormat
+    let func=testModule.validateCUDInputFormat
     let values,result
     test.expect(7)
 
     values=null
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.CUDValuesTypeWrong.rc,'values must be object')
     values=[]
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.CUDValuesTypeWrong.rc,'values must be object')
 
     values={}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesFormatMissRecorderInfo.rc,'values must contain recorderInfo')
+    test.equal(result.rc,validateFormatError.CUDValuesFormatMissRecorderInfo.rc,'values must contain recorderInfo')
 
     values={'recorderInfo':null}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesRecorderInfoMustBeObject.rc,' recorderInfo must be object')
+    test.equal(result.rc,validateFormatError.CUDValuesRecorderInfoMustBeObject.rc,' recorderInfo must be object')
 
     values={'recorderInfo':{}}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesFormatMisCurrentPage.rc,'values must contain currentPage')
+    test.equal(result.rc,validateFormatError.CUDValuesFormatMisCurrentPage.rc,'values must contain currentPage')
 
     values={'recorderInfo':{},'currentPage':'test'}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUValuesCurrentPageMustBeInt.rc,'currentPage must be int')
+    test.equal(result.rc,validateFormatError.CUDValuesCurrentPageMustBeInt.rc,'currentPage must be int')
 
     values={'recorderInfo':{},'currentPage':1}
     result=func(values)
@@ -49,10 +49,10 @@ var validateCreateUpdateInputFormat=function(test){
     test.done()
 }
 /***************************************************************************/
-/***************  validateCreateUpdateInputRecorderFormat   *******************/
+/***************  validateRecorderInfoFormat   *******************/
 /***************************************************************************/
-var validateCreateUpdateInputRecorderFormat=function(test){
-    let func=testModule.validateCreateUpdateInputRecorderFormat
+var validateRecorderInfoFormat=function(test){
+    let func=testModule.validateRecorderInfoFormat
     let recorder,rules,result
     let maxFieldNum=5
     test.expect(5)
@@ -586,7 +586,7 @@ var checkInputAdditional=function(test){
 
 exports.validate={
     validateCreateUpdateInputFormat,
-    validateCreateUpdateInputRecorderFormat,
+    validateRecorderInfoFormat,
     validateSearchInputFormat,
     validateSingleSearchParamsFormat,
     validateSearchParamsFormat,

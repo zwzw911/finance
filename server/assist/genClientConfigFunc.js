@@ -13,13 +13,15 @@ var clientRuleType=require('../define/enum/validEnum').enum.clientRuleType
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var rightResult={rc:0}
 
-var dataTypeCheck=require('./validateFunc').func.dataTypeCheck
+var validateHelper=require('./validateInput/validateHelper')
+var dataTypeCheck=validateHelper.dataTypeCheck
+
 var dataType=require('../define/enum/validEnum').enum.dataType
 
 var dbStructure=require('../model/mongo/common/structure').fieldDefine
 
 var inputRule=require('../define/validateRule/inputRule').inputRule
-var validateInputValue=require('../assist/validateFunc').func
+//var validateInputValue=require('not_used_validateFunc').func
 
 var fs=require('fs')
 
@@ -108,7 +110,7 @@ var generateClientRule=function(){
                     }else{
                         result[coll][field][singleRule]={}
                         result[coll][field][singleRule]['define']=inputRule[newColl][newField][singleRule]['define']
-                        result[coll][field][singleRule]['msg']=validateInputValue.generateErrorMsg[singleRule](inputRule[coll][field]['chineseName'],inputRule[newColl][newField][singleRule]['define'],inputRule[newColl][newField]['default'])
+                        result[coll][field][singleRule]['msg']=validateHelper.generateErrorMsg[singleRule](inputRule[coll][field]['chineseName'],inputRule[newColl][newField][singleRule]['define'],inputRule[newColl][newField]['default'])
                     }
 
                 }
@@ -221,70 +223,118 @@ var objectIdToRealField=function(origObj,matchList){
 }
 
 /*根据server端rule define，生成客户端input的属性，以便angularjs对input进行检查
- * obj:server端item的rule define( /server/define/validateRule/inputRule)
- * level：深度（2）
- * resultObj: 因为采用递归调用，所以结果参数，而不是直接return结果
+ * allInputRule:server端item的rule define( /server/define/validateRule/inputRule)。整个inputRule
+ * allFieldDefine: 整个db的coll定义
  */
-var generateClientInputAttr=function(obj,level,resultObj){
-    // let resultObj={}
-    if('object'===typeof obj){
-        for(let key in obj){
-            resultObj[key]={}
-            //深度为1，到达最底层
-            if(1===level){
-                let tmpChineseName=obj[key]['chineseName']
-                let temInputDataType
-                switch (obj[key]['type']){
-                    case dataType.number:
-                        temInputDataType='text'; //数字采用text而不是number，因为现代浏览器会自动判别输入内容，如果不是数字，则内容不会被传递到angular（即angular得到的是空值），此时无法给出类型不正确的信息，而只能给出值为空的信息
-                        break;
-                    case dataType.float:
-                        temInputDataType='text';
-                        break;
-                    case dataType.int:
-                        temInputDataType='text';
-                        break;
-                    case dataType.password:
-                        temInputDataType='password';
-                        break;
-                    case dataType.date:
-                        temInputDataType='date';
-                        break;
-                    default:
-                        temInputDataType='text'
-                }
+var generateClientInputAttr=function(allInputRule,allFieldDefine){
+    let resultObj={}
+    for(let coll in allFieldDefine){
+        resultObj[coll]=generateSingleCollInputAttr(allInputRule[coll],allFieldDefine[coll])
+    }
+    return resultObj
+}
 
+
+/*根据server端input rule，生成客户端input的属性，以便angularjs对input进行检查
+ * inputRule:server端item的rule define( /server/define/validateRule/inputRule),以coll为单位
+ * fieldDefine：数据库的定义（/model/mongo/common/structure），以coll为单位
+ */
+var generateSingleCollInputAttr=function(inputRule,fieldDefine){
+    let resultObj={}
+    //遍历coll的所有field
+    for(let singleField in fieldDefine){
+        //如果此field有对应的rule（cDate等不需要）
+        if(inputRule[singleField]){
                 //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
                 //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
                 //isSelect:input是否为select
-                resultObj[key]={
+                resultObj[singleField]={
                     value:'',
                     originalValue:'',
-                    isSelect:false,selectOption:[],
+                    isFKField:false,//是否为外键（如果是外键的话，存储的值格式为对象{show:'',id:''}。show：显示给用户看的内容，id；实际对应的记录的objectId
+                    isSelect:false, //是否在页面上作为select
+                    selectOption:[],//如果作为select，提供的可选项 {key:'male',value:'男'}。 key：实际存储到db中的值，value：在页面上显示的值
                     isQueryAutoComplete:false,
                     isCRUDAutoComplete:false,
                     autoCompleteCollField:'',
-                    suggestList:{},
-                    inputDataType:temInputDataType, //html元素中，input type=？  和inputRule中的type概念不一样
+                    suggestList:{}, //
+                    inputDataType:null, //html元素中，input type=？  和inputRule中的type概念不一样
                     inputIcon:"",
-                    chineseName:tmpChineseName,
+                    chineseName:null,
                     errorMsg:"",
-                    validated:'undefined'}
-            }else{
-                //如果值是对象，递归调用
-                if('object'===typeof obj[key]){
-                    let currentLvl=level-1
-                    //console.log(currentLvl)
-                    generateClientInputAttr(obj[key],currentLvl,resultObj[key])
+                    validated:'undefined'
                 }
-                /*                else{
-                 obj[key]={}
-                 //func()
-                 }*/
+
+            resultObj[singleField]['chineseName']=inputRule[singleField]['chineseName']
+            let temInputDataType
+            switch (inputRule[singleField]['type']){
+                case dataType.number:
+                    resultObj[singleField]['inputDataType']='text'; //数字采用text而不是number，因为现代浏览器会自动判别输入内容，如果不是数字，则内容不会被传递到angular（即angular得到的是空值），此时无法给出类型不正确的信息，而只能给出值为空的信息
+                    break;
+                case dataType.float:
+                    resultObj[singleField]['inputDataType']='text';
+                    break;
+                case dataType.int:
+                    resultObj[singleField]['inputDataType']='text';
+                    break;
+                case dataType.password:
+                    resultObj[singleField]['inputDataType']='password';
+                    break;
+                case dataType.date:
+                    resultObj[singleField]['inputDataType']='date';
+                    break;
+                case dataType.objectId:
+                    resultObj[singleField]['inputDataType']='text';
+                    resultObj[singleField]['isFKField']=true;
+                    break;
+                case dataType.string:
+                    resultObj[singleField]['inputDataType']='text';
+                    //判断是否为enum
+                    if(true==='enum' in inputRule[singleField]){
+                        //如果是enum，进一步划分成select
+                        resultObj[singleField]['inputDataType']='select';
+                        resultObj[singleField]['isSelect']=true
+                        //填入selectOption
+                        resultObj[singleField]['selectOption']=[]
+                        inputRule[singleField]['enum']['define'].map(
+                            (ele,idx)=>{
+                                resultObj[singleField]['selectOption'].push({'key':ele,'value':null})
+                            }
+                        )
+                        // resultObj[singleField]['selectOption']=inputRule[singleField]['enum']['define']
+                    }
+                default:
+                    resultObj[singleField]['inputDataType']='text'
             }
+
+/*            //isQueryAutoComplete:字段作为查询时，值是否通过AC获得
+            //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
+            //isSelect:input是否为select
+            resultObj[singleField]={
+                value:'',
+                originalValue:'',
+                isSelect:false, //是否在页面上作为select
+                selectOption:[],//如果作为select，提供的可选项 {key:'male',value:'男'}。 key：实际存储到db中的值，value：在页面上显示的值
+                isQueryAutoComplete:false,
+                isCRUDAutoComplete:false,
+                autoCompleteCollField:'',
+                suggestList:{},
+                inputDataType:temInputDataType, //html元素中，input type=？  和inputRule中的type概念不一样
+                inputIcon:"",
+                chineseName:tmpChineseName,
+                errorMsg:"",
+                validated:'undefined'
+            }*/
+
         }
     }
-    // return resultObj
+
+
+
+
+
+
+    return resultObj
 }
 
 /*          根据structure产生client用的selectedAC             */
@@ -316,5 +366,5 @@ module.exports={
 
 //genSelectedAC()
 
-let result=generateClientRule()
-fs.writeFile('generateClientRule.txt',JSON.stringify(result))
+//let result=generateClientRule()
+//fs.writeFile('generateClientRule.txt',JSON.stringify(result))

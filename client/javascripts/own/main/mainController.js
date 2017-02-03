@@ -257,11 +257,10 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             },
 
             //初始化当前coll所有字段的inputAttr
-            initAllFieldInputAttr:function (inputAttr){
-                $scope.modal.buttonFlag=true;
+            initAllFieldInputAttr:function (inputAttr,inputRule){
                 //console.log(`optype is ${}`)
                 if(contEnum.opType.create===$scope.allData.currentOpType){
-                    inputAttrHelper.initAllFieldInputAttrCreate(inputAttr)
+                    inputAttrHelper.initAllFieldInputAttrCreate(inputAttr,inputRule)
                 }
                 if(contEnum.opType.update===$scope.allData.currentOpType){
                     inputAttrHelper.initAllFieldInputAttrUpdate(inputAttr)
@@ -276,12 +275,12 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 }
             },
 
-            initSingleFieldInputAttr:function(field,inputAttr){
+            initSingleFieldInputAttr:function(field,inputAttr,inputRule){
                 //console.log(`field is ${field}`)
                 //console.log(`inputAttr is ${JSON.stringify(inputAttr)}`)
                 $scope.modal.buttonFlag=true;
                 if(contEnum.opType.create===$scope.allData.currentOpType){
-                    inputAttrHelper.initSingleFieldInputAttrCreate(field,inputAttr)
+                    inputAttrHelper.initSingleFieldInputAttrCreate(field,inputAttr,inputRule)
                 }
                 if(contEnum.opType.update===$scope.allData.currentOpType){
                     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
@@ -308,7 +307,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                     if(contEnum.opType.create===$scope.allData.currentOpType){
                         if($scope.modal.buttonFlag){
                             //let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,$scope.pagination.paginationInfo.currentPage)
-                            financeHelper.dataOperator.create(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField,$scope.pagination.paginationInfo);
+                            financeHelper.dataOperator.create(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField,$scope.pagination);
                             $scope.allFunc.switchDialogStatus()
                             //操作完成（无论成功失败），将操作类型 复位
                             $scope.allData.currentOpType=null
@@ -317,6 +316,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                     }
                     if(contEnum.opType.update===$scope.allData.currentOpType){
                         if($scope.modal.buttonFlag){
+                            console.log(`update inputattr is ${JSON.stringify(inputAttr)}`)
                             financeHelper.dataOperator.update(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField);
                             $scope.allFunc.switchDialogStatus();
                             //操作完成（无论成功失败），将操作类型 复位
@@ -329,7 +329,9 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                     financeHelper.dataOperator.delete(idx,recorder,eColl,convertedValue,fkConfig,dateField,$scope.pagination);
                 },
                 'search':function(recorder,currentPage){
-                    //console.log(`enter search`)
+                    console.log(`enter search`)
+                    let inputAttr=$scope.allData.inputAttr
+                    console.log(`$scope.allData.inputAttr is ${JSON.stringify(inputAttr)}`)
                     //console.log(`origin search is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                     //console.log(`origin fkconfig is ${JSON.stringify(fkConfig)}`)
                     let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,currentPage)
@@ -339,7 +341,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 /*                    if(0===Object.keys($scope.allData.activeQueryValue).length){
                         financeHelper.dataOperator.read(recorder,fkConfig,eColl,dateField)
                     }else{*/
-                    financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField,$scope.pagination);
+                    financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField,$scope.pagination,$scope.allData.inputAttr);
                     console.log(`after search pagination is ${JSON.stringify($scope.pagination)}`)
                     //}
 
@@ -350,7 +352,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             //在crete/update记录时，如果input提供autoComplete功能时（一般是外键），blur时需要检测input的内容是否存在，不存在需要报错提示。
             //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
             //currentId:当前记录的objId（如果是create，为undefined）
-            acBlur:function(field,inputAttr,currentId){
+            acBlur:function(field,inputAttr,currentId,inputRule){
                 console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
                 // if(contEnum.opType.update===$scope.allData.currentOpType){
                 //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
@@ -382,14 +384,14 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                  }*/
 
                 //modal.allInputValidCheck(inputAttr)
-                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr,inputRule)
                 /*            console.log(`validate result is ${JSON.stringify(inputAttr)}`)
                  console.log(`but flag is ${$scope.modal.buttonFlag}`)*/
             },
 
             nonAcBlur:function(field,inputRule,inputAttr){
                 validateHelper.checkInput(field,inputRule,inputAttr)
-                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr)
+                $scope.modal.buttonFlag=inputAttrHelper.allInputValidCheck(inputAttr,inputRule)
             },
 
 
@@ -398,11 +400,22 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
              },*/
             //create/update
 
-            allCheckInput:function(inputRule,inputAttr){
+            //在create/update的dialog上点击确定时，需要的操作
+            CUDialogClick:function(){
+                console.log(`cu diaolg enter`)
+                inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr)
+                validateHelper.allCheckInput($scope.allData.inputRule,$scope.allData.inputAttr)
+                let allInputValidateResult=inputAttrHelper.allInputValidCheck($scope.allData.inputAttr,$scope.allData.inputRule)
+                if(true===allInputValidateResult){
+                    this.CRUDOperation.createUpdate($scope.allData.currentIdx,$scope.allData.inputAttr,$scope.allData.recorder,$scope.allData.selectedAC)
+                }
+            },
+/*            allCheckInput:function(inputRule,inputAttr){
                 console.log(`input rule is ${JSON.stringify(inputRule)}`)
                 console.log(`input attr is ${JSON.stringify(inputAttr)}`)
                 validateHelper.allCheckInput(inputRule,inputAttr)
-            },
+                console.log(`validate result is ${JSON.stringify(inputAttr)}`)
+            },*/
 
             //从activatedQueryValue中删除value
             //queryFiled:parentBillType
@@ -519,8 +532,17 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
 
             switchDialogStatus:function(){
-                console.log(`CU diag flag is ${$scope.allData.recorderDialogShow}`)
+                // console.log(`CU diag flag is ${$scope.allData.recorderDialogShow}`)
                 $scope.allData.recorderDialogShow=!$scope.allData.recorderDialogShow
+                //显示recorder modal的时候，如果是create，那么button初始为disable（不能直接提交）；如果是update，那么是enable（可以直接提交）
+                if(true===$scope.allData.recorderDialogShow){
+                    if(contEnum.opType.create===$scope.allData.currentOpType){
+                        $scope.modal.buttonFlag=false
+                    }
+                    if(contEnum.opType.update===$scope.allData.currentOpType){
+                        $scope.modal.buttonFlag=true
+                    }
+                }
                 htmlHelper.verticalModalCenter('CRUDRecorder')
 
 /*                alert($('table').attr('height'))
@@ -641,7 +663,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
         //let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,currentPage)
         //financeHelper.dataOperator.search($scope.allData.recorder,appCont.fkRedundancyFields[eColl],appCont.coll[eColl],appCont.dateField[eColl])
-        var promise=financeHelper.dataOperator.search($scope.allData.recorder,{'currentPage':1,'searchParams':{}},appCont.fkRedundancyFields[eColl],eColl,appCont.dateField[eColl],$scope.pagination);
+        var promise=financeHelper.dataOperator.search($scope.allData.recorder,{'currentPage':1,'searchParams':{}},appCont.fkRedundancyFields[eColl],eColl,appCont.dateField[eColl],$scope.pagination,$scope.allData.inputAttr);
         promise.then(function(v){
              console.log(`search done pagination is ${JSON.stringify($scope.pagination)}`)
             htmlHelper.adjustFooterPosition()

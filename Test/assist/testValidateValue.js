@@ -13,8 +13,8 @@ var regex=require('../../server/define/regex/regex').regex
 // var regex=require('../define/regex/regex').regex
 var dataType=require('../../server/define/enum/validEnum').enum.dataType
 
-var validateCreateUpdateInputValue=function(test){
-    let func=testModule.validateCreateUpdateInputValue
+var validateRecorderInfoValue=function(test){
+    let func=testModule.validateRecorderInfoValue
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
     let rule,value,tmpDataType,result,tmp
     let error={rc:1234,msg:''}
@@ -43,14 +43,14 @@ var validateCreateUpdateInputValue=function(test){
     rule={name:{}}
     value={'_id':{value:null}}
     result=func(value,rule)
-    test.equal(result._id.rc,validateValueError.CUObjectIdEmpty.rc,'field _id null check fail')
+    test.equal(result._id.rc,validateValueError.CUDObjectIdEmpty.rc,'field _id null check fail')
     value={'_id':{value:undefined}}
     result=func(value,rule)
-    test.equal(result._id.rc,validateValueError.CUObjectIdEmpty.rc,'field _id undefined check fail')
+    test.equal(result._id.rc,validateValueError.CUDObjectIdEmpty.rc,'field _id undefined check fail')
 
     value={'_id':{value:{}}}
     result=func(value,rule)
-    test.equal(result._id.rc,validateValueError.CUObjectIdWrong.rc,'field _id {} check fail')
+    test.equal(result._id.rc,validateValueError.CUDObjectIdWrong.rc,'field _id {} check fail')
 
 
     //3.2 如果是objectId（外键），提前检测
@@ -76,7 +76,7 @@ var validateCreateUpdateInputValue=function(test){
     rule.name={chineseName:'名字',type:dataType.string,require:{define:true,error:error},maxLength:{define:20,error:error}}
     value={name:{value:null}}
     result=func(value,rule)
-    test.equal(result.name.rc,validateValueError.CUValueNotDefineWithRequireTrue.rc,'require true, default empty and input empty, check fail')
+    test.equal(result.name.rc,validateValueError.CUDValueNotDefineWithRequireTrue.rc,'require true, default empty and input empty, check fail')
 
     //3.4 format check
     rule={salt:{
@@ -119,7 +119,7 @@ var validateCreateUpdateInputValue=function(test){
     rule.name={chineseName:'名字',type:dataType.string,require:{define:false,error:error},maxLength:{define:5,error:{rc:7654,msg:'名字不是数字'}}}
     value={name:{value:1234}}
     result=func(value,rule)
-    test.equal(result.name.rc,validateValueError.CUTypeWrong.rc,'wrong type, check fail')
+    test.equal(result.name.rc,validateValueError.CUDTypeWrong.rc,'wrong type, check fail')
 
     //3.8 all except enum/maxLength/format
     rule={
@@ -164,10 +164,10 @@ var validateCreateUpdateInputValue=function(test){
 
 //检查_id（rule中未定义）和外键id（rule中定义）
 //测试在checkInput中添加了新的代码
-var validateCreateUpdateInputValueAdditional=function(test){
+var validateRecorderInfoValueAdditional=function(test){
     test.expect(7)
 
-    let func=testModule.validateCreateUpdateInputValue
+    let func=testModule.validateRecorderInfoValue
     //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
     let rule,value,tmpDataType,result,tmp
     let error={rc:1234,msg:''}
@@ -192,13 +192,13 @@ var validateCreateUpdateInputValueAdditional=function(test){
     }
     result=func(value,rule)
     //console.log(result)
-    test.equal(result._id.rc,validateValueError.CUObjectIdWrong.rc,'wrong _id check fail')
+    test.equal(result._id.rc,validateValueError.CUDObjectIdWrong.rc,'wrong _id check fail')
     value={
         id:{value:'57f8dc65a795ace017f36'},
     }
     result=func(value,rule)
     //console.log(result)
-    test.equal(result.id.rc,validateValueError.CUObjectIdWrong.rc,'wrong id check fail')
+    test.equal(result.id.rc,validateValueError.CUDObjectIdWrong.rc,'wrong id check fail')
 
     rule={
         fk:{
@@ -244,9 +244,9 @@ var validateCreateUpdateInputValueAdditional=function(test){
 }
 
 /*                  searchParams check              */
-var validateSearchInputValue=function(test){
+var validateSearchParamsValue=function(test){
 
-    let func=testModule.validateSearchInputValue
+    let func=testModule.validateSearchParamsValue
     //let error=miscError.misc.validateInputSearchValue
     let rules=require('../../server/define/validateRule/inputRule').inputRule
     let coll=require('../../server/define/enum/node').node.coll
@@ -326,7 +326,7 @@ var validateSearchInputValue=function(test){
 }
 
 module.exports={
-    // validateCreateUpdateInputValue,
-    // validateCreateUpdateInputValueAdditional,
-    validateSearchInputValue,
+    //validateRecorderInfoValue,
+    //validateRecorderInfoValueAdditional,
+    validateSearchParamsValue,
 }

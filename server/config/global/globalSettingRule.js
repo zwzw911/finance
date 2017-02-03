@@ -106,6 +106,10 @@ var pageSetting={
 }*/
 
 var paginationSetting={
+    user:{
+        pageSize:6,//每页最多读取的记录数
+        pageLength:10, //pagination最大显示的页码数量
+    },
     department:{
         pageSize:6,//每页最多读取的记录数
         pageLength:10, //pagination最大显示的页码数量
@@ -592,7 +596,7 @@ module.exports={
     searchSetting,
 	internalSetting,
 	session,
-    //pageSetting,
+    // pageSetting,
     paginationSetting,
     suggestLimit,
 }

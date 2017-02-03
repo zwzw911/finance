@@ -43,7 +43,8 @@ var dataType={
     'file':'file',
     'folder':'folder',
     'number':'number',
-    'password':'string',
+    // 'password':'string',
+    'password':'password',
     'objectId':'objectId',//mongodb的id
     // format:Symbol('regex'),
 }

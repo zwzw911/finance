@@ -173,10 +173,17 @@ var inputRule={
             'minLength':{define:2,error:{rc:10042},mongoError:{rc:20042,msg:'单据类别至少2个字符'}},
             'maxLength':{define:40,error:{rc:10044},mongoError:{rc:20044,msg:'单据类别的长度不能超过40个字符'}},
         },
+        inOut:{
+            'chineseName': '支取类型',
+            //'default':'male',
+            'type':inputDataType.string,
+            'require': {define: true, error: {rc: 10045},mongoError:{rc:20045,msg:'支取类型不能为空'}},
+            'enum':{define:['in','out'],error:{rc:10046},mongoError:{rc:20046,msg:'支取类型不正确'}},
+        },
         parentBillType:{
             'chineseName':'父类别',
             'type':inputDataType.objectId,
-            'require': {define: false, error: {rc: 10046},mongoError:{rc:20046,msg:'父类别不能为空'}},
+            'require': {define: false, error: {rc: 10047},mongoError:{rc:20047,msg:'父类别不能为空'}},
             'format':{define:regex.objectId,error:{rc:10048},mongoError:{rc:20048,msg:'父类别的id格式不正确'}},//format == mongodb_match
         },
 /*        cDate:{

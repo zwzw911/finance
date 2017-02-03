@@ -199,25 +199,39 @@ async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
     return Promise.resolve({rc:0,msg:result})
 }
 
-async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,currentPage}) {
+/*
+* readRecorderNum:在当前页上读取的记录数
+* skipRecorderNumInPage：在当前页上跳过的记录数
+* 以上2个参数可以为空，则读取指定页上的所有记录；设置的话，可以灵活的读取指定页的某些记录（主要是为了应用在remove操作中）
+* */
+async function search ({dbModel,populateOpt,searchParams,paginationInfo,readRecorderNum,skipRecorderNumInPage}) {
     //return new Promise(function(resolve,reject){
     //     console.log(`search in with params ${JSON.stringify(searchParams)}`)
     // searchParams['dDate']={'$exists':1}
     // console.log(`new search in with params ${JSON.stringify(searchParams)}`)
     let option={}
 
-    //读取全部数据，不能有 limit
+/*    //读取全部数据，不能有 limit
     let count=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).count()
     console.log(   `count is ${JSON.stringify(count)}`)
-    let paginationInfo=pagination({'total':count,'curPage':currentPage,'pageSize':pageSize,'pageLength':pageLength})
+    let paginationInfo=pagination({'total':count,'currentPage':currentPage,'pageSize':pageSize,'pageLength':pageLength})*/
 
-
-    option.limit=pageSize
-    //当前页超过1，才计算skip，否则不用设置
-    if(paginationInfo.currentPage>1){
-        option.skip=(paginationInfo.currentPage-1)*pageSize
+    //console.log(`readRecorderNumis ${readRecorderNum}`)
+    //console.log(`skipRecorderNumInPage ${skipRecorderNumInPage}`)
+    if(readRecorderNum){
+        option.limit=readRecorderNum
+    }else{
+        option.limit=paginationInfo.pageSize
     }
 
+    //当前页超过1，才计算skip，否则不用设置
+    if(paginationInfo.currentPage>1){
+        option.skip=(paginationInfo.currentPage-1)*paginationInfo.pageSize
+        if(skipRecorderNumInPage){
+            option.skip+=skipRecorderNumInPage
+        }
+    }
+console.log(`search option is ${JSON.stringify(option)}`)
     //finalParams
     let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('-cDate')
         .populate(populateOpt)   //populate外键，以便直接在client显示
@@ -228,7 +242,7 @@ async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,cur
         }
     )
     //console.log(`find result is ${JSON.stringify(result)}`)
-    return Promise.resolve({rc:0,msg:{'recorder':result,'paginationInfo':paginationInfo}})
+    return Promise.resolve({rc:0,msg:result})
 
 /*        dbModel.find(searchParams,function(err,result){
             if(err){
@@ -241,6 +255,20 @@ async function search ({dbModel,populateOpt,searchParams,pageSize,pageLength,cur
     //})
 }
 
+
+async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentPage}){
+    //console.log(   `searchParams is ${JSON.stringify(searchParams)}`)
+    //console.log(   `pageSize is ${JSON.stringify(pageSize)}`)
+    //console.log(   `pageLength is ${JSON.stringify(pageLength)}`)
+    //console.log(   `currentPage is ${JSON.stringify(currentPage)}`)
+    //读取全部数据，不能有 limit
+    let count=await dbModel.find(searchParams,'-dDate').exists('dDate',false).count()
+    console.log(   `count is ${JSON.stringify(count)}`)
+    let paginationInfo=pagination({'total':count,'currentPage':currentPage,'pageSize':pageSize,'pageLength':pageLength})
+    //console.log(`calc paginationInfo is ${JSON.stringify(paginationInfo)}`)
+    return Promise.resolve({rc:0,msg:paginationInfo})
+}
+
 module.exports= {
     create,
     update,
@@ -250,4 +278,5 @@ module.exports= {
     readName,
     findById,
     search,
+    calcPagination,//将pagination的功能从search中单独分离出来，以便给search的create复用
 }
