@@ -9,7 +9,7 @@
 
 var dataTypeCheck=require('./validateInput/validateHelper').dataTypeCheck
 var dataType=require('../define/enum/validEnum').enum.dataType
-
+var compOp=require('../define/enum/node').node.compOp
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}
  * 分成2个函数，好处是层次清楚：
@@ -111,7 +111,7 @@ function subGenNativeSearchCondition(fieldValue,fieldRule){
             let valueToBePush=singleElement['value']
             if(dataType.date===fieldDataType){
                 console.log(`date  orig is ${valueToBePush}`)
-                valueToBePush=new Date(valueToBePush*1000)
+                valueToBePush=new Date(valueToBePush)
                 console.log(`date  converted is ${valueToBePush}`)
             }
             // console.log(`singleElement is ${JSON.stringify(singleElement)}`)

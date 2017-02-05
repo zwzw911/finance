@@ -10,19 +10,34 @@
         <!--<div >-->
         <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id'" ng-class="{'has-error': 0<value.errorMsg.length}">
           <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
-          <input ng-if="!value.isCRUDAutoComplete" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr)'}" >
+            <!--普通字段-->
+            <input ng-if="'normal'===allData.inputAttr[field]['inputType']" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
 
-          <div mass-autocomplete ng-if="value.isCRUDAutoComplete">
-            <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
-          </div>
+            <!--设置的值是枚举，例如性别，支取，通过select来设置-->
+            
+            <select ng-if="'select'===allData.inputAttr[field]['inputType'] " class="form-control"  ng-model="value.value"  >
+                <option ng-repeat="option in value['selectOption']" ng-selected="value.value===option.value" value="{{option.key}}">{{option.value}}</option>
+            </select>
 
+            <!--可以AC的字段-->
+            <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType']">
+                <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
+            </div>
+
+            <!--日期-->
+            <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputAttr[field]['inputType']">
+                <input type='text' class="form-control" />
+              <span class="input-group-addon" >
+                        <span class="fa fa-calendar" ></span>
+                    </span>
+            </div>
           <p class="text-danger" style="height:20px">{{value.errorMsg}}</p>
         </div>
         <!--</div>-->
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="allFunc.switchDialogStatus();allFunc.initAllFieldInputAttr(allData.inputAttr)">取消</button>
-        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="allFunc.allCheckInput(allData.inputRule,allData.inputAttr);allFunc.allInputValidCheck(allData.inputAttr);allFunc.CRUDOperation.createUpdate(allData.currentIdx,allData.inputAttr,allData.recorder,allData.selectedAC)">确定</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="allFunc.switchDialogStatus();allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule)">取消</button>
+        <button type="button" class="btn btn-primary" ng-class="{disabled:false===modal.buttonFlag}"  ng-click="allFunc.CUDialogClick()">确定</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -59,8 +74,8 @@
             <input class="form-control" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']">
           </div>-->
           <!--数字，提供比较符-->
-            <div class="ccol-lg-2 col-md-3 col-sm-4 col-xs-4 flex-horizontal" ng-if="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">
-
+            <!--<div class="ccol-lg-2 col-md-3 col-sm-4 col-xs-4 flex-horizontal" ng-if="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect']">-->
+          <div class="col-lg-3 col-md-3 col-sm-4 col-xs-4 flex-horizontal" ng-if="''!==allData.selectedQueryField && ('float'===allData.inputRule[allData.selectedQueryField['key']]['type'] || 'int'===allData.inputRule[allData.selectedQueryField['key']]['type'] || 'number'===allData.inputRule[allData.selectedQueryField['key']]['type'] )">
                 <!--需要设置比较符的类型-->
                 <!--<select  class="form-control input-sm" ng-if="'float'===allData.inputRule[allData.selectedQueryField['key']]['type'] || 'int'===allData.inputRule[allData.selectedQueryField['key']]['type']|| 'number'===allData.inputRule[allData.selectedQueryField['key']]['type']">-->
                 <select  class="form-control col-lg-2 col-md-3 col-sm-4 col-xs-4" ng-model="allData.selectedQueryFieldOperator" ng-if="['float','int','number'].indexOf(allData.inputRule[allData.selectedQueryField['key']]['type'])>-1">
@@ -75,8 +90,8 @@
 
 
           <!--日期，提供起始结束日期-->
-          <div class="col-lg-7 col-md-12 " ng-show="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && !allData.inputAttr[allData.selectedQueryField['key']]['isSelect'] && 'date'===allData.inputRule[allData.selectedQueryField['key']]['type']">
-              <div class=" flex-horizontal"   ng-show="'date'===allData.inputRule[allData.selectedQueryField['key']]['type']">
+          <div class="col-lg-7 col-md-12 " ng-show="''!==allData.selectedQueryField && !allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete'] && 'date'===allData.inputRule[allData.selectedQueryField['key']]['type']">
+              <div class=" flex-horizontal"   ng-show="'date'===allData.selectedQueryField['type']">
                   <span class="col-lg-2 col-sm-12 col-xs-12">开始日期</span>
                   <div class='input-group date col-lg-4 col-sm-12 col-xs-12' id='queryStartDate'>
                       <input type='text' class="form-control" />
@@ -97,9 +112,11 @@
 
             </div>-->
             <!--设置枚举类型，例如性别-->
-          <select class="form-control col-lg-2"  ng-if="''!==allData.selectedQueryField && allData.inputAttr[allData.selectedQueryField['key']]['isSelect']" ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
+          <div  class="col-lg-2" ng-if="''!==allData.selectedQueryField && 'select'===allData.inputAttr[allData.selectedQueryField['key']]['inputType']">
+              <select class="form-control"   ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
 
-          </select>
+              </select>
+          </div>
         <!--</div>-->
           <!--因为查询日期有默认值，所以类型是日期，button直接可用-->
         <button class="btn  btn-primary btn-sm col-lg-1" ng-if="undefined!==allData.selectedQueryField" ng-class="{disabled:undefined==allData.selectedQueryFieldValue && ('date'!==allData.inputRule[allData.selectedQueryField['key']]['type']),enable:undefined!==allData.selectedQueryFieldValue || ('date'===allData.inputRule[allData.selectedQueryField['key']]['type']) }" ng-click="allFunc.addQueryValue();allFunc.CRUDOperation.search(allData.recorder,1);allFunc.initSelectedQueryField()">确定</button>
@@ -111,23 +128,29 @@
   <div id="activeQueryValue" class="col-lg-12 marginT_1"  ng-show="allData.queryFieldEnable">
     <p class="" style="font-size:18px;font-weight:700;font-family:serif">当前查询条件</p>
     <div ng-repeat="(key,values) in allData.activeQueryValue" class="col-lg-12">
-      <label class="text-info text-success marginR_1 col-lg-2">{{allData.inputAttr[key]['chineseName']}}：</label>
-      <span ng-repeat="(idx,queryValue) in values  track by $index" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue label label-info">{{queryValue.compSymbol}}{{allFunc.formatQueryValue(key,queryValue.value)}}<span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,idx,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder,1)"></span></span>
+      <label class="text-info text-success marginR_1 col-lg-2">{{allData.queryFieldChineseName[key]}}：</label>
+      <span ng-repeat="(idx,queryValue) in values  track by $index" class="marginR_2 paddingL_2 paddingR_1 paddingV_1 activeQueryValue label label-info">
+          {{queryValue.compSymbol}}{{allFunc.formatQueryValue(key,queryValue.value)}}
+          <!--<span ng-if="'date'=allData.inputRule[key]['type']">-->
+
+          <!--</span>-->
+
+          <span class="fa fa-times marginL_1 cursor_pointer" style="" ng-click="allFunc.deleteQueryValue(key,idx,allData.activeQueryValue);allFunc.CRUDOperation.search(allData.recorder,1)">
+          </span>
+      </span>
     </div>
     <!--<button class="btn btn-primary btn-sm marginT_2" ng-if="!allFunc.isActiveQueryValueEmpty()" ng-click="allFunc.CRUDOperation.search(allData.recorder)">查询</button>-->
   </div>
 </div>
 
 <div class="flex-vertical">
-    <div class="page-header h3 text-primary col-lg-12" sytle="">
+  <div class="page-header-narrow h3 text-primary col-lg-12" sytle="">
         数据
     </div>
-<button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
-    <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-if="undefined===allData.recorder[0]">无数据</span>
-
-    <div class="col-lg-12">
-
-        <table class="table table-hover table-bordered marginT_4" ng-if="undefined!=allData.recorder[0]">
+  <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
+  <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-show="undefined===allData.recorder[0]">无数据</span>
+  <div class="col-lg-12" >
+    <table class="table table-hover table-bordered marginT_4" ng-show="undefined!=allData.recorder[0] ">
             <thead>
             <!--<th><input  type="checkbox" name="all" ng-model=""></th>-->
             <th class="text-primary">编号</th>
@@ -151,7 +174,7 @@
                 <td class="hidden-xs hidden-sm">{{value.cDate}}</td>
                 <td class="hidden-xs hidden-sm">{{value.uDate}}</td>
                 <td style="align:left">
-                  <button class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="right" title="修改" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();" ><span class="fa fa-edit" ></span></button>
+                  <button class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="right" title="修改" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();" ><span class="fa fa-edit" ></span></button>
                   <button class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="right" title="删除" ng-click="allFunc.setCurrentIdx(idx);allFunc.showChoiceModal()"><span class="fa fa-trash-o"></span></button>
                     <!--allFunc.CRUDOperation.delete(allData.currentIdx,allData.recorder)-->
                 </td>

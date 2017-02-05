@@ -241,6 +241,17 @@ var generateClientInputAttr=function(allInputRule,allFieldDefine){
  */
 var generateSingleCollInputAttr=function(inputRule,fieldDefine){
     let resultObj={}
+
+    //在inputAttr中，指定每个field对应在页面上input的类型
+    //inputAttr只在CU的时候才使用
+    //inputType：指定input是什么类型（和client的constant中定义的一致）
+    var inputType={
+        'normal':'normal',//普通的input
+            'select':'select', //field在页面应该使用select
+            'date':'date',//field是日期类型
+            'autoComplete':'autoComplete', //field需要 自动完成功能
+    }
+
     //遍历coll的所有field
     for(let singleField in fieldDefine){
         //如果此field有对应的rule（cDate等不需要）
@@ -252,10 +263,11 @@ var generateSingleCollInputAttr=function(inputRule,fieldDefine){
                     value:'',
                     originalValue:'',
                     isFKField:false,//是否为外键（如果是外键的话，存储的值格式为对象{show:'',id:''}。show：显示给用户看的内容，id；实际对应的记录的objectId
-                    isSelect:false, //是否在页面上作为select
+                    inputType:inputType.normal,//代替isSelect/isCRUDAutoComplete，决定使用何种input用来处理field的数据
+                    //isSelect:false, //是否在页面上作为select
                     selectOption:[],//如果作为select，提供的可选项 {key:'male',value:'男'}。 key：实际存储到db中的值，value：在页面上显示的值
                     isQueryAutoComplete:false,
-                    isCRUDAutoComplete:false,
+                    //isCRUDAutoComplete:false,
                     autoCompleteCollField:'',
                     suggestList:{}, //
                     inputDataType:null, //html元素中，input type=？  和inputRule中的type概念不一样
@@ -282,18 +294,24 @@ var generateSingleCollInputAttr=function(inputRule,fieldDefine){
                     break;
                 case dataType.date:
                     resultObj[singleField]['inputDataType']='date';
+                    resultObj[singleField]['inputType']=inputType.date //input为date，需要使用datetimepicker
                     break;
                 case dataType.objectId:
                     resultObj[singleField]['inputDataType']='text';
                     resultObj[singleField]['isFKField']=true;
+                    //外键一般也是默认采用自动完成功能
+                    resultObj[singleField]['inputType']=inputType.autoComplete
                     break;
                 case dataType.string:
+                    //如果是字符，默认是AC，且input的type属性为text
                     resultObj[singleField]['inputDataType']='text';
+                    resultObj[singleField]['inputType']=inputType.autoComplete
                     //判断是否为enum
                     if(true==='enum' in inputRule[singleField]){
                         //如果是enum，进一步划分成select
                         resultObj[singleField]['inputDataType']='select';
-                        resultObj[singleField]['isSelect']=true
+                        resultObj[singleField]['inputType']=inputType.select  //使用select代替input
+                        //resultObj[singleField]['isSelect']=true
                         //填入selectOption
                         resultObj[singleField]['selectOption']=[]
                         inputRule[singleField]['enum']['define'].map(

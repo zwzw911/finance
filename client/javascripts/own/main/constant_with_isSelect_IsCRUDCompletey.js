@@ -327,11 +327,11 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "normal",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": false, //在执行查询条件的设置时，值是否是autoComplete
-
+                "isCRUDAutoComplete": false,//在执行CU（在modal上操作），值是否autoComplete
                 "autoCompleteCollField": "",
                 "suggestList": [],
                 "inputDataType": "text",
@@ -346,11 +346,11 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "normal",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true,
-
+                "isCRUDAutoComplete": false,
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "blur": false,
@@ -364,13 +364,15 @@ app.constant('cont',{
             "parentDepartment": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true,
-
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
+                "blur": false,
+                "focus": true,
                 "inputDataType": "text",
                 "inputIcon": "",
                 "chineseName": "上级部门",
@@ -382,10 +384,11 @@ app.constant('cont',{
             "name": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "normal",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -397,11 +400,11 @@ app.constant('cont',{
             "leader": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
-
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
 
@@ -414,11 +417,11 @@ app.constant('cont',{
             "gender": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "select",
+				"isFKField": false,
+                "isSelect":true,
                 "selectOption":[{key:'male',value:'男'},{key:'female',value:'女'}],
                 "isQueryAutoComplete": false,
-
+                "isCRUDAutoComplete": false,
                 "autoCompleteCollField": "",
                 "suggestList": [],
                 "inputDataType": "text",
@@ -430,11 +433,11 @@ app.constant('cont',{
             "birthDay": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "date",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": false,
-
+                "isCRUDAutoComplete": false,
                 "autoCompleteCollField": "",
                 "suggestList": [],
                 "inputDataType": "date",
@@ -446,11 +449,11 @@ app.constant('cont',{
             "department": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true,//在选择查询字段时，是否enable AC，一般为true
-
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'department.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
 
@@ -463,10 +466,11 @@ app.constant('cont',{
             "onBoardDate": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "date",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": false, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "date",
@@ -477,16 +481,17 @@ app.constant('cont',{
             }
         },
         "billType": {
-            /*            "id":{
-             "value":'',//不能改变
-             },*/
+/*            "id":{
+                "value":'',//不能改变
+            },*/
             "name": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "normal",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -498,10 +503,11 @@ app.constant('cont',{
             "inOut": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "select",
+				"isFKField": false,
+                "isSelect": true,       //手工定义
                 "selectOption": [{key:'in',value:'取入'},{key:'out',value:'支出'}],
                 "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false,
                 "autoCompleteCollField": "",
                 "suggestList": {},
                 "inputDataType": "select",
@@ -513,10 +519,11 @@ app.constant('cont',{
             "parentBillType": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -530,10 +537,11 @@ app.constant('cont',{
             "title": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "autoComplete",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true,
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'bill.title',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -545,10 +553,11 @@ app.constant('cont',{
             "content": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "autoComplete",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true,
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'bill.content',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -560,10 +569,11 @@ app.constant('cont',{
             "billType": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true,
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'billType.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -575,10 +585,11 @@ app.constant('cont',{
             "billDate": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "date",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "date",
@@ -590,10 +601,11 @@ app.constant('cont',{
             "amount": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": false,
-                "inputType": "normal",
+				"isFKField": false,
+                "isSelect": false,
                 "selectOption": [],
                 "isQueryAutoComplete": false,
+                "isCRUDAutoComplete": false, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -605,10 +617,11 @@ app.constant('cont',{
             "reimburser": {
                 "value": "",
                 "originalValue": "",
-                "isFKField": true,
-                "inputType": "autoComplete",
+				"isFKField": true,
+                "isSelect": false,
                 "selectOption": [],
-                "isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+				"isQueryAutoComplete": true, //在选择查询字段时，是否enable AC，一般为true
+                "isCRUDAutoComplete": true, //在CRUD时，是否enable AC
                 "autoCompleteCollField":'employee.name',//AC从何处获得数据
                 "suggestList": {},//使用autoComplete提供数据，在controller中初始化
                 "inputDataType": "text",
@@ -626,9 +639,6 @@ app.constant('cont',{
     //用来给查询字段select提供option，详见angularjs。md
     //×××可以通过在inputAttr中使用isQueryField替代×××
     //单独使用一个对象表示
-    //value：在页面显示给用户
-    //key: 加入查询参数是的字段
-    //type:检测查询参数格式
     queryField:{
         "user": [
             {
@@ -735,51 +745,15 @@ app.constant('cont',{
                 "type": "objectId"
             },
             {
-             "value": "报销日期",
-             "key": "cDate",
-             "type": "date"
-             },
-            // {
-            //     cDate:{
-            //     "value": "报销日期",
-            //     "type": "date"
-            // }
-            // },
+                "value": "报销日期",
+                "key": "cDate",
+                "type": "date"
+            },
         ]
     },
 
-queryFieldChineseName:
-    {
-        "user": {
-            "name": "用户名"
-        },
-        "department": {
-            "name": "部门名称",
-            "parentDepartment": "上级部门"
-        },
-        "employee": {
-            "name": "员工姓名",
-            "leader": "上级主管",
-            "gender": "性别",
-            "birthDay": "出生日期",
-            "department": "所属部门",
-            "onBoardDate": "入职日期"
-        },
-        "billType": {
-            "name": "单据类别",
-            "inOut": "支取类型",
-            "parentBillType": "父类别"
-        },
-        "bill": {
-            "title": "单据抬头",
-            "content": "单据内容",
-            "billType": "单据类别",
-            "billDate": "单据日期",
-            "amount": "报销金额",
-            "reimburser": "报销员工",
-            "cDate": "报销日期"
-        }
-    },
+
+
 
 })
 

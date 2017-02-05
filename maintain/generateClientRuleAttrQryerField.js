@@ -55,11 +55,11 @@ var matchList={
 }
 
 inputAttr=genClientFunc.generateClientInputAttr(ruleDefine,fieldDefine)
-console.log(inputAttr['department'])
+// console.log(inputAttr['department'])
 genClientFunc.deleteNonNeededObject(inputAttr,skipListForAttr)
-console.log(inputAttr['department'])
+// console.log(inputAttr['department'])
 genClientFunc.objectIdToRealField(inputAttr,matchList)
-console.log(inputAttr['department'])
+// console.log(inputAttr['department'])
 fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))
 
 clientInputRule=genClientFunc.generateClientRule()
@@ -93,5 +93,28 @@ var extractQueryFieldFromInputAttr=function(inputAttr,inputRule){
 var result=extractQueryFieldFromInputAttr(inputAttr,ruleDefine)
 // console.log(result)
 fs.writeFile('queryField.txt',JSON.stringify(result))
+
+
+//根据queryField的内容，产生Cdate:'报销日期'  格式的内容，以便页面可以快速的获得查询字段的中文名（原本是使用inputAttr，但是某些复用的查询字段，不在inputAttr中，所以只能产生额外的内容）
+// {
+//     "value": "部门名称",
+//     "key": "name",
+//     "type": "string"
+// }
+//=====> name:不能名称
+var extractQueryFieldChineseName=function(queryField){
+    let result={}
+    for(let coll in queryField){
+        // console.log(`coll is ${coll}`)
+        result[coll]={}
+        for(let singleQueryField of queryField[coll]){ //queryField[coll]是数组
+            // console.log(`single quer =y field is ${JSON.stringify(singleQueryField)}`)
+            result[coll][singleQueryField['key']]=singleQueryField['value']
+        }
+    }
+    return result
+}
+var queryFieldChineseName=extractQueryFieldChineseName(result)
+fs.writeFile('queryFieldChineseName.txt',JSON.stringify(queryFieldChineseName))
 
 console.log('done')

@@ -586,9 +586,10 @@ console.log(`ready to read db`)
  *           values:{currentPage:1,searchParams:{}}
  * */
 var search=async function ({eCurrentColl,req,res}){
+console.log(`search params is ${JSON.stringify(req.body.values)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
-     //console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
+     console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
 
         return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
@@ -597,7 +598,7 @@ var search=async function ({eCurrentColl,req,res}){
     let currentPage=req.body.values['currentPage']
     let clientSearchParams=req.body.values['searchParams']
     let searchParams=dataConvert.genNativeSearchCondition(clientSearchParams,eCurrentColl,fkConfig,inputRule)
-    //console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    console.log(`convert search params id ${JSON.stringify(searchParams)}`)
     //console.log(`current coll is ${JSON.stringify(dbModel[eCurrentColl])}`)
     let paginationInfo,result
     result=await unifiedModel.calcPagination({'dbModel':dbModel[eCurrentColl],'searchParams':searchParams,'pageSize':paginationSetting[eCurrentColl]['pageSize'],'pageLength':paginationSetting[eCurrentColl]['pageLength'],'currentPage':currentPage})

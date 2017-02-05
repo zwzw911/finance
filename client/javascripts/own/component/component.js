@@ -27,6 +27,24 @@ app.factory('validateHelper',function(){
             isStringEmpty(value){
                 return ( "" === value || 0 === value.length || "" === value.trim() || null===value);
             },
+            isEmpty(value) {
+                if (undefined === value || null === value) {
+                    return true
+                }
+                switch (typeof value) {
+                    case "string":
+                        return ( "" === value || 0 === value.length || "" === value.trim());
+                        break;
+                    case "object":
+                        if (true === this.isArray(value)) {
+                            return 0 === value.length
+                        } else {
+                            return 0 === Object.keys(value).length
+                        }
+                        break;
+                }
+                return false
+            },
             isDate(date) {
                 let parsedDate=new Date(date)
                 if(parsedDate.toLocaleString() ===  'Invalid Date'){
@@ -99,22 +117,24 @@ app.factory('validateHelper',function(){
     // inputRule/inputAttr是coll级别
     function checkInput(field,inputRule,inputAttr){
         // console.log(`inputAttr is ${JSON.stringify(inputAttr)}`)
-        console.log(`field to be checked is ${JSON.stringify(field)}`)
+        //console.log(`field to be checked is ${JSON.stringify(field)}`)
         //id不需要检测
         if('id'===field){
             return true
         }
         //console.log(`before field is ${field}`)
         var requireFlag=inputRule[field]['require']['define']
-        //console.log(`after field is ${field}`)
+        //console.log(`requireFlag is ${requireFlag}`)
         var currentValue=inputAttr[field]['value']
         if(undefined===requireFlag){
             requireFlag=false
         }
 
         // if(''===currentValue){
-        //console.log(`currentValue is ${JSON.stringify(currentValue)}`)
-        if(true===dataTypeCheck.isStringEmpty(currentValue)){
+//console.log(`currentValue is ${JSON.stringify(currentValue)}`)
+//        console.log(`currentValue type is ${JSON.stringify(typeof currentValue)}`)
+        //如果是字符，需要调用专用的函数判断是否为空
+        if(true===dataTypeCheck.isEmpty(currentValue)){
             if(false===requireFlag){
                 inputAttr[field]['validated']=true
                 return true
@@ -149,7 +169,7 @@ app.factory('validateHelper',function(){
                 dataTypeCheckResult=dataTypeCheck.isDate(currentValue)
                 break;
         }
-        console.log(`type check result is ${JSON.stringify(dataTypeCheckResult)}`)
+//console.log(`field ${field} type check result is ${JSON.stringify(dataTypeCheckResult)}`)
 
         if(false===dataTypeCheckResult){
             if('int'===tmpFieldDataType || 'float'===tmpFieldDataType || 'number'===tmpFieldDataType){
@@ -159,7 +179,7 @@ app.factory('validateHelper',function(){
                 inputAttr[field]['errorMsg']=inputAttr[field]['chineseName']+'必须是日期'
             }
             inputAttr[field]['validated']=false
-            console.log(`error is ${JSON.stringify(inputAttr[field])}`)
+            //console.log(`error is ${JSON.stringify(inputAttr[field])}`)
             return false
         }
 
@@ -191,9 +211,9 @@ app.factory('validateHelper',function(){
                         ruleCheckFunc='enum'
                         break;
                 }
-console.log(`rule check type is ${ruleCheckFunc}`)
-console.log(`tobe checked value is ${JSON.stringify(currentValue)}`)
-                console.log(`tobe checked value's rule defind  is ${JSON.stringify(inputRule[field][singleRule]['define'])}`)
+//console.log(`field ${field} rule check type is ${ruleCheckFunc}`)
+//console.log(`field ${field} with value is ${JSON.stringify(currentValue)}`)
+//console.log(`tobe checked value's rule is ${JSON.stringify(inputRule[field][singleRule]['define'])}`)
                 if(true===ruleTypeCheck[ruleCheckFunc](currentValue,inputRule[field][singleRule]['define'])){
                     inputAttr[field]['errorMsg']=inputRule[field][singleRule]['msg']
                     inputAttr[field]['validated']=false
@@ -208,7 +228,7 @@ console.log(`tobe checked value is ${JSON.stringify(currentValue)}`)
     }
     //对所有的input进行检测
     function allCheckInput(inputRule,inputAttr){
-        console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        //console.log(`input attr is ${JSON.stringify(inputAttr)}`)
         // console.log('check input in')
         let tmpResult
         for(let singleField in inputAttr){
@@ -342,6 +362,19 @@ app.factory('queryHelper',function(contEnum) {
             activateQueryFieldAndValue[field].splice(idx,1)
             if (0 === activateQueryFieldAndValue[field].length) {
                 delete activateQueryFieldAndValue[field]
+            }
+        }
+    }
+
+    //因为inputAttr和queryField可能不一致（例如，query的时候要求有创建日期，而inputAttr是不能有的（server自动创建））。
+    //为了正确显示query使用的字段，要根据key（英文），从queryField中找到对应的idx，然后页面根据idx找到中文（而不是直接返回）
+    //field: 字段的英文名
+    //queryField: constant的queryField中coll的定义
+    function getQueryFiledChineseName(field,queryField){
+        console.log(`getQueryFiledChineseName in`)
+        for(let singleQueryField of queryField){
+            if(field===singleQueryField['key']){
+                return singleQueryField['value']
             }
         }
     }
@@ -497,12 +530,12 @@ app.factory('queryHelper',function(contEnum) {
     let formatQueryValue={
         'date':function(fieldValue){
             console.log(`date tiem stamp ${fieldValue}`)
-            return moment(fieldValue,'X').format('YYYY-MM-DD')
+            return moment(fieldValue,'x').format('YYYY-MM-DD') //小x说明是以ms为单位
         },
         'dateTime':function(){}
     }
 
-    return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat,formatQueryValue}
+    return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat,formatQueryValue,getQueryFiledChineseName}
 })
 /*    function convertAddQueryValueToServerFormat(activateQueryFieldAndValue,fkConfig,currentPage){
         let formattedValue={}
@@ -542,7 +575,7 @@ app.factory('queryHelper',function(contEnum) {
     return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat}
 })*/
 
-app.factory('inputAttrHelper',function(contEnum,validateHelper) {
+app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHelper) {
     //对某个input设置errorMsg（errorMsg隐式设置input样式）
     function setSingleInputAttrErrorMsg(field,inputAttr,errMsg){
         inputAttr[field]['errorMsg']=errMsg
@@ -616,7 +649,7 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper) {
         return true
     }
     //将当前的记录载入到inputAttr
-    function loadCurrentData(idx,inputAttr,recorder,fkConfig){
+    function loadCurrentData(idx,inputAttr,recorder,fkConfig,selectedAC){
         console.log(`recorder to be loaded is ${JSON.stringify(recorder[idx])}`)
         for(var field in inputAttr){
 
@@ -631,10 +664,36 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper) {
                 }
                 inputAttr[field]['value']=newValue
                 inputAttr[field]['originalValue']=newValue //用来比较是不是做了修改
+
+                //除了将recorder的数据载入inputAttr，还需要载入selectedAC，以便在update，且不更改selectedAC的情况下，有数据可以放入inputAttr
+                if(true=== field in selectedAC){
+                    selectedAC[field]._id = recorder[idx][field]['_id']
+                    selectedAC[field].value = recorder[idx][field][fkConfig[field]['fields'][0]]
+                    //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
+                    console.log(`load selectedAC is ${JSON.stringify(selectedAC)}`)
+                }
+
+                //如果是日期，除了把值放入inputAttr，还需要手工在页面上显示日期（ng-model对datetimepicker不起作用）
+                if('date'===inputAttr[field]['inputDataType']){
+                    dateTimePickerHelper.setDate(field,inputAttr[field]['value'])
+                }
+
+/*                //判断field是否为select(是否设置了容纳初始值的变量，已经定义的类型是否为select)，如果是，除了inputAttr，同时赋值给selectInitValue，以便为select设置初始值
+                if(true=== field in selectInitValue && 'select'===inputAttr[field]['inputType']){
+                    //英文转换成中文
+                    let selectOption=inputAttr[field]['selectOption']
+                    for(let singleOption of selectOption){
+                        if(singleOption['key']===newValue){
+                            selectInitValue[field]=singleOption['value']
+                        }
+                    }
+
+                }*/
             }
 
         }
         console.log(`inputAttr to be loaded is ${JSON.stringify(inputAttr)}`)
+        // console.log(`selectInitValue to be loaded is ${JSON.stringify(selectInitValue)}`)
     }
 
     //为未在inputRule中定义的字段，在inputAttr中产生对应的field，以便显示在页面
@@ -777,7 +836,7 @@ app.factory('commonHelper',function(){
         let fieldIsSelect=[]
         for(let fieldName in inputAttr){
             // console.log(`fiedls name is ${fieldName}`)
-            if(true===inputAttr[fieldName]['isSelect']){
+            if('select'===inputAttr[fieldName]['inputType']){
                 fieldIsSelect.push(fieldName)
             }
         }
@@ -1032,7 +1091,7 @@ app.service('dateTimePickerHelper',function(){
     }
     this.getCurrentDateInTimeStamp=function(eleId){
         let currentDate= $('#'+eleId).data("DateTimePicker").date()
-        return moment(currentDate).unix()
+        return moment(currentDate).unix()*1000  //转换成ms，以便和db兼容
     }
 
     this.setDate=function(eleId,date){

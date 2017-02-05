@@ -89,6 +89,17 @@ app.constant('appCont',{
             "queryEndDate": "queryEndDate",//设置查询条件时，用作选择 结束日期 的input的Id
         }
     },
+
+
+/*    //用于update的时候，初始化select（枚举，例如性别）的值
+    selectInitValue:{
+        billType:{
+            inOut:null,
+        },
+        employee:{
+            gender:null,
+        }
+    },*/
 })
 
 app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
@@ -155,8 +166,10 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             inputRule:cont.inputRule[eColl],//CRUD，对输入进行设置（min/maxLength）以及进行检测
             //存储当前载入的数据，数组，以便判断是否为空
             recorder:[],
-
+// test:null,
             queryFieldEnable:false,//当前 字段查询是否展开
+
+            // selectInitValue:appCont.selectInitValue[eColl], //用于update的时候，初始化select（枚举，例如性别）的值
 
             selectedQueryField:undefined, //当前选中的查询字段，是key（实际字段名）：value（显示给用户看的中文字段名）的键值对
             selectedQueryFieldOperator:undefined,//如果是数字，当前选中的比较符
@@ -166,6 +179,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             // selectedEndDateValue:undefined,
 
             queryField:cont.queryField[eColl], //可选的查询字段
+            queryFieldChineseName:cont.queryFieldChineseName[eColl], //用来在页面上，根据queryField中的字段名称（英文），直接映射到中文名
 
             activeQueryValue:{},//当前生效的查询字段和查询值 ，可以直接传递给server{stringField:[{value:'val1'},{value:'val2'}], numberField:[{value:1,compOp:'gt'},{value:2,compOp:'lt'}]}   采用{}初始化，则可以直接通过函数的参数进行修改；缺点是无法在前端判断是否为{}
 
@@ -253,7 +267,13 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
 //在对记录进行update的时候，根据idx，将recorder中的一个载入到inputAttr
             loadCurrentData:function (idx,inputAttr,recorder){
-                inputAttrHelper.loadCurrentData(idx,inputAttr,recorder,fkConfig);
+/*                //初始化selectInitValue（防止上个记录的值被读取到当前记录）
+                for(let singleSelectField in $scope.allData.selectInitValue){
+                    $scope.allData.selectInitValue[singleSelectField]=null
+                }*/
+                //首先将recorder中的记录的数据载入inputAttr，通过过ng-model的方式传递到页面
+                inputAttrHelper.loadCurrentData(idx,inputAttr,recorder,fkConfig,$scope.allData.selectedAC);
+                //然后处理日期类型的数据（要使用datetimepicker的方法才能显示数据）
             },
 
             //初始化当前coll所有字段的inputAttr
@@ -353,7 +373,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
             //currentId:当前记录的objId（如果是create，为undefined）
             acBlur:function(field,inputAttr,currentId,inputRule){
-                console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${contEnum.opType.update.toString()}`)
+                console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${$scope.allData.currentOpType.toString()}`)
                 // if(contEnum.opType.update===$scope.allData.currentOpType){
                 //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
                 // }
@@ -403,7 +423,14 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             //在create/update的dialog上点击确定时，需要的操作
             CUDialogClick:function(){
                 console.log(`cu diaolg enter`)
-                inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr)
+                //如果有date类型的字段，需要手工将值填入inputAttr（因为datetimepicker初始化后，无法直接通过input获得值，只能通过datetimepicker提供的方法）
+                for(let singleFiled in $scope.allData.inputAttr){
+                    if('date'===$scope.allData.inputAttr[singleFiled]['inputType']){
+                        $scope.allData.inputAttr[singleFiled]['value']=dateTimePickerHelper.getCurrentDateInTimeStamp(singleFiled)
+                    }
+                }
+                // console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
+                // inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr)
                 validateHelper.allCheckInput($scope.allData.inputRule,$scope.allData.inputAttr)
                 let allInputValidateResult=inputAttrHelper.allInputValidCheck($scope.allData.inputAttr,$scope.allData.inputRule)
                 if(true===allInputValidateResult){
@@ -530,6 +557,9 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 $scope.allData.selectedQueryFieldValue=undefined
             },
 
+            getQueryFiledChineseName:function(field){
+                return queryHelper.getQueryFiledChineseName(field,$scope.allData.queryField)
+            },
 
             switchDialogStatus:function(){
                 // console.log(`CU diag flag is ${$scope.allData.recorderDialogShow}`)
@@ -555,7 +585,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
             //通用autoComplete，for both create/update and query
             //其中对selectedAC的处理，虽然也是for both create/update and query，但是实际只有在create/update的时候才会用到
-            generateSuggestList:function(eColl,fieldName){
+            generateSuggestList:function(fkColl,fieldName){
                 //最终返回suggest和on_select的一个对应
                 let suggestList={}
 
@@ -573,7 +603,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
                     searchValue[realFieldNameToRead]={}
                     searchValue[realFieldNameToRead]['value']=name
-                    financeHelper.dataOperator.readName(searchValue,eColl).success(
+                    financeHelper.dataOperator.readName(searchValue,fkColl).success(
                         (data, status, header, config)=>{
                             let tmpResult = []
                             //console.log(`get suggest result is ${data.msg}`)
@@ -613,6 +643,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 suggestList['on_select']=function (selected) {
                     console.log(`on_selected is ${JSON.stringify(selected)}`)
                     if(true=== fieldName in $scope.allData.selectedAC){
+                        console.log(`select ac filed is ${fieldName}`)
                         $scope.allData.selectedAC[fieldName]._id = selected.id
                         $scope.allData.selectedAC[fieldName].value = selected.value
                         //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
@@ -641,18 +672,20 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
         for(let singleFieldName in $scope.allData.inputAttr){
             let singleInputAttr=$scope.allData.inputAttr[singleFieldName]
             //无论是query还是create/update需要AC，都要为对应的字段设置AC
-            if(true===singleInputAttr['isQueryAutoComplete'] || true===singleInputAttr['isCRUDAutoComplete']){
+            if(true===singleInputAttr['isQueryAutoComplete'] || 'autoComplete'===singleInputAttr['inputType']){
                 //从autoCompleteCollField字段中获取从哪个coll的哪个field中获得ac
                 let fk=singleInputAttr['autoCompleteCollField'].split('.')
-                let coll=fk[0]
-                let field=fk[1]
+                let fkColl=fk[0]
+                let fkField=fk[1]
                 // console.log(`field for ac is ${singleFieldName}, related coll is ${coll}, related field is ${field}`)
 
-                $scope.allData.inputAttr[singleFieldName]['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll[eColl],singleFieldName)
+                //$scope.allData.inputAttr[singleFieldName]['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll[eColl],singleFieldName)
                 //$scope.allData.inputAttr['name']['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll.billType,'name')
 
                 //字段名是原始字段名（符合正常的逻辑），server会根据fkconfig自动查找对应的字段
-                $scope.allData.inputAttr[singleFieldName]['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll[coll],singleFieldName)
+                //第一个参数是ac对应外部coll，对应的field通过配置文件进行读取
+                //第二个是当前coll中用作外键的字段，通过此字段，将用户选择的name/id存入到selectAC中
+                $scope.allData.inputAttr[singleFieldName]['suggestList']=$scope.allFunc.generateSuggestList(appCont.coll[fkColl],singleFieldName)
             }
         }
     }
@@ -660,7 +693,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
     //对controller做初始化操作
     function init($scope,eColl){
 
-
+// console.log(`query field chinese name is ${JSON.stringify($scope.allData.queryFieldChineseName)}`)
         //let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,currentPage)
         //financeHelper.dataOperator.search($scope.allData.recorder,appCont.fkRedundancyFields[eColl],appCont.coll[eColl],appCont.dateField[eColl])
         var promise=financeHelper.dataOperator.search($scope.allData.recorder,{'currentPage':1,'searchParams':{}},appCont.fkRedundancyFields[eColl],eColl,appCont.dateField[eColl],$scope.pagination,$scope.allData.inputAttr);

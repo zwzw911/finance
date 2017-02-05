@@ -469,7 +469,7 @@ router.post('/bill/delete/:id',function(req,res,next){
 })
 //search
 router.post('/bill/search',function(req,res,next){
-    console.log(req.body.values)
+    // console.log(req.body.values)
     unifiedRouterController.search({eCurrentColl:coll.bill, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`search bill success,result: ${JSON.stringify(v)}`)

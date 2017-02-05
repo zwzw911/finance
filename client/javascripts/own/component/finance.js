@@ -207,7 +207,7 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
             //首先更新数据到db（更新db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
             //将修改过的值上传修改
             let value = inputAttrHelper.convertedInputAttrFormatUpdate(inputAttr)
-console.log(`update op convert result is ${JSON.stringify(value)}`)
+// console.log(`update op convert result is ${JSON.stringify(value)}`)
             //将外键的id转换成server可以接收的格式
             for (let singleFKField in fkConfig) {
                 inputAttrHelper.convertSingleACFormat(singleFKField, selectAC, value)
