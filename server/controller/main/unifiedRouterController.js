@@ -124,12 +124,15 @@ var updateOpt={
         }
 }
 
-var dbModel={
+/*var dbModel={
     department:structure.departmentModel,
     billType:structure.billTypeModel,
     employee:structure.employeeModel,
     bill:structure.billModel,
-}
+}*/
+var dbModel=structure.model
+//var dbSchema=structure.schema
+
 //console.log(`init dbmodel is ${JSON.stringify(dbModel.bill)}`)
 //每个外键需要的冗余字段
 var fkAdditionalFieldsConfig={
@@ -149,7 +152,7 @@ var fkAdditionalFieldsConfig={
         parentBillType:{relatedColl:coll.billType,nestedPrefix:'parentBillTypeFields',forSelect:'name',forSetValue:['name']}
     },
     bill:{
-        billType:{relatedColl:coll.billType,nestedPrefix:'billTypeFields',forSelect:'name',forSetValue:['name','inOut']},
+        billType:{relatedColl:coll.billType,nestedPrefix:'billTypeFields',forSelect:'name inOut',forSetValue:['name','inOut']},
         reimburser:{relatedColl:coll.employee,nestedPrefix:'reimburserFields',forSelect:'name',forSetValue:['name']},
 
     },
@@ -247,7 +250,14 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
     //console.log(`after get additional is ${JSON.stringify(arrayResult)}`)
     //5. 对db执行操作
-    let createResult=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
+    /*          采用insertmany，返回直接是否array        */
+    //let tmp=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
+    //let createResult=tmp.msg
+    /*          采用save，返回是对象，需要push到array中      */
+    let createResult=[]
+    let tmp=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
+    createResult.push(tmp.msg)
+
     console.log(`create result is ${JSON.stringify(createResult)}`)
     if(createResult.rc>0){
         return Promise.reject(unifiedHelper.returnResult(createResult))
@@ -267,7 +277,7 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     //let recorder=result.msg.recorder
     //currentPage is 1，返回添加的记录
     if(1===currentPage){
-        let result=await populateSingleDoc(createResult.msg[0],populateOpt[eCurrentColl],populatedFields[eCurrentColl])
+        let result=await populateSingleDoc(createResult[0],populateOpt[eCurrentColl],populatedFields[eCurrentColl])
         if(result.rc>0){
             return Promise.reject( unifiedHelper.returnResult(result))
         }

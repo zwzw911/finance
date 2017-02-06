@@ -162,6 +162,7 @@ app.controller('configurationController',function($scope,htmlHelper){
 app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper,paginationHelper){
     var generateControllerData=function(eColl){
         return {
+            showAdditionalField:false, //当CU的modal中，field太多的时候，把require=false的字段，通过此字段决定是否显示
             inputAttr:cont.inputAttr[eColl],//CRUD记录的时候，对输入进行设置
             inputRule:cont.inputRule[eColl],//CRUD，对输入进行设置（min/maxLength）以及进行检测
             //存储当前载入的数据，数组，以便判断是否为空
@@ -260,7 +261,9 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
         let dateField=appCont.dateField[eColl]
 
         let allFuncResult={
-
+            switchAdditionalFields:function(){
+                $scope.allData.showAdditionalField=!$scope.allData.showAdditionalField
+            },
             // onchange:function(){
             //     console.log(`date change result is ${JSON.stringify($scope.allData.selectedStartDateValue)}`)
             // },
@@ -280,7 +283,9 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
             initAllFieldInputAttr:function (inputAttr,inputRule){
                 //console.log(`optype is ${}`)
                 if(contEnum.opType.create===$scope.allData.currentOpType){
+                    console.log(`initAllFieldInputAttr->create: inputRule is ${JSON.stringify(inputRule)}`)
                     inputAttrHelper.initAllFieldInputAttrCreate(inputAttr,inputRule)
+                    console.log(`after init inputattr is ${JSON.stringify(inputAttr)}`)
                 }
                 if(contEnum.opType.update===$scope.allData.currentOpType){
                     inputAttrHelper.initAllFieldInputAttrUpdate(inputAttr)
@@ -426,7 +431,13 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                 //如果有date类型的字段，需要手工将值填入inputAttr（因为datetimepicker初始化后，无法直接通过input获得值，只能通过datetimepicker提供的方法）
                 for(let singleFiled in $scope.allData.inputAttr){
                     if('date'===$scope.allData.inputAttr[singleFiled]['inputType']){
-                        $scope.allData.inputAttr[singleFiled]['value']=dateTimePickerHelper.getCurrentDateInTimeStamp(singleFiled)
+                        let dateValue=dateTimePickerHelper.getCurrentDateInTimeStamp(singleFiled)
+                        if(isNaN(dateValue)){
+                            $scope.allData.inputAttr[singleFiled]['value']=null
+                        }else{
+                            $scope.allData.inputAttr[singleFiled]['value']=dateValue
+                        }
+
                     }
                 }
                 // console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
@@ -606,14 +617,18 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
                     financeHelper.dataOperator.readName(searchValue,fkColl).success(
                         (data, status, header, config)=>{
                             let tmpResult = []
-                            //console.log(`get suggest result is ${data.msg}`)
+                            console.log(`get suggest result is ${JSON.stringify(data.msg)}`)
                             //如果当前的字段是外键（定义在allData.selectedAC中），需要确定的id，以便保存到数据库，则初始设为-1
-                            if(true=== fieldName in $scope.allData.selectedAC){
-                                if ('' !== name && null !== name) {
-                                    $scope.allData.selectedAC[fieldName]._id = null
-                                    $scope.allData.selectedAC[fieldName].value=null
+                            //if (data.msg.length === 1) {
+                            //初始化selectedAC
+                                if(true=== fieldName in $scope.allData.selectedAC){
+                                    if ('' !== name && null !== name) {
+                                        $scope.allData.selectedAC[fieldName]._id = null
+                                        $scope.allData.selectedAC[fieldName].value=null
+                                    }
                                 }
-                            }
+                            //}
+
 
                             if (data.msg.length > 0) {
                                 data.msg.forEach(function (e) {

@@ -76,17 +76,24 @@ var dataTypeCheck= {
     },
     //已经赋值，赋的值是不是为空（string:空字符串；object:{},array:[]）
     isEmpty(value) {
-        if (undefined === value || null === value) {
+        //console.log(`to be checked value type is ${typeof value}`)
+        //console.log(`is empty to be checked value is ${JSON.stringify(value)}`)
+        if (undefined === value || null === value ) {
+            //console.log(`null/undefined/NaN checked`)
             return true
         }
+
         switch (typeof value) {
             case "string":
                 return ( "" === value || 0 === value.length || "" === value.trim());
                 break;
             case "object":
                 if (true === this.isArray(value)) {
+                    //console.log(`array checked`)
                     return 0 === value.length
                 } else {
+                    //console.log(`object checked`)
+                    //console.log(`object length is ${Object.keys(value).length}`)
                     return 0 === Object.keys(value).length
                 }
                 break;

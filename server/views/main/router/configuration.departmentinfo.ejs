@@ -11,7 +11,7 @@
                 <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id'" ng-class="{'has-error': 0<value.errorMsg.length}">
                     <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
             <!--普通字段-->
-            <input ng-if="'normal'===allData.inputAttr[field]['inputType']" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
+            <input ng-if="'normal'===allData.inputAttr[field]['inputType']" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
 
             <!--设置的值是枚举，例如性别，支取，通过select来设置-->
             
@@ -21,7 +21,7 @@
 
             <!--可以AC的字段-->
             <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType']">
-                <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
+                <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);'}" >
             </div>
 
             <!--日期-->

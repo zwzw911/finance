@@ -122,9 +122,9 @@ app.factory('validateHelper',function(){
         if('id'===field){
             return true
         }
-        //console.log(`before field is ${field}`)
+        console.log(`inputRule of ${field} is ${JSON.stringify(inputRule[field])}`)
         var requireFlag=inputRule[field]['require']['define']
-        //console.log(`requireFlag is ${requireFlag}`)
+        console.log(`requireFlag of ${field} is ${requireFlag}`)
         var currentValue=inputAttr[field]['value']
         if(undefined===requireFlag){
             requireFlag=false
@@ -132,9 +132,11 @@ app.factory('validateHelper',function(){
 
         // if(''===currentValue){
 //console.log(`currentValue is ${JSON.stringify(currentValue)}`)
-//        console.log(`currentValue type is ${JSON.stringify(typeof currentValue)}`)
+//        console.log(`currentValue of ${field} is ${JSON.stringify(currentValue.toString())}`)
+//        console.log(`currentValue type of ${field} is ${JSON.stringify(typeof currentValue)}`)
         //如果是字符，需要调用专用的函数判断是否为空
         if(true===dataTypeCheck.isEmpty(currentValue)){
+            console.log(`${field} is empty`)
             if(false===requireFlag){
                 inputAttr[field]['validated']=true
                 return true
@@ -228,7 +230,7 @@ app.factory('validateHelper',function(){
     }
     //对所有的input进行检测
     function allCheckInput(inputRule,inputAttr){
-        //console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        console.log(`input attr is ${JSON.stringify(inputAttr)}`)
         // console.log('check input in')
         let tmpResult
         for(let singleField in inputAttr){
@@ -595,10 +597,17 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHel
     //除了被initAllFieldInputAttrUpdate调用，也会在mainController中被直接调用，所以参数必须是field/inputAttr
     function initSingleFieldInputAttrCreate(singleField,inputAttr,inputRule){
         // console.log(opType)
-        // if(contEnum.opType.create===opType){
-        inputAttr[singleField]['value']=''
-        // }
-        inputAttr[singleField]['originalValue']=''
+        //initAllFieldInputAttrCreate
+        if('date'===inputRule[singleField]['type']){
+            inputAttr[singleField]['value']=null
+            // }
+            inputAttr[singleField]['originalValue']=null
+        }else{
+            inputAttr[singleField]['value']=''
+            // }
+            inputAttr[singleField]['originalValue']=''
+        }
+
         //无需默认设成false，因为点击 确定按钮的时候，需要通过undefined来判断是否 需要进行validate
 /*        //在create的时候，如果字段是必须的，则validated初始设为false（防止直接点击确定提交POST请求）；否则设为undefined
         if(true===inputAttr[singleField]['require']){
@@ -619,7 +628,7 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHel
             // console.log(singleField)
             initSingleFieldInputAttrUpdate(singleField,inputAttr)
         }
-        // console.log(inputAttr)
+         console.log(`after init ${JSON.stringify(inputAttr)}`)
     }
     //除了被initAllFieldInputAttrUpdate调用，也会在mainController中被直接调用，所以参数必须是field/inputAttr
     function initSingleFieldInputAttrUpdate(field,inputAttr){
@@ -678,6 +687,11 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHel
                     dateTimePickerHelper.setDate(field,inputAttr[field]['value'])
                 }
 
+                /*          patch(bill，amount全部为正)          */
+                if('amount'===field){
+                    inputAttr[field]['value']=Math.abs(newValue)
+                    inputAttr[field]['originalValue']=Math.abs(newValue) //用来比较是不是做了修改
+                }
 /*                //判断field是否为select(是否设置了容纳初始值的变量，已经定义的类型是否为select)，如果是，除了inputAttr，同时赋值给selectInitValue，以便为select设置初始值
                 if(true=== field in selectInitValue && 'select'===inputAttr[field]['inputType']){
                     //英文转换成中文

@@ -8,82 +8,67 @@
       </div>
       <div class="modal-body">
         <!--<div >-->
-        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id'" ng-class="{'has-error': 0<value.errorMsg.length}">
-            <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
+        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id' && allData.inputRule[field]['require']['define']" ng-class="{'has-error': 0<value.errorMsg.length}">
+            <!--<div>-->
+                <label class="control-label" >{{value['chineseName']}}<span style="color:red" class="marginL_1">*</span></label>
 
-            <!--普通字段-->
-            <input ng-if="'normal'===allData.inputAttr[field]['inputType']" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
+                <!--普通字段-->
+                <input ng-if="'normal'===allData.inputAttr[field]['inputType'] " class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
 
-            <!--设置的值是枚举，例如性别，支取，通过select来设置-->
-            <select ng-if="'select'===allData.inputAttr[field]['inputType'] " class="form-control"  ng-model="value.value"  >
-                <option ng-repeat="option in value['selectOption']" ng-selected="value.value===option.value" value="{{option.key}}">{{option.value}}</option>
-            </select>
+                <!--设置的值是枚举，例如性别，支取，通过select来设置-->
+                <select ng-if="'select'===allData.inputAttr[field]['inputType'] " class="form-control"  ng-model="value.value"  >
+                    <option ng-repeat="option in value['selectOption']" ng-selected="value.value===option.value" value="{{option.key}}">{{option.value}}</option>
+                </select>
 
 
-            <!--可以AC的字段-->
-            <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType']">
-                <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
-            </div>
+                <!--可以AC的字段-->
+                <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType'] ">
+                    <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);'}" >
+                </div>
 
-            <!--日期-->
-            <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputAttr[field]['inputType']">
-                <input type='text' class="form-control" />
-              <span class="input-group-addon" >
+                <!--日期-->
+                <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputAttr[field]['inputType'] ">
+                    <input type='text' class="form-control" />
+                        <span class="input-group-addon" >
                         <span class="fa fa-calendar" ></span>
                     </span>
-            </div>
-
-
-
-
-
-<!--            <label class="control-label">{{value['chineseName']}}</label><span style="color:red" class="marginL_1" ng-if="allData.inputRule[field]['require']['define']">*</span>
-
-            &lt;!&ndash;普通字段&ndash;&gt;
-            <input ng-if="'normal'===allData.inputAttr[field]['inputType']" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
-
-            &lt;!&ndash;设置的值是枚举，例如性别，支取，通过select来设置&ndash;&gt;
-            <select ng-if="'select'===allData.inputAttr[field]['inputType'] " class="form-control"  ng-model="value.value"  ng-options="option.value for option in value['selectOption']" >
-                &lt;!&ndash;<option ng-repeat="option in value['selectOption']" value="option.key">{{option.value}}</option>&ndash;&gt;
-            </select>
-            &lt;!&ndash;可以AC的字段&ndash;&gt;
-            <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType']">
-                <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
-            </div>
-
-            &lt;!&ndash;日期&ndash;&gt;
-            <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputAttr[field]['inputType']">
-                <input type='text' class="form-control" />
-                <span class="input-group-addon" >
-                        <span class="fa fa-calendar" ></span>
-                    </span>
-            </div>-->
-
-
-
- <!--           &lt;!&ndash;非日期，且非外键，也非select&ndash;&gt;
-            <input ng-if="'date'!==allData.inputRule[field]['type'] && !value.isCRUDAutoComplete && false===value.isSelect" class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
-
-            &lt;!&ndash;非日期，且非外键，设置的值是枚举，例如性别，支取，通过select来设置&ndash;&gt;
-            <select ng-if="'date'!==allData.inputRule[field]['type'] && !value.isCRUDAutoComplete && true===value.isSelect" class="form-control"  ng-model="value.value"  ng-options="option.value for option in value['selectOption']" >
-                &lt;!&ndash;<option ng-repeat="option in value['selectOption']" value="option.key">{{option.value}}</option>&ndash;&gt;
-            </select>
-            &lt;!&ndash;非日期，且是外键，非select&ndash;&gt;
-          <div mass-autocomplete ng-if="'date'!==allData.inputRule[field]['type'] && value.isCRUDAutoComplete && false===value.isSelect">
-            <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr);'}" >
-          </div>
-
-         &lt;!&ndash;如果是日期&ndash;&gt;
-          <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputRule[field]['type']">
-              <input type='text' class="form-control" />
-              <span class="input-group-addon" >
-                        <span class="fa fa-calendar" ></span>
-                    </span>
-          </div>-->
-
+                </div>
           <p class="text-danger" style="height:4px">{{value.errorMsg}}</p>
         </div>
-        <!--</div>-->
+
+          <div class=" h4 text-muted" sytle="">
+              其他信息
+              <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示其他信息" data-content="test" data-placement="right" ng-show="false===allData.showAdditionalField" ng-init="allData.showAdditionalField=false" ng-click="allFunc.switchAdditionalFields()"></span>
+              <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏其他信息" data-content="test1" data-placement="right" ng-show="true===allData.showAdditionalField" ng-click="allFunc.switchAdditionalFields()"></span>
+          </div>
+          <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id' && !allData.inputRule[field]['require']['define']" ng-show="true===allData.showAdditionalField" ng-class="{'has-error': 0<value.errorMsg.length}">
+              <!--<div>-->
+              <label class="control-label" >{{value['chineseName']}}</label>
+
+              <!--普通字段-->
+              <input ng-if="'normal'===allData.inputAttr[field]['inputType'] " class="form-control" type="{{value.inputDataType}}" ng-model="value.value" ng-change="" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);',blur:'allFunc.nonAcBlur(field,allData.inputRule,allData.inputAttr)'}" >
+
+              <!--设置的值是枚举，例如性别，支取，通过select来设置-->
+              <select ng-if="'select'===allData.inputAttr[field]['inputType'] " class="form-control"  ng-model="value.value"  >
+                  <option ng-repeat="option in value['selectOption']" ng-selected="value.value===option.value" value="{{option.key}}">{{option.value}}</option>
+              </select>
+
+
+              <!--可以AC的字段-->
+              <div mass-autocomplete ng-if="'autoComplete'===allData.inputAttr[field]['inputType'] ">
+                  <input class="form-control input-sm" ng-model="value.value" mass-autocomplete-item="value.suggestList" ui-event="{focus:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule)',blur:'allFunc.acBlur(field,allData.inputAttr,allData.recorder[allData.currentIdx]._id)',change:'allFunc.initSingleFieldInputAttr(field,allData.inputAttr,allData.inputRule);'}" >
+              </div>
+
+              <!--日期-->
+              <div class='input-group date' id='{{field}}' ng-show="'date'===allData.inputAttr[field]['inputType'] ">
+                  <input type='text' class="form-control" />
+                        <span class="input-group-addon" >
+                        <span class="fa fa-calendar" ></span>
+                    </span>
+              </div>
+              <p class="text-danger" style="height:4px">{{value.errorMsg}}</p>
+          </div>
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal" ng-click="allFunc.switchDialogStatus();allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule)">取消</button>
@@ -200,7 +185,7 @@
         数据
     </div>
 
-    <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
+    <button class="btn btn-primary btn-sm marginL_3"  ng-click="allFunc.setCurrentOpTypeCreate();allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule);allFunc.switchDialogStatus()" ><span class="fa fa-plus marginR_1 "></span>添加</button>
     <span style="align-self: center" class="paddingV_7 h4 text-warning center" ng-show="undefined===allData.recorder[0]">无数据</span>
     <div class="col-lg-12" >
         <!--use ng-show, thus adjustFootPosition can work; ng-if will not change page content height -->
@@ -213,7 +198,9 @@
             <th class="text-primary hidden-xs hidden-sm">单据内容</th>
             <th class="text-primary hidden-xs hidden-sm">单据类别</th>
             <th class="text-primary hidden-xs">单据日期</th>
-            <th class="text-primary ">报销金额</th>
+            <!--<th class="text-primary ">报销金额</th>-->
+            <th class="text-primary ">取入</th>
+            <th class="text-primary ">支出</th>
             <th class="text-primary ">报销员工</th>
             <th class="text-primary hidden-xs hidden-sm">报销日期</th>
             <th class="text-primary hidden-xs hidden-sm">更新日期</th>
@@ -227,7 +214,21 @@
                 <td class="hidden-xs hidden-sm">{{value.content}}</td>
                 <td class="hidden-xs hidden-sm">{{value.billType.name}}</td>
                 <td class="hidden-xs">{{value.billDate}}</td>
-                <td>{{value.amount}}</td>
+                <!--<td>{{value.amount}}</td>-->
+                <td ng-if="'in'===value.billTypeFields.inOut">{{value.amount}}</td><td ng-if="'out'===value.billTypeFields.inOut"></td>
+                <td ng-if="'in'===value.billTypeFields.inOut"></td><td ng-if="'out'===value.billTypeFields.inOut">{{value.amount}}</td>
+<!--                <td ng-show="'out'===value.billTypeFields.inOut">{{value.amount}}</td>
+                <td ng-show="'in'===value.billTypeFields.inOut">{{value.amount}}</td>-->
+<!--                <td ng-switch="value.billTypeFields.inOut">
+                    <span ng-switch-when="in">
+                        <td>{{value.amount}}</td>
+                        <td></td>
+                    </span>
+                    <span ng-switch-when="out">
+                        <td></td>
+                        <td>{{value.amount}}</td>
+                    </span>
+                </td>-->
                 <td>{{value.reimburser.name}}</td>
                 <td class="hidden-xs hidden-sm">{{value.cDate}}</td>
 

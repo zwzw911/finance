@@ -219,6 +219,27 @@ var billSchema=new mongoose.Schema(
     fieldDefine['bill'],
     schemaOptions
 )
+/*          hook            */
+billSchema.pre('save',function(next){
+    console.log(`bill pre save in`)
+    console.log(`document is ${JSON.stringify(this)}`)
+    if(this.billTypeFields.inOut==='out'){
+        console.log(`out enter`)
+        this.amount=-Math.abs(this.amount)
+        console.log(`out amount is ${this.amount}`)
+    }
+    if(this.billTypeFields.inOut==='in'){
+        console.log(`in enter`)
+    }
+    next()
+})
+billSchema.pre('findOneAndUpdate',function(next){
+    console.log(`enter findOneAndUpdate`)
+    this.update({"billTypeFields.inOut":"in"},{"$set":{"amount":-1}})
+    next()
+})
+
+
 
 var userModel=dbFinance.model('users',userSchema)
 var departmentModel=dbFinance.model('departments',departmentSchema)
@@ -228,11 +249,22 @@ var billModel=dbFinance.model('bills',billSchema)
 
 //console.log(billModel)
 module.exports={
-    userModel,
-    departmentModel,
-    employeeModel,
-    billTypeModel,
-    billModel,
+    schema:{
+        user:userSchema,
+        department:departmentSchema,
+        employee:employeeSchema,
+        billType:billTypeSchema,
+        bill:billSchema
+    },
+
+    model:{
+        user:userModel,
+        department:departmentModel,
+        employee:employeeModel,
+        billType:billTypeModel,
+        bill:billModel,
+    },
+
     //以下export，为了mongoValidate
     collections:collections,
     fieldDefine,

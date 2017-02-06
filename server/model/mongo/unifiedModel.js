@@ -31,41 +31,57 @@ var updateOptions={
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
 var create=async function ({dbModel,values}){
 //使用Promise方式，以便catch可能的错误
-    let result=await dbModel.insertMany(values).catch((err)=>{
+    /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
+/*    let result=await dbModel.insertMany(values).catch((err)=>{
+        //console.log(`model err is ${JSON.stringify(err)}`)
+        return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
+    })
+    //result.name=undefined
+    //console.log(`model result is ${JSON.stringify(modelResult)}`)
+    return Promise.resolve({rc:0,msg:result})*/
+
+    /*          为了使用mongoose的pre功能（为bill，判断正负），使用save保存         */
+    let doc=new dbModel(values[0])
+    let result=await doc.save(values[0]).catch((err)=>{
         //console.log(`model err is ${JSON.stringify(err)}`)
         return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
     })
     //result.name=undefined
     //console.log(`model result is ${JSON.stringify(modelResult)}`)
     return Promise.resolve({rc:0,msg:result})
-
-
 }
 
 async function update({dbModel,updateOptions,id,values}){
     values['uDate']=Date.now()
     //console.log(`id is ${id}, values is ${JSON.stringify(values)}`)
     //无需执行exec返回一个promise就可以使用了？？？
-    let result= await dbModel.findByIdAndUpdate(id,values,updateOptions).catch(
+/*    let result= await dbModel.findByIdAndUpdate(id,values,updateOptions).catch(
+        (err)=>{
+            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+        }
+    )
+    //update成功，返回的是原始记录，需要转换成可辨认格式
+    return Promise.resolve({rc:0,msg:result})*/
+
+/*             使用传统的findById/set/save ,以便利用save middleware（bill的amount正负设置）     */
+    let doc= await dbModel.findById(id).catch(
+        (err)=>{
+            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+        }
+    )
+    //将values中的数据赋值给doc
+    for(let field in values){
+        doc[field]=values[field]
+    }
+
+    let result=await doc.save().catch(
         (err)=>{
             return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
         }
     )
     //update成功，返回的是原始记录，需要转换成可辨认格式
     return Promise.resolve({rc:0,msg:result})
-/*    return new Promise(function(resolve,reject){
-        dbModel.findByIdAndUpdate(id,values,updateOptions,function(err,result){
-            if(err){
-                 console.log(`db err is ${err}`)
-                resolve( mongooseErrorHandler(mongooseErrorHandler.fdierr))
-            }
 
-            //update成功，返回的是原始记录，需要转换成可辨认格式
-            // resolve({rc:0})
-             console.log(`db result is ${JSON.stringify(result)}`)
-            resolve({rc:0,msg:result})
-        })
-    })*/
 }
 
 //根据Id删除文档（其实只是设置dData）
