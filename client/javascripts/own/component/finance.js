@@ -2,9 +2,9 @@
  * Created by ada on 2016/9/15.
  */
 'use strict'
-var app=angular.module('finance',['component']);
+var financeApp=angular.module('finance',['component']);
 
-app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,paginationHelper){
+financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,paginationHelper){
 /*    //根据inputAttr的内容，生成合适的values，以便server处理
     var generateInputValue=function(inputAttr){
         let values={}
@@ -327,6 +327,22 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
                 console.log('err')
             })
         },
+        'getCurrentCapital':function(){
+            let url="/bill/static/getCurrentCapital"
+            return $http.post(url,{}).success(function(data, status, header, config){
+
+            }).error(function(){
+
+            })
+        },
+        'getGroupCapital':function(){
+            let url="/bill/static/getGroupCapital"
+            return $http.post(url,{}).success(function(data, status, header, config){
+
+            }).error(function(){
+
+            })
+        }
     }
 
     return {
@@ -334,3 +350,5 @@ app.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal
         //suggest_state
     }
 })
+
+//module.exports=financeApp.name

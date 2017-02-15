@@ -1,10 +1,11 @@
 /**
  * Created by ada on 2016/8/28.
  */
+//var angular=require('angular')
 
-
-var app=angular.module('app',['ui.router','ui.event','ngSanitize','MassAutoComplete','contDefine','component','finance'])
-app.constant('appCont',{
+var mainApp=angular.module('mainApp',['ui.router','ui.event','ngSanitize','MassAutoComplete','contDefine','component','finance'])
+//var app=angular.module('app',[require('angular-ui-router'),'ui.event','ngSanitize','MassAutoComplete','contDefine','component','finance'])
+mainApp.constant('appCont',{
     //和server不同，此处的配置，只是为了将外键的ObjectID替换成人类可读的字符串，（暂时）是1：1的关系
     //格式还是采用object，以便后续可以加入其他选项
     //nestedPrefix用来删除对应的字段，因为这些字段只是server用来serach用，无需在client显示
@@ -102,7 +103,7 @@ app.constant('appCont',{
     },*/
 })
 
-app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
+mainApp.config(function($stateProvider,$urlRouterProvider,$locationProvider){
     $locationProvider.html5Mode(true);//为了去除url中的#
 
     $urlRouterProvider.when("", "/configuration").otherwise("/");
@@ -137,11 +138,16 @@ app.config(function($stateProvider,$urlRouterProvider,$locationProvider){
             url:'/billInfo',
             templateUrl:'bill.billInfo.ejs',
             controller:'bill.billInfo.Controller',
-    })
 
+        })
+        .state('bill.static',{
+            url:'/static',
+            templateUrl:'bill.static.ejs',
+            controller:'bill.static.Controller',
+        })
 })
 
-app.controller('mainController',function($scope,htmlHelper){
+mainApp.controller('mainController',function($scope,htmlHelper){
     htmlHelper.adjustFooterPosition()
 
     window.onresize=function(){
@@ -150,7 +156,7 @@ app.controller('mainController',function($scope,htmlHelper){
     }
 })
 
-app.controller('configurationController',function($scope,htmlHelper){
+mainApp.controller('configurationController',function($scope,htmlHelper){
     htmlHelper.adjustFooterPosition()
     $scope.adjustFooterPosition=function(){
         //console.log('configuration resize')
@@ -159,7 +165,7 @@ app.controller('configurationController',function($scope,htmlHelper){
 
 })
 
-app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper,paginationHelper){
+mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper,paginationHelper){
     var generateControllerData=function(eColl){
         return {
             showAdditionalField:false, //当CU的modal中，field太多的时候，把require=false的字段，通过此字段决定是否显示
@@ -440,8 +446,9 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
                     }
                 }
-                // console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
-                // inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr)
+                 console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
+                 inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr,$scope.allData.inputRule)
+                console.log(`after convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
                 validateHelper.allCheckInput($scope.allData.inputRule,$scope.allData.inputAttr)
                 let allInputValidateResult=inputAttrHelper.allInputValidCheck($scope.allData.inputAttr,$scope.allData.inputRule)
                 if(true===allInputValidateResult){
@@ -756,7 +763,7 @@ app.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelpe
 
 
 
-app.controller('configuration.billType.Controller',function($scope,templateFunc){
+mainApp.controller('configuration.billType.Controller',function($scope,templateFunc){
     //appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,templateFunc
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('billType')
@@ -774,7 +781,7 @@ app.controller('configuration.billType.Controller',function($scope,templateFunc)
 
 
 
-app.controller('configuration.departmentInfo.Controller',function($scope,templateFunc){
+mainApp.controller('configuration.departmentInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('department')
 
@@ -792,7 +799,7 @@ app.controller('configuration.departmentInfo.Controller',function($scope,templat
 
 
 
-app.controller('configuration.employeeInfo.Controller',function($scope,templateFunc){
+mainApp.controller('configuration.employeeInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('employee')
     //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
@@ -807,7 +814,7 @@ app.controller('configuration.employeeInfo.Controller',function($scope,templateF
     templateFunc.init($scope,'employee')
 })
 
-app.controller('billController',function($scope,htmlHelper){
+mainApp.controller('billController',function($scope,htmlHelper){
     $scope.adjustFooterPosition=function(){
         //console.log('main resize')
         htmlHelper.adjustFooterPosition()
@@ -818,7 +825,7 @@ app.controller('billController',function($scope,htmlHelper){
 
 
 
-app.controller('bill.billInfo.Controller',function($scope,templateFunc){
+mainApp.controller('bill.billInfo.Controller',function($scope,templateFunc){
     //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('bill')
     //$scope.pagination=templateFunc.generatePaginationData('bill')
@@ -836,3 +843,37 @@ app.controller('bill.billInfo.Controller',function($scope,templateFunc){
 
     // templateFunc.generateDateTimePickerFunc.allFunc.initDateTimePicker('bill')
 })
+
+
+mainApp.controller('bill.static.Controller',function($scope,financeHelper){
+    $scope.allData={
+        currentCapitalFlag:false,//当前资金 是否显示
+    }
+
+    $scope.allFunc={
+        showHideCurrentCapital:function(){
+            $scope.allData.currentCapitalFlag=!$scope.allData.currentCapitalFlag
+        }
+    }
+
+    console.log(`static enter`)
+    financeHelper.dataOperator.getCurrentCapital()
+    financeHelper.dataOperator.getGroupCapital()
+/*    //需要用到的数据，预先定义好
+    $scope.allData=templateFunc.generateControllerData('bill')
+    //$scope.pagination=templateFunc.generatePaginationData('bill')
+    //初始化为对象，否则无法进行引用传递。调用 generateClientPagination 会自动根据server 返回的信息来填充一个对象并返回
+    $scope.pagination={}
+    $scope.paginationFunc=templateFunc.generatePaginationFunc($scope)
+    $scope.modal=templateFunc.generateCreateUpdateModalInfo()
+    $scope.allFunc=templateFunc.allFunc($scope,'bill')
+
+    templateFunc.setACConfig($scope,'bill')
+    //初始化调用
+    templateFunc.init($scope,'bill')*/
+
+
+
+    // templateFunc.generateDateTimePickerFunc.allFunc.initDateTimePicker('bill')
+})
+//module.exports=mainApp.name

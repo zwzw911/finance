@@ -69,11 +69,19 @@ async function update({dbModel,updateOptions,id,values}){
             return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
         }
     )
+    //console.log(`update: oringal value is ${JSON.stringify(doc)}`)
+    //console.log(`update: passed value is ${JSON.stringify(values)}`)
     //将values中的数据赋值给doc
     for(let field in values){
-        doc[field]=values[field]
-    }
+        //使用find/save的方式，为了不存储设为null的字段，需要设置字段为undefined（findByIdUpdate的话，把null字段放入$unset）
+        if(null===values[field]){
+           doc[field]=undefined
+        }else{
+            doc[field]=values[field]
+        }
 
+    }
+//console.log(`update: after set value is ${JSON.stringify(doc)}`)
     let result=await doc.save().catch(
         (err)=>{
             return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
@@ -285,6 +293,28 @@ async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentP
     return Promise.resolve({rc:0,msg:paginationInfo})
 }
 
+
+//其实dbModel就是billModel，使用传参是为了防止在当前文件再次应用model文件
+async function getCurrentCapital({dbModel}){
+    let restMount=await dbModel.aggregate([
+        // {$match:{'billTypeFields.name':"bt1"}},
+        {$project:{"billTypeFields":1}},
+        {$group:{"_id":"$billType",'total':{$sum:"$amount"}}}
+    ])
+    console.log(`getCurrentCapital result is ${JSON.stringify(restMount)}`)
+    return Promise.resolve({rc:0,msg:restMount})
+}
+
+async function getGroupCapital({dbModel}){
+    let restMount=await dbModel.aggregate([
+        {$match:{'dDate':{'$exists':0}}},//过滤出和条件的document
+        {$project:{'billTypeFields.name':1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
+        {$group:{"_id":"$billTypeFields.name",'total':{$sum:"$amount"}}}
+    ])
+    console.log(`getGroupCapital result is ${JSON.stringify(restMount)}`)
+    return Promise.resolve({rc:0,msg:restMount})
+}
+
 module.exports= {
     create,
     update,
@@ -295,4 +325,7 @@ module.exports= {
     findById,
     search,
     calcPagination,//将pagination的功能从search中单独分离出来，以便给search的create复用
+    /*      static      */
+    getCurrentCapital,
+    getGroupCapital,
 }

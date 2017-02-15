@@ -9,7 +9,8 @@ var lessMiddleware = require('less-middleware');
 /*var routes = require('./routes/index');
 var users = require('./routes/users');*/
 // var main= require('./server/controller/main/main')
-var main= require('./server/controller/main/unifiedMain')
+var main= require('./server/controller/main/main')
+//var staticInfo=require('./server/controller/main/static')
 
 var app = express();
 
@@ -19,7 +20,7 @@ for(let singleKey in appSetting){
   //console.log(`${singleKey}:${appSetting[singleKey]}`)
   app.set(singleKey,appSetting[singleKey])
 }
-app.set('env','development')
+//app.set('env','development') //采用appSetting中的设置
 
 // view engine setup
 app.set('views', path.join(__dirname, 'server/views'));
@@ -54,7 +55,7 @@ if(app.get('env') === 'development'){
 }
 //
 app.use(['/main','/'],main)
-
+//app.use('/bill/static',staticInfo)
 /*app.use('/', routes);
 app.use('/users', users);*/
 

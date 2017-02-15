@@ -1,12 +1,13 @@
 /**
  * Created by Ada on 2016/8/28.
+ * 同时支持unified和static的router
  */
 'use strict'
 require("babel-polyfill");
 require("babel-core/register")
 
 var express = require('express');
-var app=express()
+//var app=express()
 var router = express.Router();
 
 //var checkInterval=require('../../assist/misc-compiled').func.checkInterval
@@ -17,27 +18,36 @@ var router = express.Router();
 // var userController=controller.user
 
 var coll=require('../../define/enum/node').node.coll
+
+var envSetting=require('../../config/global/appSetting').env
 /*var departmentController=controller.department
 var employeeController=controller.employee
 var unifiedRouterController=controller.billType
 var unifiedRouterController=controller.bill*/
+var checkInterval=require('../../assist/misc').checkInterval
 
 // import * as unifiedRouterController from './unifiedRouterController-compiled'
-var unifiedRouterController=require('./unifiedRouterController')
+var unifiedRouterController=require('./routerController')
 router.use(function(req,res,next){
 /*    console.log(req.ips)
     console.log(req.ip)*/
     console.log('router use')
-    if("development"===app.get('env')){
+    if("development"===envSetting){
         console.log('dev, not check interval')
         next()
     }
 
-    if("production"===app.get('env')) {
-        console.log(express().get('env'))
-        //console.log('%s %s %s', req.method, req.url, req.path);
-        //判断请求的是页面还是静态资源（css/js）
-        if (req.path) {
+    if("production"===envSetting) {
+        let result=checkInterval(req)
+        if(result.rc>0){
+            return res.render('helper/reqReject', {
+                title: '拒绝请求',
+                content: result['msg'],
+                year: new Date().getFullYear()
+            });
+        }
+        //判断请求的是页面还是静态资源（css/js），还没有想好如何处理
+        /*if (req.path) {
             let tmp = req.path.split('.')
             let suffix = tmp[tmp.length - 1]
             //console.log(suffix)
@@ -74,7 +84,7 @@ router.use(function(req,res,next){
 
             }
 
-        }
+        }*/
     }
 
 })
@@ -86,7 +96,7 @@ router.get('/', function(req,res,next){
 })
 
 router.delete("/",function(req,res,next){
-    if('development'===app.get('env')){
+    if('development'===envSetting){
         unifiedRouterController.removeAll({'req':req,'res':res}).then(
             //(v)=>{console.log(`remove all result is ${JSON.stringify(v)}`)}
             (v)=>{
@@ -480,5 +490,35 @@ router.post('/bill/search',function(req,res,next){
             return res.json(e)
         })
 })
+
+
+/*              static                  */
+//采用post，以便处理可能的查询参数
+router.post('/bill/static/getCurrentCapital',function(req,res,next){
+    // console.log(req.body.values)
+    unifiedRouterController.getCurrentCapital().then(
+        (v)=>{
+            console.log(`static success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`static fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
+})
+
+router.post('/bill/static/getGroupCapital',function(req,res,next){
+    // console.log(req.body.values)
+    unifiedRouterController.getGroupCapital().then(
+        (v)=>{
+            console.log(`static group success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`static group fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
+})
+
 
 module.exports = router;

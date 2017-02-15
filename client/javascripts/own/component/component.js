@@ -3,10 +3,10 @@
  * 通用函数（可供finance调用）
  */
     'use strict'
-var app=angular.module('component',['angularMoment']);
-
+var componentApp=angular.module('component',['angularMoment']);
+//var moment=require('moment')
 //common的程序
-app.factory('validateHelper',function(){
+componentApp.factory('validateHelper',function(){
     var dataTypeCheck=
         {
             isArray(obj) {
@@ -122,9 +122,9 @@ app.factory('validateHelper',function(){
         if('id'===field){
             return true
         }
-        console.log(`inputRule of ${field} is ${JSON.stringify(inputRule[field])}`)
+        //console.log(`inputRule of ${field} is ${JSON.stringify(inputRule[field])}`)
         var requireFlag=inputRule[field]['require']['define']
-        console.log(`requireFlag of ${field} is ${requireFlag}`)
+        //console.log(`requireFlag of ${field} is ${requireFlag}`)
         var currentValue=inputAttr[field]['value']
         if(undefined===requireFlag){
             requireFlag=false
@@ -136,7 +136,7 @@ app.factory('validateHelper',function(){
 //        console.log(`currentValue type of ${field} is ${JSON.stringify(typeof currentValue)}`)
         //如果是字符，需要调用专用的函数判断是否为空
         if(true===dataTypeCheck.isEmpty(currentValue)){
-            console.log(`${field} is empty`)
+            //console.log(`${field} is empty`)
             if(false===requireFlag){
                 inputAttr[field]['validated']=true
                 return true
@@ -230,7 +230,7 @@ app.factory('validateHelper',function(){
     }
     //对所有的input进行检测
     function allCheckInput(inputRule,inputAttr){
-        console.log(`input attr is ${JSON.stringify(inputAttr)}`)
+        //console.log(`input attr is ${JSON.stringify(inputAttr)}`)
         // console.log('check input in')
         let tmpResult
         for(let singleField in inputAttr){
@@ -246,7 +246,7 @@ app.factory('validateHelper',function(){
     return {dataTypeCheck,ruleTypeCheck,checkInput,allCheckInput}
 })
 
-app.factory('htmlHelper',function(validateHelper){
+componentApp.factory('htmlHelper',function(validateHelper){
     return {
         /*
         * leftOffset:覆盖元素的left和当前元素left 之间的offset。可正可负。
@@ -354,7 +354,7 @@ app.factory('htmlHelper',function(validateHelper){
 })
 
 /*            设置 查询条件 时，使用的函数              */
-app.factory('queryHelper',function(contEnum) {
+componentApp.factory('queryHelper',function(contEnum) {
     //var allFunc={}
     //allFunc={
     //field：要操作的字段名
@@ -577,7 +577,7 @@ app.factory('queryHelper',function(contEnum) {
     return {deleteQueryValue,addQueryValue,convertAddQueryValueToServerFormat}
 })*/
 
-app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHelper) {
+componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHelper) {
     //对某个input设置errorMsg（errorMsg隐式设置input样式）
     function setSingleInputAttrErrorMsg(field,inputAttr,errMsg){
         inputAttr[field]['errorMsg']=errMsg
@@ -722,11 +722,26 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHel
         }
     }
 
-    //如果是select传递进来的值，是inputAttr[field][value]={key:'in',value:'取入'}   ===> inputAttr[field][value]={'in'}
-    function convertReadableToEnum(inputAttr){
+    //如果是select传递进来的值，是inputAttr[field][value]='取入'{key:'in',value:'取入'}   ===> inputAttr[field][value]={'in'}
+    function convertReadableToEnum(inputAttr,inputRule){
         for(let field in inputAttr){
-            if(true===inputAttr[field]['isSelect']){
-                inputAttr[field]['value']=inputAttr[field]['value']['key']
+            if('select'===inputAttr[field]['inputType']){
+                //select空，检查是否require；非require，不进行转换
+                if(''===inputAttr[field]['value'] || null===inputAttr[field]['value']){
+                    if(false===inputRule[field]['require']['define']){
+                        continue
+                    }
+                }
+                //enum非空，执行readable==>enum的转换
+                else{
+                    for(let singleOption of inputAttr[field]['selectOption']){
+                        if(singleOption.value===inputAttr[field]['value']){
+                            inputAttr[field]['value']=singleOption.key
+                        }
+                    }
+                }
+
+
             }
         }
     }
@@ -827,7 +842,7 @@ app.factory('inputAttrHelper',function(contEnum,validateHelper,dateTimePickerHel
     }
 })
 
-app.factory('commonHelper',function(){
+componentApp.factory('commonHelper',function(){
     //对server返回的result，进行检查，如果是日期，用moment进行转换
     //result：从server返回的结果(非数组，而是单个记录)；filedType：当前result的field类型
     function convertDateTime(singleRecorder,fieldType){
@@ -900,7 +915,7 @@ app.factory('commonHelper',function(){
     }
 })
 
-app.service('modal',function(){
+componentApp.service('modal',function(){
     let _modalId,_modalMsgId,_modalTitleId,_modalCloseButtonId,_modalCloseSymbolId
     function _setTop(){
         //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
@@ -974,7 +989,7 @@ app.service('modal',function(){
 
 })
 
-app.service('modalChoice',function(htmlHelper){
+componentApp.service('modalChoice',function(htmlHelper){
     let _modalId,_modalMsgId,_modalTitleId,_modalYesButtonId,_modalNoButtonId,_modalCloseSymbolId
     function _setTop(){
         //$('#modal_modal>div').height()=174，直接测量得到，因为只有在show时，才有height，hide时为0
@@ -1062,7 +1077,7 @@ app.service('modalChoice',function(htmlHelper){
 })
 
 //采用jquery的方式对指定的input进行初始化，以及设置获得日期时间
-app.service('dateTimePickerHelper',function(){
+componentApp.service('dateTimePickerHelper',function(){
     // let _dateTimeEleId
     this.initEle=function(eleId){
         //_dateTimeEleId=eleId
@@ -1142,7 +1157,7 @@ app.service('dateTimePickerHelper',function(){
 })
 
 //分页函数
-app.service('paginationHelper',function(validateHelper){
+componentApp.service('paginationHelper',function(validateHelper){
     //根据serve传递过来的数据，产生用于页面的分页 数据
     //serverData：从server端获得的原始分页数据
     //返回：angular用于渲染页面的 分页 数据
@@ -1182,3 +1197,5 @@ app.service('paginationHelper',function(validateHelper){
         return validateHelper.dataTypeCheck.isInt(goToPageNo)
     }
 })
+
+//module.exports=componentApp.name

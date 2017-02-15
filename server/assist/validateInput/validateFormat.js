@@ -81,7 +81,7 @@ function validateRecorderInfoFormat(recorderInfo,rule,maxFieldNum){
     }
     //4. 检查key数量是否合适（不能超过最大定义）
     let keys=Object.keys(recorderInfo)
-console.log(`recorderInfo leys is ${JSON.stringify(keys)},length is ${keys.length},max field is ${maxFieldNum}`)
+//console.log(`recorderInfo leys is ${JSON.stringify(keys)},length is ${keys.length},max field is ${maxFieldNum}`)
     if(keys.length>maxFieldNum){
         return validateFormatError.recorderInfoFieldNumExceed
     }

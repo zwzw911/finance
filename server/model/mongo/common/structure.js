@@ -191,10 +191,10 @@ if(true===mongoSetting.schemaOptions.validateFlag){
 
 // fs.writeFile('mongodb.txt',JSON.stringify(fieldDefine))
 // console.log(fieldDefine['department']['name'])
-console.log(fieldDefine['employee']['gender']['enum'])
+//console.log(fieldDefine['employee']['gender']['enum'])
 // console.log(JSON.stringify(fieldDefine['department']))
 // console.log(JSON.stringify(fieldDefine['employee']))
- console.log(JSON.stringify(fieldDefine['billType']))
+// console.log(JSON.stringify(fieldDefine['billType']))
 
 var userSchema=new mongoose.Schema(
     fieldDefine['user'],

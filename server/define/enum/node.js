@@ -24,8 +24,8 @@ var coll={
 
 
 var env={
-    'development':Symbol('development'),
-    'production':Symbol('production')
+    'development':'development',
+    'production':'production',
 }
 
 var compOp={

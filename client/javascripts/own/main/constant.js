@@ -2,8 +2,8 @@
  * Created by ada on 2016/9/5.
  * 由/maintain/developer_helper。js产生inputRule和inputAttr
  */
-var app=angular.module('contDefine',[])
-app.constant('cont',{
+var constantApp=angular.module('contDefine',[])
+constantApp.constant('cont',{
 
     //dataType主要验证client的用户输入，所以只要基本数据类型
     dataType:{
@@ -198,7 +198,7 @@ app.constant('cont',{
             },
             "inOut": {
                 "require": {
-                    "define": true,
+                    "define": false,
                     "msg": "支取类型不能为空"
                 },
                 "enum": {
@@ -416,9 +416,8 @@ app.constant('cont',{
                 "originalValue": "",
                 "isFKField": false,
                 "inputType": "select",
-                "selectOption":[{key:'male',value:'男'},{key:'female',value:'女'}],
+                "selectOption":[{key:null,value:''},{key:'male',value:'男'},{key:'female',value:'女'}],
                 "isQueryAutoComplete": false,
-
                 "autoCompleteCollField": "",
                 "suggestList": [],
                 "inputDataType": "text",
@@ -500,7 +499,7 @@ app.constant('cont',{
                 "originalValue": "",
                 "isFKField": false,
                 "inputType": "select",
-                "selectOption": [{key:'in',value:'取入'},{key:'out',value:'支出'}],
+                "selectOption": [{key:null,value:''},{key:'in',value:'取入'},{key:'out',value:'支出'}],
                 "isQueryAutoComplete": false,
                 "autoCompleteCollField": "",
                 "suggestList": {},
@@ -783,7 +782,7 @@ queryFieldChineseName:
 
 })
 
-app.constant('contEnum',{
+constantApp.constant('contEnum',{
 /*    opType:{
         'create': Symbol('create'),
         'read': Symbol('read'),
@@ -815,3 +814,5 @@ app.constant('contEnum',{
         'autoComplete':'autoComplete', //field需要 自动完成功能
     }
 })
+
+//module.exports=constantApp.name

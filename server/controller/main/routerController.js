@@ -42,7 +42,7 @@ var unifiedModel=require('../../model/mongo/unifiedModel')
 /*                      func                   */
 var populateSingleDoc=require('../../assist/misc').populateSingleDoc
 // import * as  unifiedHelper from './unifiedRouterControllerHelper'
-var unifiedHelper=require('./unifiedRouterControllerHelper')
+var unifiedHelper=require('./routerControllerHelper')
 /*                      regex               */
 var coll=require('../../define/enum/node').node.coll
 /*                      enum                */
@@ -326,12 +326,15 @@ var update=async function ({eCurrentColl,req,res}){
 
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     //console.log(`after deleter id ${JSON.stringify(convertedResult)}`)
-    //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
-    dataConvert.constructUpdateCriteria(convertedResult,fkConfig)
+
+    /*          如果model采用findByIdupdate的方式，需要将value为null的字段放入$unset，以便在db中对应的doc删除字段        */
+/*    //4 检查输入的更新字段中，是否有需要被删除的字段（设为null的字段）
+    dataConvert.constructUpdateCriteria(convertedResult,fkConfig)*/
+    /*          如果model采用find=>save的方式，无需对null字段操作，在model中直接将对应的字段值设为undefined即可        */
+
     //console.log(`construct update is ${JSON.stringify(convertedResult)}`)
-
-
     //console.log(`fkconfig is ${JSON.stringify(fkConfig)}`)
+
     //5 上级不能设成自己，且在对应的coll中必须有记录存在
     //遍历当前coll的外键
     for(let singleFK in fkConfig){
@@ -662,6 +665,20 @@ var removeAll=async function ({req,res}){
 
 }
 
+/*                            统计信息                     */
+
+/**         获得当前剩余资金        **/
+var getCurrentCapital=async function(){
+    let result=await unifiedModel.getCurrentCapital({dbModel:dbModel.bill})
+    return Promise.resolve(result)
+}
+
+/**         获得分组信息        **/
+var getGroupCapital=async function(){
+    let result=await unifiedModel.getGroupCapital({dbModel:dbModel.bill})
+    return Promise.resolve(result)
+}
+
 
 module.exports= {
     create,
@@ -671,4 +688,7 @@ module.exports= {
     readName,
     search,
     removeAll,
+    /*  统计信息    */
+    getCurrentCapital,
+    getGroupCapital,
 }
