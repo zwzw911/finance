@@ -1,0 +1,1 @@
+1. 为了实现AC在空白以及选中的时候，显示所有选项，需要a. 设置on_attach，选择所有选项；b.修改massautocomplete，将if (typeof(term) === 'string' && term.length > 0) 改成if (typeof(term) === 'string' && term.length >= 0) ，即，在输入字符为空的情况下，也要进行操作

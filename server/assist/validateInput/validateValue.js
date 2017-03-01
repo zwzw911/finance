@@ -661,7 +661,48 @@ function validateDeleteObjectId(id){
     return {rc:0}
 }
 
+/*            检测static的搜索参数的格式          */
+//验证是否为日期即可，无需范围
+function validateStaticSearchParamsValue(searchParams,rules){
+    let rc={}
+    if(false===dataTypeCheck.isEmpty(searchParams)){
+        for(let fieldName in searchParams){
+            rc[fieldName]={}
+            rc[fieldName]['rc']=0
 
+            //根据定义的是否需要require，以及传入的值是否为空，进行判断
+            let singleFiledRequireFlag=rules[fieldName]['require']
+            let fieldValueEmptyFlag=dataTypeCheck.isEmpty(searchParams[fieldName]['value'])
+            if(singleFiledRequireFlag && fieldValueEmptyFlag){
+                rc[fieldName]['rc']=validateValueError.CUDValueNotDefineWithRequireTrue.rc
+                rc[fieldName]['msg']=`${rules[fieldName]['chineseName']}:${validateValueError.CUDValueNotDefineWithRequireTrue.msg}`
+                continue
+                // return rules[fieldName]['require']['error']
+            }
+            //值为空，却并非为require，直接删除
+            if(false===singleFiledRequireFlag && fieldValueEmptyFlag){
+                delete searchParams[fieldName]
+            }
+
+
+
+            let fieldValue=searchParams[fieldName]['value']
+            //判断类型是否符合
+            let typeResult=valueTypeCheck(fieldValue,rules[fieldName]['type'])
+            if(typeResult.rc && 0<typeResult.rc){
+                rc[fieldName]['rc']=typeResult.rc
+                rc[fieldName]['msg']=`${fieldName}${typeResult.msg}`
+                continue
+            }
+            if(false===typeResult){
+                rc[fieldName]['rc']=validateValueError.staticTypeWrong.rc
+                rc[fieldName]['msg']=`${fieldName}${validateValueError.staticTypeWrong.msg}`
+                continue
+            }
+        }
+    }
+    return rc
+}
 module.exports={
     // checkSearchValue,
     validateRecorderInfoValue,
@@ -669,4 +710,5 @@ module.exports={
     validateSingleSearchFieldValue,//辅助函数，一般不直接使用
     validateSingleElementValue,//可在1，autoComplete的时候，使用   2. 被validateSingleSearchFieldValue调用
     validateDeleteObjectId,//delete比较特殊，使用POST，URL带objectID指明要删除的记录，同时body中带searchParams和currentPage，以便删除后继续定位对应的页数
+    validateStaticSearchParamsValue,
 }

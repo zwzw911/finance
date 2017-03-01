@@ -621,7 +621,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
 
                     searchValue[realFieldNameToRead]={}
                     searchValue[realFieldNameToRead]['value']=name
-                    financeHelper.dataOperator.readName(searchValue,fkColl).success(
+                    financeHelper.dataOperator.readName(searchValue,fkColl,eColl).success(
                         (data, status, header, config)=>{
                             let tmpResult = []
                             console.log(`get suggest result is ${JSON.stringify(data.msg)}`)
@@ -651,8 +651,9 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                                         }
                                     }
                                 })
-                                deferred.resolve(tmpResult)
+
                             }
+                            deferred.resolve(tmpResult)
                         }
                     ).error(
                         (data, status, header, config)=>{
@@ -665,7 +666,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 suggestList['on_select']=function (selected) {
                     console.log(`on_selected is ${JSON.stringify(selected)}`)
                     if(true=== fieldName in $scope.allData.selectedAC){
-                        console.log(`select ac filed is ${fieldName}`)
+                        // console.log(`select ac filed is ${fieldName}`)
                         $scope.allData.selectedAC[fieldName]._id = selected.id
                         $scope.allData.selectedAC[fieldName].value = selected.value
                         //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
@@ -673,6 +674,62 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                         //不是外键，直接保存在inputAttr中
                         $scope.allData.inputAttr[fieldName]['value']=selected.value
                     }
+                }
+
+                suggestList['on_attach']=function(){
+                    let deferred=$q.defer()
+                    let searchValue={}
+
+                    //如果是外键，那么实际对应的field名称，例如：parentBillType对应的是name
+                    let realFieldNameToRead=fieldName
+                    //替换成外键所以在的coll中的名称，以便server通过format检测（否则如果外键在不同的coll，server无法正确通过）
+                    if(fieldName in fkConfig){
+                        realFieldNameToRead=fkConfig[fieldName]['fields'][0]
+                    }
+
+                    searchValue[realFieldNameToRead]={}
+                    searchValue[realFieldNameToRead]['value']=''
+                    financeHelper.dataOperator.readName(searchValue,fkColl,eColl).success(
+                        (data, status, header, config)=>{
+                            let tmpResult = []
+                            // console.log(`get suggest result is ${JSON.stringify(data.msg)}`)
+                            //如果当前的字段是外键（定义在allData.selectedAC中），需要确定的id，以便保存到数据库，则初始设为-1
+                            //if (data.msg.length === 1) {
+                            //初始化selectedAC
+                            if(true=== fieldName in $scope.allData.selectedAC){
+                                // if ('' !== name && null !== name) {
+                                    $scope.allData.selectedAC[fieldName]._id = null
+                                    $scope.allData.selectedAC[fieldName].value=null
+                                // }
+                            }
+                            //}
+
+
+                            if (data.msg.length > 0) {
+                                data.msg.forEach(function (e) {
+                                    //label:下拉菜单中的选项，value：选中后显示的内容，id:选中项目的id（用作外键）
+                                    tmpResult.push({label: e.name, value: e.name, id: e._id})
+                                    //如果当前的字段是外键（定义在allData.selectedAC中），且输入的值存在db中，则将id保存到selectedAC中，以便crete/update使用（query也保存，但是实际不使用），包括blur时做检测
+/*                                    if(true=== fieldName in $scope.allData.selectedAC){
+                                        //输入的外键值，在db中存在，保存其id，
+                                        if (name === e.name) {
+                                            $scope.allData.selectedAC[fieldName]._id = e._id
+                                            $scope.allData.selectedAC[fieldName].value = name
+                                            // console.log(`set id is ${JSON.stringify($scope.allData.selectedAC[fieldName])}`)
+                                        }
+                                    }*/
+                                })
+                                // console.log(`tmpresult is ${JSON.stringify(tmpResult)}`)
+                                deferred.resolve(tmpResult)
+                            }
+                        }
+                    ).error(
+                        (data, status, header, config)=>{
+                            deferred.resolve({rc: 9999, msg: data})
+                        }
+                    )
+
+                    return deferred.promise
                 }
 
                 return suggestList
@@ -845,20 +902,63 @@ mainApp.controller('bill.billInfo.Controller',function($scope,templateFunc){
 })
 
 
-mainApp.controller('bill.static.Controller',function($scope,financeHelper){
+mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTimePickerHelper){
     $scope.allData={
         currentCapitalFlag:false,//当前资金 是否显示
+        queryDurationFlag:false, //查询分组数据的时候，是不是显示对应的时间段查询
+        serverTime:null,//从服务器获得的时间
+        queryDataTimeId:{
+            'queryStartDate':'queryStartDate',
+            'queryEndDate':'queryEndDate'
+        }, //设置时间的html id
+        currentCapital:null,//数组，当前各类别的资金，最后汇总成总资金
+        groupCapital:null, //数组，各类别资金，按照时间分类
     }
 
     $scope.allFunc={
         showHideCurrentCapital:function(){
             $scope.allData.currentCapitalFlag=!$scope.allData.currentCapitalFlag
+        },
+        showHideQueryDuration:function(){
+            $scope.allData.queryDurationFlag=!$scope.allData.queryDurationFlag
+        },
+        init:function(){
+            dateTimePickerHelper.initEle($scope.allData.queryDataTimeId.queryStartDate)
+            dateTimePickerHelper.initEle($scope.allData.queryDataTimeId.queryEndDate)
+            financeHelper.dataOperator.getServerTime().success(
+                (data, status, header, config)=>{
+                    dateTimePickerHelper.setLastYearToday($scope.allData.queryDataTimeId.queryStartDate,data)
+                    dateTimePickerHelper.setDate($scope.allData.queryDataTimeId.queryEndDate,data)
+                    console.log(`${JSON.stringify(data)}`)
+                    let startDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryStartDate)
+                    let endDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryEndDate)
+                    let searchParams={"startDate":{"value":startDate},"endDate":{"value":endDate}}
+                    //因为是promise，所以通过传值方式返回数据
+                    financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital)
+                    financeHelper.dataOperator.getGroupCapital(searchParams,$scope.allData.groupCapital)
+                }
+            ).error(
+                (data, status, header, config)=>{
+                    console.log(`get server time failed`)
+                }
+
+            )
+
+
+            // dateTimePickerHelper.setL
+        },
+        queryGroupCapital:function(){
+            let startDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryStartDate)
+            let endDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryEndDate)
+            let values={"startDate":{"value":startDate},"endDate":{"value":endDate}}
+            financeHelper.dataOperator.getGroupCapital(values,$scope.allData.groupCapital)
         }
+
     }
 
+    $scope.allFunc.init()
     console.log(`static enter`)
-    financeHelper.dataOperator.getCurrentCapital()
-    financeHelper.dataOperator.getGroupCapital()
+
 /*    //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('bill')
     //$scope.pagination=templateFunc.generatePaginationData('bill')

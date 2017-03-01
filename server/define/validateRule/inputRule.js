@@ -267,6 +267,20 @@ var inputRule={
             'type':inputDataType.date,
             'require': {define: false, error: {rc: 10094},mongoError:{rc:20094,msg:'删除日期不能为空'}},
         }*/
+    },
+
+    /*          以下在数据库中无对应coll和field，所以无需mongoError             */
+    'staticQuery':{
+        startDate:{
+            'chineseName':'起始日期',
+            'type':'date',
+            'require': {define: false, error: {rc: 19000}}
+        },
+        endDate:{
+            'chineseName':'结束日期',
+            'type':'date',
+            'require': {define: false, error: {rc: 19002}}
+        }
     }
 }
 

@@ -332,10 +332,50 @@ function validateSingleSearchParamsFormat(fieldValue,fieldRule){
     return rightResult
 }
 
+
+/*       对static输入的查询参数检查           */
+function validateStaticInputFormat(values){
+    //0 values必须是对像
+    if(false===dataTypeCheck.isObject(values)){
+        return validateFormatError.staticValuesTypeWrong
+    }
+    //1 必须包含searchParams，且为对象
+    if(false==='searchParams' in values){
+        return validateFormatError.staticValuesFormatMissSearchParams
+    }
+    if(false===dataTypeCheck.isObject(values['searchParams'])){
+        return validateFormatError.staticValuesSearchParamsMustBeObject
+    }
+
+    return rightResult
+}
+
+/*          对static的searchParams的结构进行检查        */
+function validateStaticSearchParamsFormat(searchParams,inputRules){
+    if(false===dataTypeCheck.isEmpty(searchParams)){
+        //let searchParams=searchParams['searchParams']
+        for (let singleFieldName in searchParams) {
+            //3  是否有对应的rule（说明字段在数据库中有定义，而不是notExist的字段）
+            if(false===singleFieldName in inputRules){
+                return validateFormatError.staticSearchParamsFieldNoRelatedRule
+            }
+            //4 对应字段的搜索值不能为空
+            if(true===dataTypeCheck.isEmpty(searchParams[singleFieldName])){
+                return validateFormatError.staticSearchParamsFiledValueCantEmpty
+            }
+
+        }
+    }
+    return rightResult
+}
+
 module.exports={
     validateCUDInputFormat,
     validateRecorderInfoFormat,
     validateSearchInputFormat,
     validateSearchParamsFormat,
     validateSingleSearchParamsFormat,
+
+    validateStaticInputFormat,
+    validateStaticSearchParamsFormat,
 }

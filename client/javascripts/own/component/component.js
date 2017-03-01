@@ -1124,6 +1124,7 @@ componentApp.service('dateTimePickerHelper',function(){
     }
 
     this.setDate=function(eleId,date){
+        console.log(`setDate date is ${date}`)
         $('#'+eleId).data("DateTimePicker").date(date)
     }
     this.getDate=function(eleId){
@@ -1145,6 +1146,14 @@ componentApp.service('dateTimePickerHelper',function(){
         $('#'+eleId).data("DateTimePicker").date(d)
     }
 
+    this.setLastYearToday=function(eleId,currentDate){
+        // let [year,month]=[moment().get('year'),moment().get('month')]
+        // let firstDay=year+'-'+month+'-01'
+        let d=moment(currentDate).subtract(1,'years')
+        console.log(`last year today is ${d}`)
+        $('#'+eleId).data("DateTimePicker").date(d)
+        //$('#'+eleId).data("DateTimePicker").setValue(d)
+    }
     this.validateDate=function(eleId){
         let datetobecheck=$('#'+eleId).data("DateTimePicker").date()
         // console.log(`date to be check is ${datetobecheck}`)

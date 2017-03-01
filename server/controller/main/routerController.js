@@ -44,7 +44,7 @@ var populateSingleDoc=require('../../assist/misc').populateSingleDoc
 // import * as  unifiedHelper from './unifiedRouterControllerHelper'
 var unifiedHelper=require('./routerControllerHelper')
 /*                      regex               */
-var coll=require('../../define/enum/node').node.coll
+var collEnum=require('../../define/enum/node').node.coll
 /*                      enum                */
 var nodeEnum=require('../../define/enum/node').node
 var envEnum=nodeEnum.env
@@ -137,11 +137,11 @@ var dbModel=structure.model
 //每个外键需要的冗余字段
 var fkAdditionalFieldsConfig={
     department:{
-        parentDepartment:{relatedColl:coll.department,nestedPrefix:'parentDepartmentFields',forSelect:'name',forSetValue:['name']}
+        parentDepartment:{relatedColl:collEnum.department,nestedPrefix:'parentDepartmentFields',forSelect:'name',forSetValue:['name']}
     },
     employee:{
-        leader:{relatedColl:coll.employee,nestedPrefix:'leaderFields',forSelect:'name',forSetValue:['name']},
-        department:{relatedColl:coll.department,nestedPrefix:'departmentFields',forSelect:'name',forSetValue:['name']}
+        leader:{relatedColl:collEnum.employee,nestedPrefix:'leaderFields',forSelect:'name',forSetValue:['name']},
+        department:{relatedColl:collEnum.department,nestedPrefix:'departmentFields',forSelect:'name',forSetValue:['name']}
     },
     billType:{
         //冗余字段（nested）的名称：具体冗余那几个字段
@@ -149,11 +149,11 @@ var fkAdditionalFieldsConfig={
         //relatedColl：外键对应的coll
         //nestedPrefix： 冗余字段一般放在nested结构中
         //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
-        parentBillType:{relatedColl:coll.billType,nestedPrefix:'parentBillTypeFields',forSelect:'name',forSetValue:['name']}
+        parentBillType:{relatedColl:collEnum.billType,nestedPrefix:'parentBillTypeFields',forSelect:'name',forSetValue:['name']}
     },
     bill:{
-        billType:{relatedColl:coll.billType,nestedPrefix:'billTypeFields',forSelect:'name inOut',forSetValue:['name','inOut']},
-        reimburser:{relatedColl:coll.employee,nestedPrefix:'reimburserFields',forSelect:'name',forSetValue:['name']},
+        billType:{relatedColl:collEnum.billType,nestedPrefix:'billTypeFields',forSelect:'name inOut',forSetValue:['name','inOut']},
+        reimburser:{relatedColl:collEnum.employee,nestedPrefix:'reimburserFields',forSelect:'name',forSetValue:['name']},
 
     },
 }
@@ -235,6 +235,14 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
         }
     }
 
+    /*                      patch(如果是对bill进行操作，则要检查billType是否合格：即有inOut)               */
+    if(collEnum.bill===eCurrentColl){
+        let billTypeValid=await unifiedModel.checkBillTypeOkForBill({dbModel:dbModel.billType,id:arrayResult[0]['billType']})
+        if(false===billTypeValid.msg){
+            return Promise.reject(pageError.bill.billTypeInCorrect)
+        }
+        // console.log(`billTypeValid is ${JSON.stringify(billTypeValid)}`)
+    }
 
     //4.5 如果外键存在，获得外键的额外字段
     //console.log(`before get additional is ${JSON.stringify(arrayResult)}`)
@@ -518,6 +526,7 @@ var remove=async function  ({eCurrentColl,req,res}){
 /*      采用POST的方式完成auto complete的功能         */
 //传入参数的格式同inputValue，检查的格式同inputSearch（不用检查最大值）
 var readName=async function  ({eCurrentColl,req,res}){
+    console.log(`read name req.body is ${JSON.stringify(req.body)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
 
     //1 检查格式
@@ -553,8 +562,12 @@ var readName=async function  ({eCurrentColl,req,res}){
 
 
     //let constructedValue={}
-
-
+    // console.log(req.body.caller)
+    // console.log(`coll is ${JSON.stringify(collEnum)}`)
+/*          检查调用 readName的Coll是否存在              */
+    if(false===req.body.caller in collEnum ){
+        return pageError.common.callerCollNotExist
+    }
 console.log(`ready to read db`)
     console.log(`db is ${coll}`)
     console.log(`value is ${inputValueFiledValue}`)
@@ -573,10 +586,10 @@ console.log(`ready to read db`)
                 return Promise.reject(unifiedHelper.returnResult(valueCheckResult))
             }
         //}
-        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],nameToBeSearched:inputValueFiledValue,recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName})
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],nameToBeSearched:inputValueFiledValue,recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName,'callerColl':req.body.caller})
         //constructedValue[inputValueFiledName]=inputValue[inputValueFiledName]['value']
     }else{
-        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName})
+        recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName,'callerColl':req.body.caller})
     }
     console.log(`read db result is ${JSON.stringify(recorder)}`)
     return Promise.resolve(unifiedHelper.returnResult(recorder))
@@ -599,6 +612,7 @@ console.log(`ready to read db`)
  *           values:{currentPage:1,searchParams:{}}
  * */
 var search=async function ({eCurrentColl,req,res}){
+    // console.log(`dbmodel is ${JSON.stringify(dbModel[eCurrentColl].modelName)}`)
 console.log(`search params is ${JSON.stringify(req.body.values)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
@@ -668,14 +682,52 @@ var removeAll=async function ({req,res}){
 /*                            统计信息                     */
 
 /**         获得当前剩余资金        **/
-var getCurrentCapital=async function(){
+var getCurrentCapital=async function({req,res}){
+    console.log(`getCurrentCapital params is ${JSON.stringify(req.body.values)}`)
+    // unifiedHelper.sa
     let result=await unifiedModel.getCurrentCapital({dbModel:dbModel.bill})
     return Promise.resolve(result)
 }
 
 /**         获得分组信息        **/
-var getGroupCapital=async function(){
-    let result=await unifiedModel.getGroupCapital({dbModel:dbModel.bill})
+var getGroupCapital=async function({req,res}){
+    console.log(`getGroupCapital values is ${JSON.stringify(req.body.values)}`)
+    //1 检测输入格式
+    let rules=inputRule.staticQuery
+    let sanitizedInputValue=unifiedHelper.sanityStaticQueryDate(req.body.values,rules)
+    console.log(`static santiy result is ${JSON.stringify(sanitizedInputValue)}`)
+    if(sanitizedInputValue.rc>0){
+        return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
+    }
+
+    let match={}
+    if(true==='startDate' in req.body.values['searchParams']){
+        if(false==='$and' in match){
+            match['$and']=[]
+        }
+        let value={'cDate':{'$gt': req.body.values['searchParams']['startDate']}}
+        match['$and'].push(value)
+    }
+    if(true==='endDate' in req.body.values['searchParams']){
+        if(false==='$and' in match){
+            match['$and']=[]
+        }
+        let value={'cDate':{'$gt': req.body.values['searchParams']['endDate']}}
+        match['$and'].push(value)
+    }
+
+    let filterDeletedRecorder={'dDate':{'$exists':0}}
+    if(false==='$and' in match){
+        if(false==='$and' in match){
+            match['$and']=[]
+            match['$and'].push(filterDeletedRecorder)
+        }
+
+    }else{
+        match=filterDeletedRecorder
+    }
+    // console.log(`static query match is ${JSON.stringify(match)}`)
+    let result=await unifiedModel.getGroupCapital({dbModel:dbModel.bill,'match':match})
     return Promise.resolve(result)
 }
 

@@ -77,10 +77,13 @@ var validateError={
         singleSearchParamsElementMissKeyCompOp:{rc:69652,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含操作符`}},
         singleSearchParamsElementCompOpWrong:{rc:69654,msg:{client:`查询字符格式不正确`,server:`查询参数中，操作符不是预定义的符号之一`}},
 
-
-
-
-
+        //static（总结构）
+        staticValuesTypeWrong:{rc:69660,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
+        staticValuesFormatMissSearchParams:{rc:69662,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含SearchParams'}},
+        staticValuesSearchParamsMustBeObject:{rc:69664,msg:{client:'参数格式不正确',server:'参数格式不正确，SearchParams必须是对象'}},
+        //static->searchParams format check
+        staticSearchParamsFieldNoRelatedRule:{rc:69666,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
+        staticSearchParamsFiledValueCantEmpty:{rc:69668,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
 
 
 
@@ -136,6 +139,9 @@ var validateError={
         CUDValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
         CUDTypeWrong:{rc:69706,msg:'类型不正确'},
         STypeWrong:{rc:69708,msg:'类型不正确'},
+
+        /*          static          */
+        staticTypeWrong:{rc:69710,msg:'类型不正确'},
     }
 }
 

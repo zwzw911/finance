@@ -134,10 +134,10 @@ var suggestLimit={
         maxOptionNum:5,//每次最多提供可选项数目
     },
     employee:{
-        maxOptionNum:5,//每次最多提供可选项数目
+        maxOptionNum:20,//每次最多提供可选项数目
     },
     billType:{
-        maxOptionNum:5,//每次最多提供可选项数目
+        maxOptionNum:10,//每次最多提供可选项数目
     },
     bill:{
         maxOptionNum:5,//每次最多提供可选项数目

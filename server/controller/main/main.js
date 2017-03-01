@@ -493,10 +493,13 @@ router.post('/bill/search',function(req,res,next){
 
 
 /*              static                  */
+/*router.get('/bill/static/',function(req,res,next){
+    console.log('static get in')
+})*/
 //采用post，以便处理可能的查询参数
 router.post('/bill/static/getCurrentCapital',function(req,res,next){
     // console.log(req.body.values)
-    unifiedRouterController.getCurrentCapital().then(
+    unifiedRouterController.getCurrentCapital({'req':req,'res':res}).then(
         (v)=>{
             console.log(`static success,result: ${JSON.stringify(v)}`)
             return res.json(v)
@@ -509,7 +512,7 @@ router.post('/bill/static/getCurrentCapital',function(req,res,next){
 
 router.post('/bill/static/getGroupCapital',function(req,res,next){
     // console.log(req.body.values)
-    unifiedRouterController.getGroupCapital().then(
+    unifiedRouterController.getGroupCapital({'req':req,'res':res}).then(
         (v)=>{
             console.log(`static group success,result: ${JSON.stringify(v)}`)
             return res.json(v)
@@ -520,5 +523,7 @@ router.post('/bill/static/getGroupCapital',function(req,res,next){
         })
 })
 
-
+router.get("/getServerTime",function(req,res,next){
+    return res.json(new Date())
+})
 module.exports = router;

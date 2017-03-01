@@ -10,7 +10,7 @@ require("babel-core/register")
 
 var appSetting=require('../../config/global/appSetting')
 
-var inputRule=require('../../define/validateRule/inputRule').inputRule
+// var inputRule=require('../../define/validateRule/inputRule').inputRule
 //var validateFunc=require('../../assist/not_used_validateFunc').func
 var validateHelper=require('../../assist/validateInput/validateHelper')
 var validateFormat=require('../../assist/validateInput/validateFormat')
@@ -171,82 +171,6 @@ function returnResult(rc,clientFlag=true){
 
 }
 
-//fkColl：选择哪个coll进行id验证
-//currentColl+currentFkName：确定使用哪个error
-/*async function checkIdExist(fkColl,currentColl,currentFkName,id){
-    let dbModel
-    switch (fkColl){
-        case coll.employee:
-            dbModel=employeedbModel;
-            break;
-        case coll.department:
-            dbModel=departmentdbModel;
-            break;
-        case coll.billType:
-            dbModel=billTypedbModel;
-            break;
-        case coll.bill:
-            dbModel=billdbModel
-            break;
-        default:
-            return pageError.common.unknownColl
-    }
-//console.log(`dbModel is ${dbModel['findById'].toString()}`)
-//    console.log(`id is ${id}`)
-    let result=await dbModel['findById'](id)
-    //console.log(`findByID result is ${JSON.stringify(result)}`)
-    if(null===result.msg){
-        return pageError[currentColl][currentFkName+'NotExist']
-    }else{
-        return {rc:0}
-    }
-}*/
-
-/*async function checkIdExist({dbModel,eCurrentColl,fkFieldName,id}){
-    let result=await dbModel[eCurrentColl]['findById'](id)
-    //console.log(`findByID result is ${JSON.stringify(result)}`)
-    if(null===result.msg){
-        return pageError[eCurrentColl][fkFieldName+'NotExist']
-    }else{
-        return {rc:0}
-    }
-}*/
-/*//从coll中，根据id查找到记录，然后返回其中的fields
-//和checkIdExist使用同样的函数，目的是为了能让代码更加清晰
-/!*
-* fkFieldName：需要获得冗余字段的外键名，主要为了产生 错误信息
-* fkid：ObjectId
-* fkColl：fk对应的coll
-* fkAdditionalFields：需要哪些fk的冗余字段
-* *!/
-async function getAdditionalFields(fkFieldName,fkId,fkColl,fkAdditionalFields){
-    let dbModel
-    switch (fkColl){
-        case coll.employee:
-            dbModel=employeedbModel;
-            break;
-        case coll.department:
-            dbModel=departmentdbModel;
-            break;
-        case coll.billType:
-            dbModel=billTypedbModel;
-            break;
-        case coll.bill:
-            dbModel=billdbModel
-            break;
-        default:
-            return pageError.common.unknownColl
-    }
-//console.log(`dbModel is ${dbModel['findById'].toString()}`)
-//    console.log(`id is ${id}`)
-    let result=await dbModel['findById'](fkId,fkAdditionalFields)
-    //console.log(`findByID result is ${JSON.stringify(result)}`)
-    if(null===result.msg){
-        return pageError[fkColl][fkFieldName+'NotExist']
-    }else{
-        return {rc:0,msg:result.msg}
-    }
-}*/
 
 //
 //
@@ -301,8 +225,33 @@ console.log(`getFkAdditionalFields:fkAdditionalFieldsArray is ${JSON.stringify(f
 }
 
 
+/*       对统计信息传入的日期进行检测（格式和值类型）        */
+function sanityStaticQueryDate(values,rules){
+    // let
+    //1 检查总体格式
+    let checkWholeFormatResult=validateFormat.validateStaticInputFormat(values)
+    console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
+    if(checkWholeFormatResult.rc>0){
+        return checkWholeFormatResult
+    }
+    //2 检查搜索参数格式
+    let checkSearchParamsFormatResult=validateFormat.validateStaticSearchParamsFormat(values['searchParams'],rules)
+    console.log(   `format resuot is ${JSON.stringify(checkSearchParamsFormatResult)}`)
+    if(checkSearchParamsFormatResult.rc>0){
+        return checkSearchParamsFormatResult
+    }
 
+    //3 检查搜索值是否正确
+    let validateValueResult=validateValue.validateStaticSearchParamsValue(values['searchParams'],rules)
+    console.log(   `value result is ${JSON.stringify(validateValueResult)}`)
+    for(let singleFieldName in validateValueResult){
+        if(validateValueResult[singleFieldName]['rc']>0){
+            return {rc:9999,msg:validateValueResult}
+        }
+    }
 
+    return {rc:0}
+}
 
 
 
@@ -317,7 +266,7 @@ module.exports= {
     // checkIdExist,//检查外键对应的记录是否存在
     //getAdditionalFields,
     getFkAdditionalFields,//create/update的时候，将外键的id转换成对应的冗余字段，以便存储db
-
+    sanityStaticQueryDate,
 }
 
 /*

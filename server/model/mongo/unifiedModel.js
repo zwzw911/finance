@@ -178,7 +178,8 @@ async  function removeAll({dbModel}){
 }*/
 
 //readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
-async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField}){
+//currentDb:在bill中选择billType时候，最上级的billType不能出现（因为这些billType只是用作统计用的）。因此需要添加这个参数，判断当前是否为bill
+async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,callerColl}){
     //return new Promise(function(resolve,reject){
         //过滤标记为删除的记录
         // let condition={dDate:{$exists:false}}
@@ -186,6 +187,15 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField}){
         if(undefined!==nameToBeSearched && ''!== nameToBeSearched.toString()){
             condition[readNameField]=new RegExp(nameToBeSearched,'i')
         }
+
+        /*                 patch: 当前coll为bill的时候，billType只显示inOut有设置的记录                             */
+        if('bill'===callerColl && 'billTypes'===dbModel.modelName) {
+            condition['parentBillType'] = {'$exists': true}
+
+        }
+        /* ************************************************************************/
+
+
         console.log(`read name condition is ${JSON.stringify(condition)}`)
         //let selectField='name'?
         let option={}
@@ -305,15 +315,39 @@ async function getCurrentCapital({dbModel}){
     return Promise.resolve({rc:0,msg:restMount})
 }
 
-async function getGroupCapital({dbModel}){
+async function getGroupCapital({dbModel,match}){
+    console.log(`match in model is ${JSON.stringify(match)}`)
     let restMount=await dbModel.aggregate([
-        {$match:{'dDate':{'$exists':0}}},//过滤出和条件的document
-        {$project:{'billTypeFields.name':1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
-        {$group:{"_id":"$billTypeFields.name",'total':{$sum:"$amount"}}}
+        {$match:match},//过滤出和条件的document
+        // {$lookup:{localField:"billType",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
+        {$project:{'billType':1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
+        {$group:{"_id":"$billType",'total':{$sum:"$amount"}}},
+        // {$lookup:{localField:"_id",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
     ])
     console.log(`getGroupCapital result is ${JSON.stringify(restMount)}`)
     return Promise.resolve({rc:0,msg:restMount})
 }
+
+
+/*  `             patch:   检测billType是否可以在bill中使用               */
+async function checkBillTypeOkForBill({dbModel,id}){
+
+        let findResult=await dbModel.find({
+            "$and":[
+                {"_id":id},
+                {"parentBillType":{"$exists":true}},
+                {"inOut":{"$exists":true}}
+                ]
+        }) //
+/*    console.log(`checkBillTypeOkForBill result is ${JSON.stringify(findResult)}`)
+        console.log(`checkBillTypeOkForBill count is ${findResult}`)*/
+        let result= (findResult.length===0) ? false:true
+        return Promise.resolve({rc:0,msg:result})
+
+
+}
+
+
 
 module.exports= {
     create,
@@ -328,4 +362,6 @@ module.exports= {
     /*      static      */
     getCurrentCapital,
     getGroupCapital,
+    /*      patch， 检测billType是否可以在bill中使用（billType必须有parent，且inOut不为空）*/
+    checkBillTypeOkForBill,
 }

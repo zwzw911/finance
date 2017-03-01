@@ -260,9 +260,9 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                 console.log('err')
             })
         },
-        'readName': function (name, eColl) {
+        'readName': function (name, eColl,callerColl) {
             let url = '/' + eColl + '/name/'
-            return $http.post(url, {values: name}, {})
+            return $http.post(url, {values: name,caller:callerColl}, {})
         },
         'search': function (recorder, queryValue, fkConfig, eColl, aDateToBeConvert,pagination,inputAttr) {
 // console.log(`search input attr is ${JSON.stringify(inputAttr)}`)
@@ -335,13 +335,30 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
 
             })
         },
-        'getGroupCapital':function(){
+        'getGroupCapital':function(searchParams){
             let url="/bill/static/getGroupCapital"
-            return $http.post(url,{}).success(function(data, status, header, config){
+            return $http.post(url,{values:{"searchParams":searchParams}}).success(function(data, status, header, config){
 
             }).error(function(){
 
             })
+        },
+        'getServerTime':function(){
+            let deferred=$q.defer()
+            let url="/getServerTime";
+            return $http.get(url,{}) //返回promise，在mainController中通过success初始化日期
+          /*  $http.get(url,{}).success(
+                (data, status, header, config)=>{
+                    console.log(`${JSON.stringify(data)}`)
+                    deferred.resolve(data)
+                }
+            ).error(
+                (data, status, header, config)=>{
+                    console.log(`get server time failed`)
+                    alert('get server time failed')
+                    deferred.reject(false)
+                }
+            )*/
         }
     }
 
