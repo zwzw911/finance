@@ -904,15 +904,20 @@ mainApp.controller('bill.billInfo.Controller',function($scope,templateFunc){
 
 mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTimePickerHelper){
     $scope.allData={
-        currentCapitalFlag:false,//当前资金 是否显示
+        currentCapitalFlag:true,//当前资金 是否显示
         queryDurationFlag:false, //查询分组数据的时候，是不是显示对应的时间段查询
         serverTime:null,//从服务器获得的时间
         queryDataTimeId:{
             'queryStartDate':'queryStartDate',
             'queryEndDate':'queryEndDate'
         }, //设置时间的html id
+        totalCurrentCapital:null,//个分组的资金总计
         currentCapital:null,//数组，当前各类别的资金，最后汇总成总资金
         groupCapital:null, //数组，各类别资金，按照时间分类
+        billTypeStructure:null,//账单的结构，用来填充表的字头
+        billTypeStructureShowInTable:null,//从billTypeStructure中的child，组合成新的数组，用来填充表头（因为原始的billTypeStructure是2层数组结构（top-child），无法ng-repeat,同时，如果在th外包一层<div>，会导致angular无法解析（tr中只能包含th/td））
+        billGroupDataShowInTable:null,//为了在页面上容易处理，将server端的数据，处理成二维的数组（每个元素代表一个月份的记录，每个元素是数组，包含月份，子billType的值已经合计，已经总合计）
+
     }
 
     $scope.allFunc={
@@ -922,6 +927,40 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
         showHideQueryDuration:function(){
             $scope.allData.queryDurationFlag=!$scope.allData.queryDurationFlag
         },
+        convertBillTypeToHtml:function(baseBillTypeStructure){
+            let result=[]
+            for(let topBillType of baseBillTypeStructure){
+                for(let child of topBillType['child']){
+                    result.push(child['name'])
+                }
+                result.push('合计')
+            }
+            return result
+        },
+        //server端传来的是["2017-3";[[123,234,345],[567,657,453]]]，转换成[["2017-3",123,234,345,合计1,567,657,453,合计2，总计]]
+        convertGroupDataToFlatArray:function(groupCapital){
+            let result=[]
+            for(let dateKey in groupCapital){
+                let flatRecorder=[]
+
+                //1. 加入日期
+                flatRecorder.push(dateKey)
+                //为了计算一行数据的总计，需要保存每个child的total，最后执行+，并存储到最终结果
+                let singleChildTotal=[]
+                for(let child of groupCapital[dateKey]){
+                    //添加每个父billType的合计项
+                    let childTotal=eval(child.join("+"))
+                    child.push(childTotal)
+                    flatRecorder=flatRecorder.concat(child)
+                    singleChildTotal.push(childTotal)
+                }
+                let singleRecorderTotal=eval(singleChildTotal.join("+"))
+                flatRecorder.push(singleRecorderTotal)
+                result.push(flatRecorder)
+            }
+            console.log(`converted result is ${JSON.stringify(result)}`)
+            return result
+        },
         init:function(){
             dateTimePickerHelper.initEle($scope.allData.queryDataTimeId.queryStartDate)
             dateTimePickerHelper.initEle($scope.allData.queryDataTimeId.queryEndDate)
@@ -929,13 +968,39 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                 (data, status, header, config)=>{
                     dateTimePickerHelper.setLastYearToday($scope.allData.queryDataTimeId.queryStartDate,data)
                     dateTimePickerHelper.setDate($scope.allData.queryDataTimeId.queryEndDate,data)
-                    console.log(`${JSON.stringify(data)}`)
+                    //console.log(`${JSON.stringify(data)}`)
                     let startDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryStartDate)
                     let endDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryEndDate)
                     let searchParams={"startDate":{"value":startDate},"endDate":{"value":endDate}}
+                    let currentPage=1
                     //因为是promise，所以通过传值方式返回数据
-                    financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital)
-                    financeHelper.dataOperator.getGroupCapital(searchParams,$scope.allData.groupCapital)
+                    //初始化执行一次
+                    //let p1=
+                    // financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital,$scope.allData.totalCurrentCapital,$scope.allData.structure)
+                    // console.log(`mainController totalCurrentCapital is ${JSON.stringify()}`)
+                    financeHelper.dataOperator.getCurrentCapital().then(function(value){
+                        console.log(`get current captial resylt is ${JSON.stringify(value)}`)
+                        $scope.allData.totalCurrentCapital=value.msg['totalCapital']
+                        $scope.allData.currentCapital=value.msg['currentCapital']
+                        $scope.allData.billTypeStructure=value.msg['billTypeStructure']
+                        $scope.allData.billTypeStructureShowInTable=$scope.allFunc.convertBillTypeToHtml($scope.allData.billTypeStructure)
+                        console.log(`currentCapital  is ${JSON.stringify(value.msg['currentCapital'])}`)
+                        financeHelper.dataOperator.getGroupCapital(searchParams,currentPage).then(
+                            (value)=>{
+                                $scope.allData.groupCapital=value.groupCapital
+                                console.log($scope.allData.groupCapital)
+                                $scope.allData.billGroupDataShowInTable=$scope.allFunc.convertGroupDataToFlatArray($scope.allData.groupCapital)
+                                //financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital)
+                                // financeHelper.dataOperator.getGroupCapital(searchParams,currentPage,$scope.allData.groupCapital)
+                            },
+
+                            (error)=> {
+                                console.log(`get getCurrentCapital time failed`)
+                            }
+                        )
+                    },function(error){})
+
+
                 }
             ).error(
                 (data, status, header, config)=>{
@@ -943,15 +1008,24 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                 }
 
             )
-
-
-            // dateTimePickerHelper.setL
         },
-        queryGroupCapital:function(){
+        queryGroupCapital:function(currentPage){
             let startDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryStartDate)
             let endDate=dateTimePickerHelper.getCurrentDateInTimeStamp($scope.allData.queryDataTimeId.queryEndDate)
             let values={"startDate":{"value":startDate},"endDate":{"value":endDate}}
-            financeHelper.dataOperator.getGroupCapital(values,$scope.allData.groupCapital)
+            financeHelper.dataOperator.getGroupCapital(values,currentPage).then(
+                (value)=>{
+                    $scope.allData.groupCapital=value.groupCapital
+                    // console.log($scope.allData.groupCapital)
+                    $scope.allData.billGroupDataShowInTable=$scope.allFunc.convertGroupDataToFlatArray($scope.allData.groupCapital)
+                    //financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital)
+                    // financeHelper.dataOperator.getGroupCapital(searchParams,currentPage,$scope.allData.groupCapital)
+                },
+
+                (error)=> {
+                    console.log(`get getCurrentCapital time failed`)
+                }
+            )
         }
 
     }
@@ -959,6 +1033,7 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
     $scope.allFunc.init()
     console.log(`static enter`)
 
+    // $('.currentCapital').after("<p>+</p>")
 /*    //需要用到的数据，预先定义好
     $scope.allData=templateFunc.generateControllerData('bill')
     //$scope.pagination=templateFunc.generatePaginationData('bill')

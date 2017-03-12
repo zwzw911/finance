@@ -683,19 +683,29 @@ var removeAll=async function ({req,res}){
 
 /**         获得当前剩余资金        **/
 var getCurrentCapital=async function({req,res}){
-    console.log(`getCurrentCapital params is ${JSON.stringify(req.body.values)}`)
-    // unifiedHelper.sa
-    let result=await unifiedModel.getCurrentCapital({dbModel:dbModel.bill})
-    return Promise.resolve(result)
+    // console.log(`getCurrentCapital params is ${JSON.stringify(req.body.values)}`)
+    // 获得统计数据
+    let groupData=await unifiedModel.getCurrentCapital({eColl:collEnum.bill})
+    //console.log(`groupData is ${JSON.stringify(groupData)}`)
+    //计算统计数据（根据billType的结构进行计算）
+    let billTypeStructure=await getStaticBillType()
+    console.log(`billTypeStructure  is ${JSON.stringify(billTypeStructure)}`)
+    let dateTemplate=unifiedHelper.genDataStructureBaseOnBillType(billTypeStructure)
+    console.log(`dateTemplate  is ${JSON.stringify(dateTemplate)}`)
+    // 将数据放入template
+    unifiedHelper.matchCurrentCaptialIntoTemplateArray(billTypeStructure,dateTemplate,groupData.msg)
+    console.log(`after exec matchDataIntoTemplateArray ${JSON.stringify(dateTemplate)}`)
+//billType的结构在和 当前资金额一起返回。因为结构和资金额都只需要在页面载入时执行一次即可
+    return Promise.resolve({rc:0,msg:{structure:billTypeStructure,data:dateTemplate}})
 }
 
 /**         获得分组信息        **/
 var getGroupCapital=async function({req,res}){
-    console.log(`getGroupCapital values is ${JSON.stringify(req.body.values)}`)
+    //console.log(`getGroupCapital values is ${JSON.stringify(req.body.values)}`)
     //1 检测输入格式
     let rules=inputRule.staticQuery
     let sanitizedInputValue=unifiedHelper.sanityStaticQueryDate(req.body.values,rules)
-    console.log(`static santiy result is ${JSON.stringify(sanitizedInputValue)}`)
+    //console.log(`static santiy result is ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
         return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
     }
@@ -727,10 +737,31 @@ var getGroupCapital=async function({req,res}){
         match=filterDeletedRecorder
     }
     // console.log(`static query match is ${JSON.stringify(match)}`)
-    let result=await unifiedModel.getGroupCapital({dbModel:dbModel.bill,'match':match})
-    return Promise.resolve(result)
+    let groupData=await unifiedModel.getGroupCapital({dbModel:dbModel.bill,'match':match})
+
+    let billTypeStructure=await getStaticBillType()
+    let dataTemplate=unifiedHelper.genDataStructureBaseOnBillType(billTypeStructure)
+
+    let result=unifiedHelper.matchGroupDataIntoTemplateArray(billTypeStructure,groupData.msg)
+    return Promise.resolve({rc:0,msg:result.msg})
 }
 
+var getStaticBillType=async function(){
+    // console.log(`getStaticBillType params is ${JSON.stringify(req.body.values)}`)
+
+    let result=await unifiedModel.getStaticBillType()
+    //删除没有子项的billType（其下没有任何inOut）
+     result.forEach(
+         (v,i)=>{
+            //console.log(`v is ${JSON.stringify(v)}`)
+            if(undefined===v || null===v){
+                //console.log(`null index is ${i}`)
+                result.splice(i,1)
+            }
+        }
+    )
+    return Promise.resolve(result)
+}
 
 module.exports= {
     create,
@@ -743,4 +774,5 @@ module.exports= {
     /*  统计信息    */
     getCurrentCapital,
     getGroupCapital,
+    getStaticBillType,
 }

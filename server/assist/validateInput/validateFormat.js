@@ -347,6 +347,13 @@ function validateStaticInputFormat(values){
         return validateFormatError.staticValuesSearchParamsMustBeObject
     }
 
+    //2 必须包含currentPage，且为整数
+    if(false==='currentPage' in values){
+        return validateFormatError.staticFormatMisCurrentPage
+    }
+    if(false===dataTypeCheck.isInt(values['currentPage'])){
+        return validateFormatError.staticCurrentPageMustBeInt
+    }
     return rightResult
 }
 

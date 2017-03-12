@@ -288,35 +288,13 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                             let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
                             delete data.msg[nestedPrefix]
                         }
-                        /*                            if(e.parentBillType && e.parentBillType.name){
-                         console.log('in')
-                         e.parentBillType=e.parentBillType.name
-                         }*/
+
                         recorder.push(e)
                     })
                     //console.log(`after push array is ${JSON.stringify(recorder)}`)
                     let a=paginationHelper.generateClientPagination(data.msg['paginationInfo'])
                     Object.assign(pagination,a)
-                    /*pagination.paginationInfo=data.msg['paginationInfo']
 
-                    if(null===pagination.pageRange){
-                        pagination.pageRange=[]
-                    }
-                    if(null!==pagination.pageRange){
-                        pagination.pageRange.splice(0, pagination.pageRange.length)
-                    }
-                    for(let i=pagination.paginationInfo.start;i<=pagination.paginationInfo.end;i++){
-                        let ele={}
-                        ele['pageNo']=i
-                        ele['active']=false
-                        if(i===pagination.paginationInfo.currentPage){
-                            ele['active']=true
-                        }
-
-                        pagination.pageRange.push(ele)
-                    }*/
-                    //console.log(`generate page range is ${JSON.stringify(pagination.pageRange)}`)
-                    // recorder=data.msg
                     console.log(`page info is ${JSON.stringify(pagination)}`)
 
                     // htmlHelper.adjustFooterPosition()
@@ -329,19 +307,51 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
         },
         'getCurrentCapital':function(){
             let url="/bill/static/getCurrentCapital"
-            return $http.post(url,{}).success(function(data, status, header, config){
+            let deferred=$q.defer()
+            $http.post(url,{}).success(function(data, status, header, config){
+                if(0===data.rc){
+                    let currentCapital=[],totalCurrentCapital=null
+                    //获得各个分组
+                    for(let topBillTyeEle of data.msg.data){
+                        let sumAmount=eval(topBillTyeEle.join('+'))
+                        currentCapital.push(sumAmount)
+                    }
+                    //获得各分组的总计
+                    totalCurrentCapital=eval(currentCapital.join('+'))
+                    // structure=data.msg.structure
+                    deferred.resolve({rc:0,msg:{"currentCapital":currentCapital,"totalCapital":totalCurrentCapital,"billTypeStructure":data.msg.structure}})
+                    // console.log(`current captial array is ${JSON.stringify(currentCapital)}`)
+                    // console.log(`totalCurrentCapital is ${JSON.stringify(totalCurrentCapital)}`)
+                }else{
+                    modal.showErrMsg(JSON.stringify(data.msg))
+                    deferred.reject(data)
+                }
 
             }).error(function(){
 
             })
+
+            return deferred.promise
         },
-        'getGroupCapital':function(searchParams){
+        'getGroupCapital':function(searchParams,currentPage){
+            console.log(`pass in curentPage is ${currentPage}`)
             let url="/bill/static/getGroupCapital"
-            return $http.post(url,{values:{"searchParams":searchParams}}).success(function(data, status, header, config){
+            let deferred=$q.defer()
+            let groupCapital
+            $http.post(url,{values:{"searchParams":searchParams,"currentPage":currentPage}}).success(function(data, status, header, config){
+                if(0===data.rc){
+                    groupCapital=data.msg
+                    deferred.resolve({rc:0,'groupCapital':groupCapital})
+                    console.log(`getGroupCapital is${JSON.stringify(groupCapital)}`)
+                }else{
+                    modal.showErrMsg(JSON.stringify(data.msg))
+                }
 
             }).error(function(){
 
             })
+
+            return deferred.promise
         },
         'getServerTime':function(){
             let deferred=$q.defer()

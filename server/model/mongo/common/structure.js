@@ -32,7 +32,7 @@ var schemaOptions={
     Strict:true,//默认true，如果要保存的数据中，字段没有在schema中定义，数据将无法保存。也可以设置成throw，如此便抛出错误，而不是仅仅drop数据。
 	//shardKey:{f1:1,f2:1}		//为collection设置shardKey（每个schema不同）
 	toJSON:toObjectOptions,		//类似toObject，除了还可以使用JSON.stringify(doc)
-	//toObject:toObjectOptions,
+	toObject:toObjectOptions,
     validateBeforeSave:mongoSetting.schemaOptions.validateBeforeSaveFlag,		//true: 在保存（save or update）数据到DB的时候自动调用validate方法进行验证（包括mongoose内定和用户自定义validator）并保存；false:需要手工调用validate方法进行验证（内定和自定义），并且可以保存不合格数据（即需要自己做数据验证来决定是否可以保存；不做自定义验证的话，任何数据都可以保存了）
 	//versionKey,		//（**不要设成false除非你知道自己在干啥**）。 设置version key的名称，默认是__v,可以生成任意字符串。
 	//skipVersion,		//**不要设置除非你知道自己在干啥**

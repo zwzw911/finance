@@ -81,9 +81,11 @@ var validateError={
         staticValuesTypeWrong:{rc:69660,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
         staticValuesFormatMissSearchParams:{rc:69662,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含SearchParams'}},
         staticValuesSearchParamsMustBeObject:{rc:69664,msg:{client:'参数格式不正确',server:'参数格式不正确，SearchParams必须是对象'}},
+        staticFormatMisCurrentPage:{rc:69666,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
+        staticCurrentPageMustBeInt:{rc:69668,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
         //static->searchParams format check
-        staticSearchParamsFieldNoRelatedRule:{rc:69666,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
-        staticSearchParamsFiledValueCantEmpty:{rc:69668,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
+        staticSearchParamsFieldNoRelatedRule:{rc:69670,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
+        staticSearchParamsFiledValueCantEmpty:{rc:69672,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
 
 
 

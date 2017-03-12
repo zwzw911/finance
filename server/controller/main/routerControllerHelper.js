@@ -253,8 +253,85 @@ function sanityStaticQueryDate(values,rules){
     return {rc:0}
 }
 
+/*
+* 根据billType的结构，产生对应的数据
+* billTypeStructure：getStaticBillType获得的billType的数据结构
+* 返回一个数组，元素是一个数组,代表top billType，其中默认填充0         [[parent1ChildType1,parent1ChildType2],[parent2ChildType1,parent2ChildType2]]
+* */
+function genDataStructureBaseOnBillType(billTypeStructure){
+    let data=[]
+    for(let topBillType of billTypeStructure){
+        //console.log(`genDataStructureBaseOnBillType child is ${JSON.stringify(topBillType)}`)
+        let childData=Array(topBillType.child.length).fill(0)
+        data.push(childData)
+    }
+    return data
+}
+
+/*
+* 将分组数据(无日期分组)加入到genDataStructureBaseOnBillType产生的模板数组中
+* */
+function matchCurrentCaptialIntoTemplateArray(billTypeStructure, templateArray,groupData){
+    for(let singleData of groupData){
+        //console.log(`singleData is ${JSON.stringify(singleData)}`)
+        //定位数据的index（top和child），以便直接写入template数组
+        for(let topBillTypeIdx in billTypeStructure){
+            //console.log(   `topBillTypeIdx is ${topBillTypeIdx}`)
+            for(let childIdx in billTypeStructure[topBillTypeIdx]['child']){
+                //console.log(   `childIdx is ${childIdx}`)
+                //console.log(`bt id is ${billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id'].toString()},type is ${typeof billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id']}`)
+                //console.log(`singleData id is ${singleData._id.billType.toString()},type is ${typeof singleData._id.billType}`)
+
+                if(singleData._id.billType.toString()===billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id'].toString()){
+                    console.log(`equal:topBillTypeIdx is {topBillTypeIdx},childIdx is {childIdx}`)
+                    templateArray[topBillTypeIdx][childIdx]=singleData.total
+                }
+            }
+        }
+    }
+console.log(`final exec matchDataIntoTemplateArray ${JSON.stringify(templateArray)}`)
+}
 
 
+/*
+ * 将分组数据(日期分组)加入到genDataStructureBaseOnBillType产生的模板数组中
+ * */
+function matchGroupDataIntoTemplateArray(billTypeStructure,groupData){
+    let finalResult={} //采用对象，如此可以快速的判断日期是否存在(因为groupData获得时已经按照时间排序，所以无需担心时间不排序的问题)
+    for(let singleData of groupData){
+        //如果有日期，说明数据来自getGroupCapital，此时，每个元素变成{
+        // "2017-02":[[123,345,678],[12345,567,134]]]
+        // }
+        if(singleData._id.year && singleData._id.month){
+            //生成年-月
+            let dateKey=singleData._id.year.toString()+'-'+singleData._id.month.toString()
+            //如果年-月 不存在，设置一个新的array,并用模板填充
+            if(false===dateKey in finalResult){
+                //因为templateArray是数组，且其中的元素为引用模式（数组），所以不能复用，只能每次重新生成
+                let templateArray=genDataStructureBaseOnBillType(billTypeStructure)
+
+                finalResult[dateKey]=[].concat(templateArray)
+                console.log(`init data array is ${JSON.stringify(finalResult)}`)
+            }
+
+            //模板存在，遍历billType结构，决定数据存储的位置
+            for(let topBillTypeIdx in billTypeStructure){
+                //console.log(   `topBillTypeIdx is ${topBillTypeIdx}`)
+                for(let childIdx in billTypeStructure[topBillTypeIdx]['child']){
+                    //console.log(   `childIdx is ${childIdx}`)
+                    //console.log(`bt id is ${billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id'].toString()},type is ${typeof billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id']}`)
+                    //console.log(`singleData id is ${singleData._id.billType.toString()},type is ${typeof singleData._id.billType}`)
+
+                    if(singleData._id.billType.toString()===billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id'].toString()){
+                        //console.log(`equal:topBillTypeIdx is {topBillTypeIdx},childIdx is {childIdx}`)
+                        finalResult[dateKey][topBillTypeIdx][childIdx]=singleData.total
+                    }
+                }
+            }
+        }
+    }
+return {rc:0,msg:finalResult}
+}
 
 module.exports= {
     common,//每个请求进来是，都要进行的操作（时间间隔检查等）
@@ -267,6 +344,10 @@ module.exports= {
     //getAdditionalFields,
     getFkAdditionalFields,//create/update的时候，将外键的id转换成对应的冗余字段，以便存储db
     sanityStaticQueryDate,
+    //根据billType的结构产生一个全为0的数组
+    genDataStructureBaseOnBillType,
+    matchCurrentCaptialIntoTemplateArray,
+    matchGroupDataIntoTemplateArray,
 }
 
 /*

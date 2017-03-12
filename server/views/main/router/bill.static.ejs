@@ -1,29 +1,28 @@
 <div class="flex-horizontal-wrap">
     <div class="page-header-narrow h3 text-primary col-lg-12" sytle="">
         当前余额
-        <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.currentCapitalFlag" ng-init="allData.currentCapitalFlag=false" ng-click="allFunc.showHideCurrentCapital()"></span>
+        <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示查询条件" data-content="test" data-placement="right" ng-show="false===allData.currentCapitalFlag"  ng-click="allFunc.showHideCurrentCapital()"></span>
         <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏查询条件" data-content="test1" data-placement="right" ng-show="true===allData.currentCapitalFlag" ng-click="allFunc.showHideCurrentCapital()"></span>
     </div>
     <div class="col-lg-12  flex-horizontal-wrap" ng-show="allData.currentCapitalFlag">
-        <div class="radius3 col-lg-2 marginR_7" style="background-color:navajowhite ">
-            <p class="h4 font_cursive">经理</p>
-            <p class="h3" style="color:orange">1800</p>
-        </div>
-        <div class="radius3  marginR_7" >
-            <p class="h4 font_cursive">+</p>
-            <!--<p class="h3" style="color:orange">1800</p>-->
-        </div>
-        <div class="radius3 col-lg-2 marginR_7" style="background-color:navajowhite ">
-            <p class="h4 font_cursive">会计</p>
-            <p class="h3" style="color:orange">1800</p>
-        </div>
-        <div class="radius3  marginR_7" >
+
+            <div id="currentCapital" ng-repeat="topBillType in allData.billTypeStructure track by $index" class="flex-horizontal">
+
+                <p class="h4 font_cursive marginH_7" ng-if="$index>0">+</p>
+                <div class="radius3  col-lg-12" style="background-color:navajowhite " >
+                    <p class="h4 font_cursive">{{allData.billTypeStructure[$index]['name']}}</p>
+                    <p class="h3" style="color:orange">{{allData.currentCapital[$index]}}</p>
+                </div>
+
+
+            </div>
+
+        <div class="radius3  marginH_7" >
             <p class="h4 font_cursive">=</p>
-            <!--<p class="h3" style="color:orange">1800</p>-->
         </div>
-        <div class="radius3 col-lg-2 marginR_7" style="background-color:navajowhite ">
+        <div class="radius3 paddingH_3" style="background-color:navajowhite ">
             <p class="h4 font_cursive">总计</p>
-            <p class="h3" style="color:orange">3600</p>
+            <p class="h3" style="color:orange">{{allData.totalCurrentCapital}}</p>
         </div>
     </div>
 
@@ -58,7 +57,7 @@
                             <span class="fa fa-calendar"></span>
                         </span>
                 </div>
-                <button class="btn btn-default btn-primary marginL_7">确定</button>
+                <button class="btn btn-default btn-primary marginL_7" ng-click="allFunc.queryGroupCapital(1)">确定</button>
             </div>
         </div>
     <!--</div>-->
@@ -73,28 +72,28 @@
             <tr>
                 <th class="text-primary text-center" rowspan="2">日期</th>
                 <!--<th>所属目录</th>-->
-                <th class="text-primary text-center" colspan="4">经理</th>
-                <th class="text-primary text-center" colspan="4">会计</th>
+                <th class="text-primary text-center" colspan="{{allData.billTypeStructure[$index]['child'].length+1}}" ng-repeat="topBill in allData.billTypeStructure">{{allData.billTypeStructure[$index]['name']}}</th>
+                <!--<th class="text-primary text-center" colspan="4">{{allData.billTypeStructure}}</th>-->
+                <!--<th class="text-primary text-center" colspan="4">会计</th>-->
                 <th class="text-primary text-center" rowspan="2">余额</th>
             </tr>
 
+            <!--设置child billTYpe name-->
             <tr>
-                <th class="text-primary text-center">转入</th>
-                <th class="text-primary text-center">加班</th>
-                <th class="text-primary text-primarytext-center">交金</th>
-                <th class="text-primary text-primarytext-center">合计</th>
-                <th class="text-primary text-center">转入</th>
-                <th class="text-primary text-center">白条</th>
-                <th class="text-primary text-primarytext-center">津贴</th>
-                <th class="text-primary text-primarytext-center">合计</th>
+                <!--将父子数组结构改成一维数组，因为父子结构无法做2次repeat-->
+                <th class="text-primary text-center" ng-repeat="name in allData.billTypeStructureShowInTable track by $index">{{name}}</th>
+
             </tr>
 
 
             </thead>
             <tbody>
             <!--ng-repeat="(idx,value) in allData.recorder"-->
-            <tr >
-                <td >2017-02-13</td>
+            <tr ng-repeat="item in allData.billGroupDataShowInTable">
+                <td ng-repeat="singleEle in item track by $index">
+                    {{singleEle}}
+                </td>
+                <!--<td >2017-02-13</td>
                 <td>10000</td>
                 <td>123</td>
                 <td>10000</td>
@@ -103,7 +102,7 @@
                 <td class="hidden-xs hidden-sm">456</td>
                 <td class="hidden-xs hidden-sm">789</td>
                 <td class="hidden-xs hidden-sm">456</td>
-                <td class="hidden-xs hidden-sm">789</td>
+                <td class="hidden-xs hidden-sm">789</td>-->
 <!--                <td style="align:left">
                     <button class="btn btn-default btn-xs" data-toggle="tooltip" data-placement="right" title="修改" ng-click="allFunc.setCurrentOpTypeUpdate(); allFunc.setCurrentIdx(idx);allFunc.initAllFieldInputAttr(allData.inputAttr,allData.inputRule);allFunc.loadCurrentData(idx,allData.inputAttr,allData.recorder);allFunc.switchDialogStatus();" ><span class="fa fa-edit" ></span></button>
                     <button class="btn btn-danger btn-xs" data-toggle="tooltip" data-placement="right" title="删除" ng-click="allFunc.setCurrentIdx(idx);allFunc.showChoiceModal()"><span class="fa fa-trash-o"></span></button>

@@ -523,6 +523,19 @@ router.post('/bill/static/getGroupCapital',function(req,res,next){
         })
 })
 
+router.post('/bill/static/getStaticBillType',function(req,res,next){
+    // console.log(req.body.values)
+    unifiedRouterController.getStaticBillType().then(
+        (v)=>{
+            console.log(`static bill type success,result: ${JSON.stringify(v)}`)
+            return res.json(v)
+        },
+        (e)=>{
+            console.log(`static bill type fail: ${JSON.stringify(e)}`)
+            return res.json(e)
+        })
+})
+
 router.get("/getServerTime",function(req,res,next){
     return res.json(new Date())
 })

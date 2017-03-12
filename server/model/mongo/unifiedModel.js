@@ -9,6 +9,7 @@
 require("babel-polyfill");
 require("babel-core/register")
 
+var dbModel=require('./common/structure').model
 
 var mongooseErrorHandler=require('../../define/error/mongoError').mongooseErrorHandler
 
@@ -297,7 +298,7 @@ async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentP
     //console.log(   `currentPage is ${JSON.stringify(currentPage)}`)
     //读取全部数据，不能有 limit
     let count=await dbModel.find(searchParams,'-dDate').exists('dDate',false).count()
-    console.log(   `count is ${JSON.stringify(count)}`)
+    //console.log(   `count is ${JSON.stringify(count)}`)
     let paginationInfo=pagination({'total':count,'currentPage':currentPage,'pageSize':pageSize,'pageLength':pageLength})
     //console.log(`calc paginationInfo is ${JSON.stringify(paginationInfo)}`)
     return Promise.resolve({rc:0,msg:paginationInfo})
@@ -305,13 +306,15 @@ async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentP
 
 
 //其实dbModel就是billModel，使用传参是为了防止在当前文件再次应用model文件
-async function getCurrentCapital({dbModel}){
-    let restMount=await dbModel.aggregate([
-        // {$match:{'billTypeFields.name':"bt1"}},
-        {$project:{"billTypeFields":1}},
-        {$group:{"_id":"$billType",'total':{$sum:"$amount"}}}
+async function getCurrentCapital({eColl}){
+    let restMount=await dbModel[eColl].aggregate([
+        //{$match:match},//过滤出和条件的document
+        // {$lookup:{localField:"billType",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
+        {$project:{'billType':1,"billTypeFields.name":1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
+        {$group:{"_id":{"billType":"$billType","name":"$billTypeFields.name"},'total':{$sum:"$amount"}}},
+        {$sort:{"_id.year":1, "_id.month":1}},
     ])
-    console.log(`getCurrentCapital result is ${JSON.stringify(restMount)}`)
+    //console.log(`getCurrentCapital result is ${JSON.stringify(restMount)}`)
     return Promise.resolve({rc:0,msg:restMount})
 }
 
@@ -320,14 +323,42 @@ async function getGroupCapital({dbModel,match}){
     let restMount=await dbModel.aggregate([
         {$match:match},//过滤出和条件的document
         // {$lookup:{localField:"billType",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
-        {$project:{'billType':1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
-        {$group:{"_id":"$billType",'total':{$sum:"$amount"}}},
+        {$project:{'billType':1,"billTypeFields.name":1,cMonth:{"$month":"$cDate"},cYear:{"$year":"$cDate"},amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
+        //必须使用_id作为分组依据
+        {$group:{"_id":{"billType":"$billType","name":"$billTypeFields.name",year:"$cYear",month:"$cMonth"},'total':{$sum:"$amount"}}},
+        {$sort:{"_id.year":1, "_id.month":1}},
+/*        {$project:{'billType':1,"billTypeFields.name":1,cMonth:{"$month":"$cDate"},cYear:{"$year":"$cDate"},amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
+        {$group:{"_id":{"billType":"$billType","name":"$billTypeFields.name",yearMonth:{$concat:["$cYear","-","$cMonth"]}},'total':{$sum:"$amount"}}},
+        {$sort:{"_id.yearMonth":1}},*/
         // {$lookup:{localField:"_id",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
     ])
     console.log(`getGroupCapital result is ${JSON.stringify(restMount)}`)
     return Promise.resolve({rc:0,msg:restMount})
 }
 
+/*      static的时候，获取需要统计的billType：1. 用来填充表格的thead  2. 用来获得统计数据的结构*/
+async function getStaticBillType(){
+    //获得顶层billType
+    let billTypeResult=await dbModel.billType.find({"$and":[{"parentBillType":{"$exists":false}},{"inOut":{"$exists":false}}]},{"_id":1,"name":1}).lean()
+
+    //如果有顶层billType，获得其子billType
+    if(billTypeResult.length>0){
+        let finalResult=billTypeResult.map(
+            async (v,i)=>{
+                let childType=await dbModel.billType.find({"$and":[{"parentBillType":v._id},{"inOut":{"$exists":true}}]},{"_id":1,"name":1}).lean()
+                if(childType.length>0){
+                    v.child=childType
+                    //console.log(`childType is ${JSON.stringify(v)}`)
+                    return v
+                }
+            }
+
+
+
+        )
+        return Promise.all(finalResult)
+    }
+}
 
 /*  `             patch:   检测billType是否可以在bill中使用               */
 async function checkBillTypeOkForBill({dbModel,id}){
@@ -362,6 +393,7 @@ module.exports= {
     /*      static      */
     getCurrentCapital,
     getGroupCapital,
+    getStaticBillType,
     /*      patch， 检测billType是否可以在bill中使用（billType必须有parent，且inOut不为空）*/
     checkBillTypeOkForBill,
 }
