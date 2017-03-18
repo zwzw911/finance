@@ -233,9 +233,10 @@ billSchema.pre('save',function(next){
     }
     next()
 })
+//findOneAndUpdate中的this指的不是document，而是query
 billSchema.pre('findOneAndUpdate',function(next){
     console.log(`enter findOneAndUpdate`)
-    this.update({"billTypeFields.inOut":"in"},{"$set":{"amount":-1}})
+    this.update({},{"billTypeFields.inOut":"in"},{"$set":{"amount":-1}})
     next()
 })
 

@@ -3,6 +3,9 @@
  * 通用函数（可供finance调用）
  */
     'use strict'
+/************************  for webpack **********************/
+var moment=require('moment')
+/**************************************************************/
 var componentApp=angular.module('component',['angularMoment']);
 //var moment=require('moment')
 //common的程序

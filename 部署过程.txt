@@ -1,0 +1,11 @@
+1. webpack前端打包
+***********			js(有修改原始文件) 			*********************
+1.1 mainController作为自定义js的入口，添加constant.js/component.js/finance.js作为依赖：require('./constant.js') require('../component/component.js') require('../component/finance.js')
+1.2 finance添加component。 require('./component')
+1.3 component添加moment作为依赖。
+第三方打包，见webpack.config.js 
+***********			css 			*********************
+2.1 创建2个entry.js文件，分别require自定义的css，以及第三方的css
+2.2 config文件中使用url-lorder处理字体（将字体一起打包）
+***********			html(有修改原始文件) 			*********************
+3. main.ejs中，将js和css的应用改成webpack后的文件

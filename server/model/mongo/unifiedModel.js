@@ -98,6 +98,9 @@ async function remove({dbModel,updateOptions,id}){
     //return new Promise(function(resolve,reject){
         let values={}
         values['dDate']=Date.now()
+/*    console.log(`delete value is ${JSON.stringify(values)}`)
+    console.log(`id is ${JSON.stringify(id)}`)
+    console.log(`dbModel is ${JSON.stringify(dbModel.modelName)}`)*/
         let result= await dbModel.findByIdAndUpdate(id,values,updateOptions).catch(
             (err)=>{
                 return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
@@ -308,7 +311,7 @@ async function calcPagination({dbModel,searchParams,pageSize,pageLength,currentP
 //其实dbModel就是billModel，使用传参是为了防止在当前文件再次应用model文件
 async function getCurrentCapital({eColl}){
     let restMount=await dbModel[eColl].aggregate([
-        //{$match:match},//过滤出和条件的document
+        {$match:{dDate:{$exists:0}}},//过滤出和条件的document
         // {$lookup:{localField:"billType",from:"billTypes",foreignField:"_id","as":"billTypeInfo"}},
         {$project:{'billType':1,"billTypeFields.name":1,amount:1}},//只读取必要的字段（而不是全部字段），进入下一阶段的聚合操作
         {$group:{"_id":{"billType":"$billType","name":"$billTypeFields.name"},'total':{$sum:"$amount"}}},

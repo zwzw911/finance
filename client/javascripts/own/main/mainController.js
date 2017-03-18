@@ -1,7 +1,15 @@
 /**
  * Created by ada on 2016/8/28.
  */
-//var angular=require('angular')
+ /***************** webpack config  ******************************/
+require('./constant.js')
+require('../component/component.js')
+require('../component/finance.js')
+
+/*require('../../3rd/Eonasdan_datetimepicker/bootstrap-datetimepicker.js')
+require('../../3rd/event.js')*/
+/**************************************************************/
+
 
 var mainApp=angular.module('mainApp',['ui.router','ui.event','ngSanitize','MassAutoComplete','contDefine','component','finance'])
 //var app=angular.module('app',[require('angular-ui-router'),'ui.event','ngSanitize','MassAutoComplete','contDefine','component','finance'])

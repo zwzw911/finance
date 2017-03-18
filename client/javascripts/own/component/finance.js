@@ -2,6 +2,10 @@
  * Created by ada on 2016/9/15.
  */
 'use strict'
+/*      for webpack     */
+require('./component')
+
+
 var financeApp=angular.module('finance',['component']);
 
 financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelper,modal,modalChoice,paginationHelper){

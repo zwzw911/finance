@@ -4,3 +4,4 @@ server/**/*compiled*
 client/**/*compiled*
 client/**/3rd
 **/*not_used_*
+dist

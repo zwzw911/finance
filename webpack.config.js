@@ -1,74 +1,69 @@
 var path=require('path')
 var webpack=require('webpack')
+//插件，用来从js中提取css（loader会先把css转换成js）
+var ExtractTextPlugin = require('extract-text-webpack-plugin')
+
 module.exports = {
-    //插件项
-    //plugins: [commonsPlugin],
+
     //页面入口文件配置
     entry: {
-		//angular mainController
-        client : './main_entry.js',
-		//vendors:['jquery','moment','bootstrap','angular-moment','angular-ui-router','angular-sanitize','angular-mass-autocomplete',require('angular-ui-utils')]
-		//pack 第三方入口文件
-		//third : './third_entry.js',
+		//自己写的js的入口文件
+		ownjs : './client/javascripts/own/main/mainController.js',
+		//需要打包的第三方js库，只写一个名称，会到node_modules中搜索，找不到就报错
+		vendorjs:['jquery','moment','angular','bootstrap','angular-moment','angular-ui-router','angular-sanitize','angular-mass-autocomplete','eonasdan-datetimepicker','event'],
+		//自己写的css的入口文件（只是简单的require了自己写的css的路径）
+		owncss: './css_own_entry.js',
+		//第三方css的入口文件（只是简单的require了第三方的css的路径）
+		vendorcss: './css_vendor_entry.js',
+
     },
     //入口文件输出配置
     output: {
-        path: './client',
-        filename: '[name].bundle.js'
+        path: 'client',
+		//文件名采用chunkhash，如此，各个chunk的修改就不会有影响（例如，如果只修改了ownjs中的文件，则vendorjs的文件名不会变更）
+        filename: '[name]-[chunkhash].js'
     },
+	module: {
+		rules: [
+			//将字体文件转换成js
+			{
+			  test: /\.woff($|\?)|\.woff2($|\?)|\.ttf($|\?)|\.eot($|\?)|\.svg($|\?)|\.otf($|\?)/,
+			  loader: 'url-loader'
+			},
+			//将css文件从js中抽取到css中,只能采用以下格式（而不是// use: "css-loader",）
+			{
+				test: /\.css$/,
+				// use: "css-loader",
+				use: ExtractTextPlugin.extract({
+					//fallback: "style-loader",
+					use: "css-loader"
+				})
+			},
+		]
+	},
+
     plugins: [
+    	//命名css
+		new ExtractTextPlugin("[name].css"),
 
-//添加我们的插件 提取js插件库
+		//提取js中公共部分（对css无影响）
+        new webpack.optimize.CommonsChunkPlugin({name:['mainfest_vendor']}),
 
-        //new webpack.optimize.CommonsChunkPlugin('vendors', 'vendors.js'),
-
-//声明jQuery全局插件
-
-        new webpack.ProvidePlugin({
-
-/*            $: "jquery",
-
-            jQuery: "jquery"*/
-
-        })
+		//声明jQuery全局插件: 把Jquery声明为全局变量，以便其他js组件使用
+		new webpack.ProvidePlugin({
+		  $: "jquery",
+		  jQuery: "jquery",
+		  "window.jQuery": "jquery"
+		  //"moment":'moment',
+		})
 
     ],
 	resolve: {
+		//如果js不是绝对/相对路径，且无法在node_modules中找到，则在此进行查找
 		alias: {
-			moment: 'moment/min/moment-with-locales.mim.js'
+			'angular-mass-autocomplete':'./client/javascripts/3rd/massautocomplete.js',
+			'eonasdan-datetimepicker':'./client/javascripts/3rd/Eonasdan_datetimepicker/bootstrap-datetimepicker.js',
+			'event':'./client/javascripts/3rd/event.js',
 		},
 	}
-/*	externals: {
-		jquery: 'window.$'
-	},*/
-
-	/*module: {
-		loaders: [
-			{
-			test: /\.js$/,
-			//exclude: /node_modules/,
-			loader: 'babel'
-			}
-		]
-	}*/
-	/*
-    module: {
-        //加载器配置
-        loaders: [
-            { test: /\.css$/, loader: 'style-loader!css-loader' },
-            { test: /\.js$/, loader: 'jsx-loader?harmony' },
-            { test: /\.scss$/, loader: 'style!css!sass?sourceMap'},
-            { test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192'}
-        ]
-    },
-    //其它解决方案配置
-    resolve: {
-        root: 'E:/github/flux-example/src', //绝对路径
-        extensions: ['', '.js', '.json', '.scss'],
-        alias: {
-            AppStore : 'js/stores/AppStores.js',
-            ActionType : 'js/actions/ActionType.js',
-            AppAction : 'js/actions/AppAction.js'
-        }
-    }*/
 }
