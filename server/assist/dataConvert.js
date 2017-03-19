@@ -95,13 +95,25 @@ function subGenNativeSearchCondition(fieldValue,fieldRule){
     //保存最终的查询条件
     let conditionResult={}
     //如果是字符，那么把所有的值都放到$in中
+    // console.log(`fieldValue is ${JSON.stringify(fieldValue)}`)
     if(dataType.string===fieldDataType){
         let inArray=[]
         for(let singleElement of fieldValue){
+            // console.log(`singleElement value is ${JSON.stringify(singleElement['value'])}`)
+            let value
+            //是字符，且是枚举值，则查询值为整个匹配查找；否则是包含查找
+            if(true==='enum' in fieldRule){
+                value=singleElement['value']
+            }else{
+                value=new RegExp(singleElement['value'],'i')
+            }
 
-            inArray.push(new RegExp(singleElement['value'],'i'))
+            // console.log(`value is ${JSON.stringify(value)}`)
+            inArray.push(value)
         }
+        // console.log(`inArray is ${JSON.stringify(inArray)}`)
         conditionResult['$in']=inArray
+        // console.log(`conditionResult is ${JSON.stringify(conditionResult)}`)
     }
     //如果是数值，需要3个数组gt/lt/eq进行判别
     if(dataType.date===fieldDataType || dataType.number===fieldDataType || dataType.float===fieldDataType || dataType.int===fieldDataType){

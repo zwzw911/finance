@@ -6,8 +6,8 @@
 *  单独一个文件，容易调试
 * */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 var asyncFs=require('../wrapAsync/node/wrapAsyncNode').asyncFs
 var ioredisError=require('../../define/error/redisError').redisError.cmdError
 var LuaError=require('../../define/error/redisError').redisError.LuaError

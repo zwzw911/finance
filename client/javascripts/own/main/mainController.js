@@ -6,8 +6,6 @@ require('./constant.js')
 require('../component/component.js')
 require('../component/finance.js')
 
-/*require('../../3rd/Eonasdan_datetimepicker/bootstrap-datetimepicker.js')
-require('../../3rd/event.js')*/
 /**************************************************************/
 
 
@@ -176,6 +174,7 @@ mainApp.controller('configurationController',function($scope,htmlHelper){
 mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrHelper,htmlHelper,validateHelper,queryHelper,commonHelper,financeHelper,modalChoice,dateTimePickerHelper,paginationHelper){
     var generateControllerData=function(eColl){
         return {
+            showMandatoryField:true, //当CU的modal中，field太多的时候，把require=true的字段，通过此字段决定是否显示
             showAdditionalField:false, //当CU的modal中，field太多的时候，把require=false的字段，通过此字段决定是否显示
             inputAttr:cont.inputAttr[eColl],//CRUD记录的时候，对输入进行设置
             inputRule:cont.inputRule[eColl],//CRUD，对输入进行设置（min/maxLength）以及进行检测
@@ -241,7 +240,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 //}else{
                 //    $scope.pagination.goToButtonEnable=true
                 //}
-                console.log($scope.pagination.goToButtonEnable)
+                // console.log($scope.pagination.goToButtonEnable)
             }
         }
         return allFuncResult
@@ -278,6 +277,9 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
             switchAdditionalFields:function(){
                 $scope.allData.showAdditionalField=!$scope.allData.showAdditionalField
             },
+            switchMandatoryFields:function(){
+                $scope.allData.showMandatoryField=!$scope.allData.showMandatoryField
+            },
             // onchange:function(){
             //     console.log(`date change result is ${JSON.stringify($scope.allData.selectedStartDateValue)}`)
             // },
@@ -297,18 +299,18 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
             initAllFieldInputAttr:function (inputAttr,inputRule){
                 //console.log(`optype is ${}`)
                 if(contEnum.opType.create===$scope.allData.currentOpType){
-                    console.log(`initAllFieldInputAttr->create: inputRule is ${JSON.stringify(inputRule)}`)
+                    // console.log(`initAllFieldInputAttr->create: inputRule is ${JSON.stringify(inputRule)}`)
                     inputAttrHelper.initAllFieldInputAttrCreate(inputAttr,inputRule)
-                    console.log(`after init inputattr is ${JSON.stringify(inputAttr)}`)
+                    // console.log(`after init inputattr is ${JSON.stringify(inputAttr)}`)
                 }
                 if(contEnum.opType.update===$scope.allData.currentOpType){
                     inputAttrHelper.initAllFieldInputAttrUpdate(inputAttr)
                 }
                 //对modal中（create/update中，数据为date的input进行初始化）
                 for(let fieldName in $scope.allData.inputAttr){
-                    console.log(`init field name is ${fieldName}`)
+                    // console.log(`init field name is ${fieldName}`)
                     if('date'===$scope.allData.inputRule[fieldName]['type']){
-                        console.log(`init inpot name is ${fieldName}`)
+                        // console.log(`init inpot name is ${fieldName}`)
                         dateTimePickerHelper.initEle(fieldName)
                     }
                 }
@@ -328,7 +330,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
             },
             //因为create和update公用一个modal，所以需要设置opType来区分操作类型
             setCurrentOpTypeCreate(){
-                console.log(`create enter`)
+                // console.log(`create enter`)
                 $scope.allData.currentOpType=contEnum.opType.create
             },
             setCurrentOpTypeUpdate(){
@@ -350,12 +352,12 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                             $scope.allFunc.switchDialogStatus()
                             //操作完成（无论成功失败），将操作类型 复位
                             $scope.allData.currentOpType=null
-                            console.log(`pagi info of create is ${JSON.stringify($scope.pagination)}`)
+                            // console.log(`pagi info of create is ${JSON.stringify($scope.pagination)}`)
                         }
                     }
                     if(contEnum.opType.update===$scope.allData.currentOpType){
                         if($scope.modal.buttonFlag){
-                            console.log(`update inputattr is ${JSON.stringify(inputAttr)}`)
+                            // console.log(`update inputattr is ${JSON.stringify(inputAttr)}`)
                             financeHelper.dataOperator.update(idx,inputAttr,recorder,selectedAC,fkConfig,eColl,dateField);
                             $scope.allFunc.switchDialogStatus();
                             //操作完成（无论成功失败），将操作类型 复位
@@ -368,9 +370,9 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                     financeHelper.dataOperator.delete(idx,recorder,eColl,convertedValue,fkConfig,dateField,$scope.pagination);
                 },
                 'search':function(recorder,currentPage){
-                    console.log(`enter search`)
+                    // console.log(`enter search`)
                     let inputAttr=$scope.allData.inputAttr
-                    console.log(`$scope.allData.inputAttr is ${JSON.stringify(inputAttr)}`)
+                    // console.log(`$scope.allData.inputAttr is ${JSON.stringify(inputAttr)}`)
                     //console.log(`origin search is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                     //console.log(`origin fkconfig is ${JSON.stringify(fkConfig)}`)
                     let convertedValue=queryHelper.convertAddQueryValueToServerFormat($scope.allData.activeQueryValue,fkConfig,currentPage)
@@ -381,7 +383,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                         financeHelper.dataOperator.read(recorder,fkConfig,eColl,dateField)
                     }else{*/
                     financeHelper.dataOperator.search(recorder,convertedValue,fkConfig,eColl,dateField,$scope.pagination,$scope.allData.inputAttr);
-                    console.log(`after search pagination is ${JSON.stringify($scope.pagination)}`)
+                    // console.log(`after search pagination is ${JSON.stringify($scope.pagination)}`)
                     //}
 
                     //$scope.switchDialogStatus();
@@ -392,7 +394,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
             //因为需要额外的检测当前input的value是否有对应的外键（是否为－1），所以独立为一个函数
             //currentId:当前记录的objId（如果是create，为undefined）
             acBlur:function(field,inputAttr,currentId,inputRule){
-                console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${$scope.allData.currentOpType.toString()}`)
+                // console.log(`acBlur field is ${field},currentId is ${currentId},ac field is ${JSON.stringify($scope.allData.selectedAC[field])},current op type is ${$scope.allData.currentOpType.toString()}`)
                 // if(contEnum.opType.update===$scope.allData.currentOpType){
                 //     inputAttrHelper.initSingleFieldInputAttrUpdate(field,inputAttr)
                 // }
@@ -406,7 +408,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                     }
                 }else{
                     //input中的内容在db中有对应的记录
-                    console.log(`check is self`)
+                    // console.log(`check is self`)
                     //只有update的时候，才需要判断是否为自己
                     if(contEnum.opType.update===$scope.allData.currentOpType && $scope.allData.selectedAC[field]['_id']===currentId){
                         // console.log(`check is self in`)
@@ -441,7 +443,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
 
             //在create/update的dialog上点击确定时，需要的操作
             CUDialogClick:function(){
-                console.log(`cu diaolg enter`)
+                // console.log(`cu diaolg enter`)
                 //如果有date类型的字段，需要手工将值填入inputAttr（因为datetimepicker初始化后，无法直接通过input获得值，只能通过datetimepicker提供的方法）
                 for(let singleFiled in $scope.allData.inputAttr){
                     if('date'===$scope.allData.inputAttr[singleFiled]['inputType']){
@@ -454,9 +456,9 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
 
                     }
                 }
-                 console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
+                 // console.log(`before convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
                  inputAttrHelper.convertReadableToEnum($scope.allData.inputAttr,$scope.allData.inputRule)
-                console.log(`after convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
+                // console.log(`after convertReadable to enum inputAttr is ${JSON.stringify($scope.allData.inputAttr)}`)
                 validateHelper.allCheckInput($scope.allData.inputRule,$scope.allData.inputAttr)
                 let allInputValidateResult=inputAttrHelper.allInputValidCheck($scope.allData.inputAttr,$scope.allData.inputRule)
                 if(true===allInputValidateResult){
@@ -475,9 +477,9 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
             //queryValue:'a'
             //activatedQueryValue:{parentBillType:['a','b']}
             deleteQueryValue:function(queryFiled,idx,activatedQueryValue){
-                console.log(`idx is ${idx}`)
+                // console.log(`idx is ${idx}`)
                 queryHelper.deleteQueryValue(queryFiled,idx,activatedQueryValue)
-                console.log(`after delete query value ${JSON.stringify(activatedQueryValue)}`)
+                // console.log(`after delete query value ${JSON.stringify(activatedQueryValue)}`)
             },
             // $scope.addQueryValue=queryHelper.addQueryValue
             addQueryValue:function(){
@@ -488,7 +490,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 let selectedQueryFiled=$scope.allData.selectedQueryField['key']
                 //判断queryField的类型，如果是date或者数字，要做特殊处理
                 let queryFiledType=$scope.allData.selectedQueryField['type']
-                console.log(`queryFiledType is ${queryFiledType}`)
+                // console.log(`queryFiledType is ${queryFiledType}`)
                 //对于日期，operator是根据开始/结束日期固定
                 if('date'===queryFiledType){
                     let startDateEleId=appCont.dateInputIdInQuery[eColl]['queryStartDate']
@@ -508,16 +510,16 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                         // let value=$scope.allData.selectedEndDateValue
                         queryHelper.addQueryValue(selectedQueryFiled,endDateValue,$scope.allData.activeQueryValue,'lt') //开始日期，操作符为gt
                     }
-                    console.log(`after selectedQueryOperator is ${JSON.stringify($scope.allData.activeQueryValue)}`)
+                    // console.log(`after selectedQueryOperator is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                 }else if(['float','int','number'].indexOf(queryFiledType)>-1){
-                    console.log(`selectedQueryOperator is ${$scope.allData.selectedQueryFieldOperator}`)
+                    // console.log(`selectedQueryOperator is ${$scope.allData.selectedQueryFieldOperator}`)
                     //对于日期，如果operator不存在
                     let value=$scope.allData.selectedQueryFieldValue
                     if(false===$scope.allData.selectedQueryFieldOperator in contEnum.operator){
                         $scope.allData.selectedQueryFieldOperator=contEnum.operator.eq
                     }
                     queryHelper.addQueryValue(selectedQueryFiled,value,$scope.allData.activeQueryValue,$scope.allData.selectedQueryFieldOperator)
-                    console.log(`after selectedQueryOperator is ${JSON.stringify($scope.allData.activeQueryValue)}`)
+                    // console.log(`after selectedQueryOperator is ${JSON.stringify($scope.allData.activeQueryValue)}`)
                 }else{
                     //字符
                     if(validateHelper.dataTypeCheck.isString($scope.allData.selectedQueryFieldValue) && false===validateHelper.dataTypeCheck.isStringEmpty($scope.allData.selectedQueryFieldValue)){
@@ -529,9 +531,16 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 $scope.allData.selectedQueryFieldValue=undefined
                 $scope.allData.selectedStartDateValue=undefined
                 $scope.allData.selectedEndDateValue=undefined
-                console.log(`after add query value ${JSON.stringify($scope.allData.activeQueryValue)}`)
+                // console.log(`after add query value ${JSON.stringify($scope.allData.activeQueryValue)}`)
             },
+//第一次focus的时候，selectedQueryFieldValue是udefined，设置成空，触发AC，显示所有选项
+trigSelectedQueryFieldValueChange:function(){
+    // console.log($scope.allData.selectedQueryFieldValue)
+    if(undefined===$scope.allData.selectedQueryFieldValue){
+        $scope.allData.selectedQueryFieldValue=""
+    }
 
+},
             formatQueryValue:function(fieldName,fieldValue){
                 //console.log(`field name is ${fieldName}`)
                 //console.log(`orig date is ${fieldValue}`)
@@ -556,12 +565,12 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 if($scope.allData.selectedQueryField && ''!==$scope.allData.selectedQueryField){
                     selectedQueryField=$scope.allData.selectedQueryField
                 }
-                console.log(`activate value is ${JSON.stringify($scope.allData.activeQueryValue)}`)
-                console.log(`selected query field is ${JSON.stringify(selectedQueryField)}`)
-                console.log(`selected query field rle is ${JSON.stringify($scope.allData.inputRule[selectedQueryField['key']])}`)
+                // console.log(`activate value is ${JSON.stringify($scope.allData.activeQueryValue)}`)
+                // console.log(`selected query field is ${JSON.stringify(selectedQueryField)}`)
+                // console.log(`selected query field rle is ${JSON.stringify($scope.allData.inputRule[selectedQueryField['key']])}`)
                 if('date'===selectedQueryField['type']){
-                    console.log(`date filed choose`)
-                    console.log(`id is ${appCont.dateInputIdInQuery[eColl]['queryStartDate']}`)
+                    // console.log(`date filed choose`)
+                    // console.log(`id is ${appCont.dateInputIdInQuery[eColl]['queryStartDate']}`)
                     //根据date input的id，通过datetimepicker进行初始化
                     //appCont.dateInputIdInQuery[eColl].map((v)=>dateTimePickerHelper.initEle(v))
                     //dateTimePickerHelper.initEle(appCont.dateInputIdInQuery[eColl]['queryStartDate'])
@@ -632,7 +641,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                     financeHelper.dataOperator.readName(searchValue,fkColl,eColl).success(
                         (data, status, header, config)=>{
                             let tmpResult = []
-                            console.log(`get suggest result is ${JSON.stringify(data.msg)}`)
+                            // console.log(`get suggest result is ${JSON.stringify(data.msg)}`)
                             //如果当前的字段是外键（定义在allData.selectedAC中），需要确定的id，以便保存到数据库，则初始设为-1
                             //if (data.msg.length === 1) {
                             //初始化selectedAC
@@ -672,7 +681,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
                 }
 
                 suggestList['on_select']=function (selected) {
-                    console.log(`on_selected is ${JSON.stringify(selected)}`)
+                    // console.log(`on_selected is ${JSON.stringify(selected)}`)
                     if(true=== fieldName in $scope.allData.selectedAC){
                         // console.log(`select ac filed is ${fieldName}`)
                         $scope.allData.selectedAC[fieldName]._id = selected.id
@@ -785,7 +794,7 @@ mainApp.factory('templateFunc',function($q,$sce,appCont,cont,contEnum,inputAttrH
         //financeHelper.dataOperator.search($scope.allData.recorder,appCont.fkRedundancyFields[eColl],appCont.coll[eColl],appCont.dateField[eColl])
         var promise=financeHelper.dataOperator.search($scope.allData.recorder,{'currentPage':1,'searchParams':{}},appCont.fkRedundancyFields[eColl],eColl,appCont.dateField[eColl],$scope.pagination,$scope.allData.inputAttr);
         promise.then(function(v){
-             console.log(`search done pagination is ${JSON.stringify($scope.pagination)}`)
+             // console.log(`search done pagination is ${JSON.stringify($scope.pagination)}`)
             htmlHelper.adjustFooterPosition()
         })
         //let [startDate,endDate]=[appCont.dateInputIdInQuery[eColl].queryStartDate,appCont.dateInputIdInQuery[eColl].queryStartDate]
@@ -966,7 +975,7 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                 flatRecorder.push(singleRecorderTotal)
                 result.push(flatRecorder)
             }
-            console.log(`converted result is ${JSON.stringify(result)}`)
+            // console.log(`converted result is ${JSON.stringify(result)}`)
             return result
         },
         init:function(){
@@ -987,23 +996,23 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                     // financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital,$scope.allData.totalCurrentCapital,$scope.allData.structure)
                     // console.log(`mainController totalCurrentCapital is ${JSON.stringify()}`)
                     financeHelper.dataOperator.getCurrentCapital().then(function(value){
-                        console.log(`get current captial resylt is ${JSON.stringify(value)}`)
+                        // console.log(`get current captial resylt is ${JSON.stringify(value)}`)
                         $scope.allData.totalCurrentCapital=value.msg['totalCapital']
                         $scope.allData.currentCapital=value.msg['currentCapital']
                         $scope.allData.billTypeStructure=value.msg['billTypeStructure']
                         $scope.allData.billTypeStructureShowInTable=$scope.allFunc.convertBillTypeToHtml($scope.allData.billTypeStructure)
-                        console.log(`currentCapital  is ${JSON.stringify(value.msg['currentCapital'])}`)
+                        // console.log(`currentCapital  is ${JSON.stringify(value.msg['currentCapital'])}`)
                         financeHelper.dataOperator.getGroupCapital(searchParams,currentPage).then(
                             (value)=>{
                                 $scope.allData.groupCapital=value.groupCapital
-                                console.log($scope.allData.groupCapital)
+                                // console.log($scope.allData.groupCapital)
                                 $scope.allData.billGroupDataShowInTable=$scope.allFunc.convertGroupDataToFlatArray($scope.allData.groupCapital)
                                 //financeHelper.dataOperator.getCurrentCapital($scope.allData.currentCapital)
                                 // financeHelper.dataOperator.getGroupCapital(searchParams,currentPage,$scope.allData.groupCapital)
                             },
 
                             (error)=> {
-                                console.log(`get getCurrentCapital time failed`)
+                                // console.log(`get getCurrentCapital time failed`)
                             }
                         )
                     },function(error){})
@@ -1012,7 +1021,7 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                 }
             ).error(
                 (data, status, header, config)=>{
-                    console.log(`get server time failed`)
+                    // console.log(`get server time failed`)
                 }
 
             )
@@ -1031,7 +1040,7 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
                 },
 
                 (error)=> {
-                    console.log(`get getCurrentCapital time failed`)
+                    // console.log(`get getCurrentCapital time failed`)
                 }
             )
         }
@@ -1039,7 +1048,7 @@ mainApp.controller('bill.static.Controller',function($scope,financeHelper,dateTi
     }
 
     $scope.allFunc.init()
-    console.log(`static enter`)
+    // console.log(`static enter`)
 
     // $('.currentCapital').after("<p>+</p>")
 /*    //需要用到的数据，预先定义好

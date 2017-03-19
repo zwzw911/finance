@@ -5,8 +5,8 @@
  * 2. 检查并格式化rule（比如将1.0转换成1等）
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 // var func=require('../server/assist/component/shaLua-compiled').shaSingleFile
 var shaFunc=require('../../server/assist/component/shaLua')
 //var execLua=shaFunc.execLua

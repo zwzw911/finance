@@ -8,8 +8,8 @@
  * 5. validateSingleSearchParamsFormat： 对searchParams中的单个字段的比较符值进行检测
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+// require("babel-polyfill");
+// require("babel-core/register")
 
 var dataTypeCheck=require('./validateHelper').dataTypeCheck
 var searchSetting=require('../../config/global/globalSettingRule').searchSetting
@@ -66,7 +66,7 @@ function validateCUDInputFormat(values){
  * 7. 检测是否有重复的key（虽然客户端可能会将重复key中的最后一个传到server）
  * */
 function validateRecorderInfoFormat(recorderInfo,rule,maxFieldNum){
-    console.log(`recorderInfo is ${JSON.stringify(recorderInfo)}`)
+    // console.log(`recorderInfo is ${JSON.stringify(recorderInfo)}`)
 /*    //1. 必须设值，不能为undefined/null
     if(false===dataTypeCheck.isSetValue(recorderInfo)){
         return validateFormatError.valueNotDefine

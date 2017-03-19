@@ -7,8 +7,8 @@
 *
 * */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 var dbModel=require('../../../../server/model/mongo/common/structure')
 //检测错误结果
 var inputRule=require('../../../../server/define/validateRule/inputRule').inputRule

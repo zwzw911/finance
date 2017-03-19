@@ -38,14 +38,16 @@ router.use(function(req,res,next){
     }
 
     if("production"===envSetting) {
-        let result=checkInterval(req)
+        console.log('production, check interval')
+        next()
+ /*       let result=checkInterval(req)
         if(result.rc>0){
             return res.render('helper/reqReject', {
                 title: '拒绝请求',
                 content: result['msg'],
                 year: new Date().getFullYear()
             });
-        }
+        }*/
         //判断请求的是页面还是静态资源（css/js），还没有想好如何处理
         /*if (req.path) {
             let tmp = req.path.split('.')

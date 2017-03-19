@@ -3,7 +3,7 @@
  */
 'use strict'
 /*      for webpack     */
-require('./component')
+// require('./component')
 
 
 var financeApp=angular.module('finance',['component']);
@@ -33,7 +33,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
             //首先加入db（加入db时，angular已经执行过value的检测，因此无需再次执行inputCheck）
             //从inputAttr提取数据，转换成{field1:{value1:xxx},field2:{value2:yyy}}如果是select，则从value(中文)转换成key(英文)
             let value = inputAttrHelper.convertedInputAttrFormatCreate(inputAttr)
-            console.log(`converted value is ${JSON.stringify(value)}`)
+            // console.log(`converted value is ${JSON.stringify(value)}`)
             //convertedValue['newAddedRecorder']=value
             //转换外键的格式
             for (let singleFKField in fkConfig) {
@@ -57,14 +57,14 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                             (ele,idx)=>{
                                 commonHelper.convertDateTime(ele, aDateToBeConvert)
                                 //检查外键是否存在，存在的话，将外键object转换成字符
-                                console.log(`before FK format result ${JSON.stringify(data.msg)}`)
+                                // console.log(`before FK format result ${JSON.stringify(data.msg)}`)
                                 //需要删除nestedPrefix字段
                                 for (let singleFKField in fkConfig) {
                                     let nestedPrefix = fkConfig[singleFKField]['nestedPrefix']
                                     delete data.msg.recorder[nestedPrefix]
                                 }
 
-                                console.log(`after FK format result ${JSON.stringify(data.msg.recorder)}`)
+                                // console.log(`after FK format result ${JSON.stringify(data.msg.recorder)}`)
                             }
                         )
 
@@ -103,7 +103,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                     modal.showErrMsg(JSON.stringify(data.msg))
                 }
             }).error(function () {
-                console.log('err')
+                // console.log('err')
             })
             //然后加入client数据，防止多次返回
             //_angularDataOp.create(idx,inputAttr,recorder)
@@ -114,7 +114,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
         //dateField: 转换日期格式
         'delete': function (idx, recorder, eColl,convertedValue,fkConfig,aDateToBeConvert,pagination) {
             //URL中的id用于告知删除哪个
-            console.log(`convertedValue is ${JSON.stringify(convertedValue)}`)
+            // console.log(`convertedValue is ${JSON.stringify(convertedValue)}`)
             let url = '/' + eColl + '/delete/' + recorder[idx]['_id']
             //删除后，还是留在原来的页上，因此必须上传 searchParams和currentPage
             $http.post(url, {values:convertedValue}).success(function (data, status, header, config) {
@@ -125,8 +125,8 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
 
                     if (data.msg.recorder) {
                         let returnRecorderLength = data.msg.recorder.length
-                        console.log(`recorder length is ${returnRecorderLength}`)
-                        console.log(`return pagination  is ${JSON.stringify(pagination)}`)
+                        // console.log(`recorder length is ${returnRecorderLength}`)
+                        // console.log(`return pagination  is ${JSON.stringify(pagination)}`)
                         //删除最后一页上的一个记录，且删完后最后一页还有其他记录;则只需删除对应的记录
                         if(0===returnRecorderLength){
                             recorder.splice(idx,1)
@@ -138,9 +138,9 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                         }
                         //删除最后一页的一个记录，且此记录为最后一页的唯一记录；则删完后要跳转到前一页(recorder清空，并压入前一页的所有值)
                         if (pagination.paginationInfo.pageSize==returnRecorderLength) {
-                            console.log(`recorder before splice is ${JSON.stringify(recorder)}`)
+                            // console.log(`recorder before splice is ${JSON.stringify(recorder)}`)
                             recorder.splice(0,recorder.length)
-                            console.log(`recorder after splice is ${JSON.stringify(recorder)}`)
+                            // console.log(`recorder after splice is ${JSON.stringify(recorder)}`)
                         }
 
                         //因为返回的记录是数组，所有可以同一个过程压入数据
@@ -217,11 +217,11 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                 inputAttrHelper.convertSingleACFormat(singleFKField, selectAC, value)
             }
 
-            console.log(`value 1 is ${JSON.stringify(value)}`)
+            // console.log(`value 1 is ${JSON.stringify(value)}`)
             //添加要更新记录的_id。必须使用_id（server只认识_id）
-            console.log(`idx is ${idx},recorder is ${JSON.stringify(recorder[idx])}`)
+            // console.log(`idx is ${idx},recorder is ${JSON.stringify(recorder[idx])}`)
             value['_id'] = {value: recorder[idx]['_id']}
-            console.log(`value 2 is ${JSON.stringify(value)}`)
+            // console.log(`value 2 is ${JSON.stringify(value)}`)
             //Object.assign(value,selectAC)
             let url = '/' + eColl
             //只是为了凑齐格式，其实update无需currentPage
@@ -299,7 +299,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                     let a=paginationHelper.generateClientPagination(data.msg['paginationInfo'])
                     Object.assign(pagination,a)
 
-                    console.log(`page info is ${JSON.stringify(pagination)}`)
+                    // console.log(`page info is ${JSON.stringify(pagination)}`)
 
                     // htmlHelper.adjustFooterPosition()
                 } else {
@@ -338,7 +338,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
             return deferred.promise
         },
         'getGroupCapital':function(searchParams,currentPage){
-            console.log(`pass in curentPage is ${currentPage}`)
+            // console.log(`pass in curentPage is ${currentPage}`)
             let url="/bill/static/getGroupCapital"
             let deferred=$q.defer()
             let groupCapital
@@ -346,7 +346,7 @@ financeApp.factory('financeHelper',function($http,$q,inputAttrHelper,commonHelpe
                 if(0===data.rc){
                     groupCapital=data.msg
                     deferred.resolve({rc:0,'groupCapital':groupCapital})
-                    console.log(`getGroupCapital is${JSON.stringify(groupCapital)}`)
+                    // console.log(`getGroupCapital is${JSON.stringify(groupCapital)}`)
                 }else{
                     modal.showErrMsg(JSON.stringify(data.msg))
                 }

@@ -47,21 +47,26 @@ module.exports = {
 		new ExtractTextPlugin("[name].css"),
 
 		//提取js中公共部分（对css无影响）
-        new webpack.optimize.CommonsChunkPlugin({name:['mainfest_vendor']}),
+		//必须有2个文件名，一个和entry中的一样，用来包含所有第三方库；另外一个随便定义，用来存储ownjs发生变化时的变化
+        new webpack.optimize.CommonsChunkPlugin({name:['vendorjs','mainfest']}),
 
 		//声明jQuery全局插件: 把Jquery声明为全局变量，以便其他js组件使用
 		new webpack.ProvidePlugin({
-		  $: "jquery",
-		  jQuery: "jquery",
-		  "window.jQuery": "jquery"
+		  "$": "jquery",
+		  "jQuery": "jquery",
+		  "window.jQuery": "jquery",
+			"moment":"moment",
 		  //"moment":'moment',
 		})
 
     ],
 	resolve: {
 		//如果js不是绝对/相对路径，且无法在node_modules中找到，则在此进行查找
+		//一下模块，要么是自己做过修改的，要么是不提供npm install服务的
 		alias: {
+			//做过修改，支持空字符，显示所有选项的功能
 			'angular-mass-autocomplete':'./client/javascripts/3rd/massautocomplete.js',
+
 			'eonasdan-datetimepicker':'./client/javascripts/3rd/Eonasdan_datetimepicker/bootstrap-datetimepicker.js',
 			'event':'./client/javascripts/3rd/event.js',
 		},

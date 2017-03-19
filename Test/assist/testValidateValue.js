@@ -2,8 +2,8 @@
  * Created by Ada on 2017/1/24.
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 var testModule=require('../../server/assist/validateInput/validateValue');
 //var miscError=require('../../server/define/error/nodeError').nodeError.assistError
 var validateValueError=require('../../server/define/error/node/validateError').validateError.validateValue

@@ -2,8 +2,8 @@
  * Created by ada on 2015/7/5.
  */
  'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 
 var testModule=require('../../server/assist/misc');
 var miscError=require('../../server/define/error/nodeError').nodeError.assistError.misc

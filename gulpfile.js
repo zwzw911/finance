@@ -19,9 +19,11 @@ gulp.task('minify-html', function(){
         minifyJS: true,//压缩页面JS
         minifyCSS: true//压缩页面CSS
     };
-    gulp.src('server/views/**/*.ejs')
+    var stream=gulp.src('server/views/**/*.ejs')
         .pipe($G.htmlmin(options))
         .pipe(gulp.dest('dist/server/views'));
+    //返回stream告知task完成
+    return stream
 });
 
 
@@ -36,13 +38,17 @@ gulp.task('minify-css', function(){
         minifyJS: true,//压缩页面JS
         minifyCSS: true//压缩页面CSS
     };*/
-    gulp.src('client/stylesheets/**/*.css')
+//webpack打包后的css
+
+    var stream= gulp.src('client/*.css')
         .pipe($G.minifyCss())
-        .pipe(gulp.dest('dist/client/stylesheets'));
+        .pipe(gulp.dest('dist/client'));
+    //返回stream告知task完成
+    return stream
 });
 
 gulp.task('server-es6', function() {
-    gulp.src(['server/**/*.js','client/**.js','!server/view'])
+    gulp.src(['server/**/*.js','!server/**/*not_used*.js','!server/view'])
         .pipe($G.babel({
             presets: ["es2015","stage-0"],
             compact:false,
@@ -53,6 +59,18 @@ gulp.task('server-es6', function() {
         .pipe(gulp.dest('dist/server/'));
 });
 
+/***************        maintain需要(用到其中的shaLua)         ************/
+gulp.task('maintain-es6', function() {
+    gulp.src(['maintain/preLaunch/*.js'])
+        .pipe($G.babel({
+            presets: ["es2015","stage-0"],
+            compact:false,
+        }))
+        .pipe($G.uglify({
+
+        }))
+        .pipe(gulp.dest('dist/maintain/preLaunch'));
+});
 
 gulp.task('client-es6', function() {
     gulp.src(['client/**.js'])
@@ -66,6 +84,6 @@ gulp.task('client-es6', function() {
         .pipe(gulp.dest('dist/client/'));
 });
 
-gulp.task('all-task',['minify-html','minify-css','server-es6','client-es6'],function(){
+gulp.task('default',['minify-html','minify-css','server-es6','client-es6'],function(){
 
 })

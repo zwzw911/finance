@@ -1,11 +1,30 @@
 1. webpack前端打包
 ***********			js(有修改原始文件) 			*********************
-1.1 mainController作为自定义js的入口，添加constant.js/component.js/finance.js作为依赖：require('./constant.js') require('../component/component.js') require('../component/finance.js')
-1.2 finance添加component。 require('./component')
-1.3 component添加moment作为依赖。
-第三方打包，见webpack.config.js 
+1.1 mainController作为自定义js的入口，添加constant.js/component.js/finance.js作为依赖：require('./constant.js') require('../component/component.js') require('../component/finance.js')，虽然finance中也需要用到component，但是因为webpack打包后，所有的文件都在一个文件中，所以就无需在finance中单独require component了
+
+**********			第三方打包			*****************************
+见webpack.config.js 
+注意：使用CommonsChunkPlugin的时候，一定要定义2个名称，一个名称和entry中的一样，把所有第三方包打在一起，一个mainfest，用来包括ownjs发生变化时的变化
+
 ***********			css 			*********************
 2.1 创建2个entry.js文件，分别require自定义的css，以及第三方的css
 2.2 config文件中使用url-lorder处理字体（将字体一起打包）
 ***********			html(有修改原始文件) 			*********************
-3. main.ejs中，将js和css的应用改成webpack后的文件
+3. main.ejs中，将js和css的引用改成webpack后的文件
+
+
+***********			直接copy			*********************
+app.js
+bin/www
+
+***********			更改参数			*********************
+config/global/appSetting.js： env:envEnum.development==>production
+
+
+***********			babel 			*********************
+2. 为了可以执行转码后的regeneratorRuntime。需要安装babel相关插件，并在入口函数（main.js）中require babel-polyfill和babel-core
+	安装babel-core/bable-polyfill/ babel-preset-stage-0/babel-preset-stage-3/babel-preset-2015（在async/await的时候，stage0会调用stage3，所以必须都安装）
+	.babelrc中如下设置
+	{
+		"presets": ["es2015","stage-0"],
+	}

@@ -3,8 +3,8 @@
  * 非validate相关的函数
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+/*require("babel-polyfill");
+require("babel-core/register")*/
 
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
@@ -14,7 +14,8 @@ var userStateEnum=require('../define/enum/node').node.userState
 var LuaSHA=require('../define/Lua/LuaSHA').LuaSHA
 var redisError=require('../define/error/redisError').redisError
 var ioredisClient=require('../model/redis/connection/redis_connection').ioredisClient
-var intervalCheck=require('../config/global/defaultGlobalSetting').intervalCheck
+var intervalCheck=require('../config/global/defaultGlobalSetting').globalSetting.intervalCheck
+// var intervalCheck=require('../config/global/globalSettingRule').defaultSetting.intervalCheck
 
 var mongooseErrorHandler=require('../define/error/mongoError').mongooseErrorHandler
 var execSHALua=require("./component/shaLua").execSHALua
@@ -358,6 +359,14 @@ function escapeRegSpecialChar(str){
     return str.replace(reg,'\\$1')
 }
 
+/*      开发的时候，打印的trace      */
+//prompt: 提示文字
+//info：需要打印的trace
+//level：根据不同的trace level决定是否打印
+function consoleDebug(prompt,info,level){
+    console.log(`${prompt} ${JSON.stringify(info)}`)
+}
+
 module.exports={
     checkInterval,
     generateRandomString,
@@ -376,6 +385,7 @@ module.exports={
 
     populateSingleDoc,
     // formatRc,
+    consoleDebug,
 
     convertURLSearchString,
     escapeRegSpecialChar,

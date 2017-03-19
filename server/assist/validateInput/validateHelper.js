@@ -8,8 +8,8 @@
  * 5. valueMatchRuleDefineCheck：出入值和某个rule（min/max/minLenght/maxLength），是否符合
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 
 var fs=require('fs')
 

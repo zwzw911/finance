@@ -5,8 +5,8 @@
  * 拆分辅助函数，合并路由函数（几个coll的路由过程都是类似的）
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 
 var appSetting=require('../../config/global/appSetting')
 
@@ -88,7 +88,7 @@ function sanityCUInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNu
 *
 * */
 function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
-     console.log(   `sanitySearchInput in`)
+     // console.log(   `sanitySearchInput in`)
     //1 检查总体格式
     let checkWholeFormatResult=validateFormat.validateSearchInputFormat(inputSearch)
     //console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
@@ -195,7 +195,7 @@ async function getFkAdditionalFields(doc,fkAdditionalConfig,dbModel){
                 let fkRelatedCollName=fkAdditionalConfig[fkFieldName]['relatedColl'] //外键对应在那个coll中
                 let fkAdditionalFields=fkAdditionalConfig[fkFieldName].forSelect    //外键对应的coll中，需要获得哪些field的值，使用mongodb的操作
                 let fkAdditionalFieldsArray=fkAdditionalConfig[fkFieldName].forSetValue //同上，只是格式是array，以便for操作
-console.log(`getFkAdditionalFields:fkAdditionalFieldsArray is ${JSON.stringify(fkAdditionalFieldsArray)}`)
+// console.log(`getFkAdditionalFields:fkAdditionalFieldsArray is ${JSON.stringify(fkAdditionalFieldsArray)}`)
                 // let fkAdditionalFieldsResult=await dbModel[fkRelatedCollName]['findById'](fkId,fkAdditionalFields)
                 //console.log(`findByID result is ${JSON.stringify(result)}`)
                 let fkAdditionalFieldsResult=await unifiedModel.findById({'dbModel':dbModel[fkRelatedCollName],'id':fkId})
@@ -212,7 +212,7 @@ console.log(`getFkAdditionalFields:fkAdditionalFieldsArray is ${JSON.stringify(f
                 doc[nestedPrefix]={}
                 //将读取到的额外字段赋值给
                 for(let field of fkAdditionalFieldsArray){
-                     console.log(`add field is ${field}`)
+                     // console.log(`add field is ${field}`)
                     //需要转换成parentBillTypeFields.name的格式，因为是nested
                     // let tmpField='parentBillTypeFields.'+field
                     doc[nestedPrefix][field]=fkAdditionalFieldsResult['msg'][field]
@@ -230,20 +230,20 @@ function sanityStaticQueryDate(values,rules){
     // let
     //1 检查总体格式
     let checkWholeFormatResult=validateFormat.validateStaticInputFormat(values)
-    console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
+    // console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
     if(checkWholeFormatResult.rc>0){
         return checkWholeFormatResult
     }
     //2 检查搜索参数格式
     let checkSearchParamsFormatResult=validateFormat.validateStaticSearchParamsFormat(values['searchParams'],rules)
-    console.log(   `format resuot is ${JSON.stringify(checkSearchParamsFormatResult)}`)
+    // console.log(   `format resuot is ${JSON.stringify(checkSearchParamsFormatResult)}`)
     if(checkSearchParamsFormatResult.rc>0){
         return checkSearchParamsFormatResult
     }
 
     //3 检查搜索值是否正确
     let validateValueResult=validateValue.validateStaticSearchParamsValue(values['searchParams'],rules)
-    console.log(   `value result is ${JSON.stringify(validateValueResult)}`)
+    // console.log(   `value result is ${JSON.stringify(validateValueResult)}`)
     for(let singleFieldName in validateValueResult){
         if(validateValueResult[singleFieldName]['rc']>0){
             return {rc:9999,msg:validateValueResult}
@@ -283,13 +283,13 @@ function matchCurrentCaptialIntoTemplateArray(billTypeStructure, templateArray,g
                 //console.log(`singleData id is ${singleData._id.billType.toString()},type is ${typeof singleData._id.billType}`)
 
                 if(singleData._id.billType.toString()===billTypeStructure[topBillTypeIdx]['child'][childIdx]['_id'].toString()){
-                    console.log(`equal:topBillTypeIdx is {topBillTypeIdx},childIdx is {childIdx}`)
+                    // console.log(`equal:topBillTypeIdx is {topBillTypeIdx},childIdx is {childIdx}`)
                     templateArray[topBillTypeIdx][childIdx]=singleData.total
                 }
             }
         }
     }
-console.log(`final exec matchDataIntoTemplateArray ${JSON.stringify(templateArray)}`)
+// console.log(`final exec matchDataIntoTemplateArray ${JSON.stringify(templateArray)}`)
 }
 
 
@@ -311,7 +311,7 @@ function matchGroupDataIntoTemplateArray(billTypeStructure,groupData){
                 let templateArray=genDataStructureBaseOnBillType(billTypeStructure)
 
                 finalResult[dateKey]=[].concat(templateArray)
-                console.log(`init data array is ${JSON.stringify(finalResult)}`)
+                // console.log(`init data array is ${JSON.stringify(finalResult)}`)
             }
 
             //模板存在，遍历billType结构，决定数据存储的位置

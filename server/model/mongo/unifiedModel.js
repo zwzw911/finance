@@ -6,8 +6,8 @@
  * Created by Ada on 2016/9/28.
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 
 var dbModel=require('./common/structure').model
 

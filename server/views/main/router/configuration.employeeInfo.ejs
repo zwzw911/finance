@@ -98,7 +98,7 @@
 
           <!--默认空或者string 类型的，都要提供autoComplete-->
         <div class="col-lg-2 col-md-3 col-sm-4 col-xs-4" mass-autocomplete ng-if="''===allData.selectedQueryField || allData.inputAttr[allData.selectedQueryField['key']]['isQueryAutoComplete']">
-            <input class="form-control" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']">
+            <input class="form-control" ng-model="allData.selectedQueryFieldValue" mass-autocomplete-item="allData.inputAttr[allData.selectedQueryField['key']]['suggestList']" ui-event="{focus:'allFunc.trigSelectedQueryFieldValueChange()'}">
         </div>
 
           <!--<div>-->
@@ -144,9 +144,14 @@
 
             </div>-->
             <!--设置枚举类型，例如性别-->
-          <div  class="col-lg-2" ng-if="''!==allData.selectedQueryField && 'select'===allData.inputAttr[allData.selectedQueryField['key']]['inputType']">
+<!--          <div  class="col-lg-2" ng-if="''!==allData.selectedQueryField && 'select'===allData.inputAttr[allData.selectedQueryField['key']]['inputType']">
               <select class="form-control"   ng-model="allData.selectedQueryFieldValue" ng-options="option.value for option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" >
 
+              </select>
+          </div>-->
+          <div  class="col-lg-2" ng-if="''!==allData.selectedQueryField && 'select'===allData.inputAttr[allData.selectedQueryField['key']]['inputType']">
+              <select class="form-control"   ng-model="allData.selectedQueryFieldValue" >
+                  <option ng-repeat="option in allData.inputAttr[allData.selectedQueryField['key']]['selectOption']" ng-selected="allData.selectedQueryFieldValue===option.value" value="{{option.key}}">{{option.value}}</option>
               </select>
           </div>
         <!--</div>-->

@@ -5,8 +5,8 @@
 /*全部使用reslove返回数据，便于调试，以及便于通过rc判断*/
 'use strict';
 
-require("babel-polyfill");
-require("babel-core/register");
+//require("babel-polyfill");
+//require("babel-core/register");
 //mongo的validate error和input value共享一个定义
 //var mongoError=require('../../../../define/validateRule/inputRule').inputRule;
 

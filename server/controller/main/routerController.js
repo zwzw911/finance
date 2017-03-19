@@ -5,8 +5,8 @@
  * 拆分辅助函数，合并路由函数（几个coll的路由过程都是类似的）
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 
 
 var appSetting=require('../../config/global/appSetting')
@@ -24,6 +24,7 @@ var validateFormat=require('../../assist/validateInput/validateFormat')
 //var miscFunc=require('../../assist/misc')
 // var validate=validateFunc.validate
 var checkInterval=require('../../assist/misc').checkInterval
+var consoleDebug=require('../../assist/misc').consoleDebug
 
 /*                      error               */
 var pageError=require('../../define/error/pageError')
@@ -48,6 +49,7 @@ var collEnum=require('../../define/enum/node').node.coll
 /*                      enum                */
 var nodeEnum=require('../../define/enum/node').node
 var envEnum=nodeEnum.env
+
 
 /*                      app special param           */
 var maxFieldNum={
@@ -187,7 +189,7 @@ user['update']=async function (req,res,next){
 //coll: enum
 var create=async function ({eCurrentColl,req,res}){
     // console.log(`chinese is 中文`)
-     console.log(`before create san ${JSON.stringify(req.body.values)}`)
+    //  console.log(`before create san ${JSON.stringify(req.body.values)}`)
     //try{
     //1. 对输入进行检查，确保是合格的输入
     let sanitizedInputValue=unifiedHelper.sanityCUInput(req.body.values,inputRule[eCurrentColl],false,maxFieldNum[eCurrentColl])
@@ -210,7 +212,7 @@ var create=async function ({eCurrentColl,req,res}){
     for(let doc of arrayResult){
         dataConvert.constructCreateCriteria(doc)
     }
-console.log(`after construct is ${JSON.stringify(arrayResult)}`)
+// console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     //4 检查外键是否存在
     //遍历所有记录
@@ -255,7 +257,7 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
             //return res.json(getFkResult)
         }
     }
-    console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
+    // console.log(`after get addational field ${JSON.stringify(arrayResult)}`)
     //console.log(`after get additional is ${JSON.stringify(arrayResult)}`)
     //5. 对db执行操作
     /*          采用insertmany，返回直接是否array        */
@@ -266,7 +268,7 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     let tmp=await unifiedModel.create({'dbModel':dbModel[eCurrentColl],values:arrayResult})
     createResult.push(tmp.msg)
 
-    console.log(`create result is ${JSON.stringify(createResult)}`)
+    // console.log(`create result is ${JSON.stringify(createResult)}`)
     if(createResult.rc>0){
         return Promise.reject(unifiedHelper.returnResult(createResult))
     }
@@ -275,7 +277,7 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     //6.1 分页信息
     let calcPaginationResult,recorder=[],paginationInfo,searchParams={},newCurrentPage=1 //无论传入的currentPage是多少，最终计算分页，都要跳到第一页
     calcPaginationResult=await unifiedModel.calcPagination({'dbModel':dbModel[eCurrentColl],'searchParams':searchParams,'pageSize':paginationSetting[eCurrentColl]['pageSize'],'pageLength':paginationSetting[eCurrentColl]['pageLength'],'currentPage':newCurrentPage})
-    console.log(`calc pagination result is ${JSON.stringify(calcPaginationResult)}`)
+    // console.log(`calc pagination result is ${JSON.stringify(calcPaginationResult)}`)
     if(calcPaginationResult.rc>0){
         return Promise.reject(calcPaginationResult)
     }
@@ -295,7 +297,7 @@ console.log(`after construct is ${JSON.stringify(arrayResult)}`)
     //currentPage is 1，返回第一页的记录
     if(1<currentPage){
         //没有任何搜索条件（否则新添加的记录可能被搜索条件排除在外）
-        console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+        // console.log(`convert search params id ${JSON.stringify(searchParams)}`)
         let result=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'paginationInfo':paginationInfo})
         if(result.rc>0){
             return Promise.reject( unifiedHelper.returnResult(result))
@@ -407,7 +409,7 @@ var remove=async function  ({eCurrentColl,req,res}){
     //总体格式，包括URL中的参数和POST的参数结构
     //delete传参数的方式和get类似，只能放在URL中，为了复用sanityValue函数，需要将参数转换成{field:{value:'val'}}
     let inputResult={}
-    console.log(`delete params is ${JSON.stringify(req.params.id)}`)
+    // console.log(`delete params is ${JSON.stringify(req.params.id)}`)
     let checkResult=unifiedHelper.sanityDeleteValue(req.body.values,inputRule[eCurrentColl],true,maxFieldNum[eCurrentColl],req.params.id)
     //console.log(`delete check result is ${JSON.stringify(checkResult)}`)
     if(checkResult.rc>0){
@@ -444,9 +446,9 @@ var remove=async function  ({eCurrentColl,req,res}){
     let newPaginationInfo=newPagination.msg
     let newCurrentPage=newPaginationInfo.currentPage
 
-    console.log(`newCUrrent page is ${newCurrentPage}`)
-    console.log(`oldCUrrent page is ${currentPage}`)
-    console.log(`calc paginationInfo is ${JSON.stringify(newPaginationInfo)}`)
+    // console.log(`newCUrrent page is ${newCurrentPage}`)
+    // console.log(`oldCUrrent page is ${currentPage}`)
+    // console.log(`calc paginationInfo is ${JSON.stringify(newPaginationInfo)}`)
     let finalResult={rc:0,msg:{'recorder':[],'paginationInfo':newPaginationInfo}} //返回的结果
     //* c. 如果 旧的当前页<新的当前页，不可能发生的情况，需报错
     if(currentPage<newCurrentPage) {
@@ -457,9 +459,9 @@ var remove=async function  ({eCurrentColl,req,res}){
         //*   a.1 如果总页数>新的当前页，则读取新的当前页的最后一条记录（给用户的感觉就是后一页的第一条记录填补到当前页了）
         if(newPaginationInfo.totalPage>newCurrentPage){
             let skipNum=paginationSetting[eCurrentColl]['pageSize']-1
-            console.log(`skip num is ${skipNum}`)
+            // console.log(`skip num is ${skipNum}`)
             let tmpResult=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'paginationInfo':newPaginationInfo,readRecorderNum:1,skipRecorderNumInPage:skipNum})
-            console.log(`final result is ${JSON.stringify(finalResult)}`)
+            // console.log(`final result is ${JSON.stringify(finalResult)}`)
             if(tmpResult.rc>0){
                 return Promise.reject(tmpResult)
             }
@@ -475,7 +477,7 @@ var remove=async function  ({eCurrentColl,req,res}){
     }
     //* b. 如果 旧的当前页>新的当前页，读取新的当前页的所有信息（删除的记录是最后一页的最后一条记录，删除后，需显示前一页的记录）
     if(currentPage>newCurrentPage){
-        console.log(`current>new Current in`)
+        // console.log(`current>new Current in`)
         let tmpResult=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'paginationInfo':newPaginationInfo})
         if(tmpResult.rc>0){
             return Promise.reject(tmpResult)
@@ -526,13 +528,13 @@ var remove=async function  ({eCurrentColl,req,res}){
 /*      采用POST的方式完成auto complete的功能         */
 //传入参数的格式同inputValue，检查的格式同inputSearch（不用检查最大值）
 var readName=async function  ({eCurrentColl,req,res}){
-    console.log(`read name req.body is ${JSON.stringify(req.body)}`)
+    // console.log(`read name req.body is ${JSON.stringify(req.body)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
 
     //1 检查格式
     //let formatCheckResult=validateFunc.validateInputFormat(req.body.values,inputRule[eCurrentColl],1)
     let formatCheckResult=validateFormat.validateRecorderInfoFormat(req.body.values,inputRule[eCurrentColl],1)
-    console.log(`format check result is ${JSON.stringify(formatCheckResult)}`)
+    // console.log(`format check result is ${JSON.stringify(formatCheckResult)}`)
     if(formatCheckResult.rc>0){
         return  Promise.reject(unifiedHelper.returnResult(formatCheckResult))
     }
@@ -568,11 +570,11 @@ var readName=async function  ({eCurrentColl,req,res}){
     if(false===req.body.caller in collEnum ){
         return pageError.common.callerCollNotExist
     }
-console.log(`ready to read db`)
-    console.log(`db is ${coll}`)
-    console.log(`value is ${inputValueFiledValue}`)
+// console.log(`ready to read db`)
+//     console.log(`db is ${coll}`)
+//     console.log(`value is ${inputValueFiledValue}`)
     //console.log(`limit is ${JSON.stringify(pagi[coll]['limit'])}`)
-    console.log(`field is ${JSON.stringify(inputValueFiledName)}`)
+    // console.log(`field is ${JSON.stringify(inputValueFiledName)}`)
     let recorder
     if(null!==inputValueFiledValue && undefined!==inputValueFiledValue && ''!==inputValueFiledValue){
         //  有值的情况下，检查搜索值是否正确（否则checkSingleSearchValue会报错）
@@ -580,7 +582,7 @@ console.log(`ready to read db`)
         let chineseName=inputRule[coll][inputValueFiledName]['chineseName']
         //inputValue原本为单个字符，为了复用validateSingleSearchFieldValue，转换成数组
         let valueCheckResult=validateValue.validateSingleElementValue(chineseName,inputValueFiledValue,inputRule[coll][inputValueFiledName])
-        console.log(   `value resuot is ${JSON.stringify(valueCheckResult)}`)
+        // console.log(   `value resuot is ${JSON.stringify(valueCheckResult)}`)
         //for(let singleFieldName in valueCheckResult){
             if(valueCheckResult['rc']>0){
                 return Promise.reject(unifiedHelper.returnResult(valueCheckResult))
@@ -591,7 +593,7 @@ console.log(`ready to read db`)
     }else{
         recorder=await unifiedModel.readName({'dbModel':dbModel[coll],recorderLimit:suggestLimit[coll]['maxOptionNum'],'readNameField':inputValueFiledName,'callerColl':req.body.caller})
     }
-    console.log(`read db result is ${JSON.stringify(recorder)}`)
+    // console.log(`read db result is ${JSON.stringify(recorder)}`)
     return Promise.resolve(unifiedHelper.returnResult(recorder))
 
 
@@ -613,10 +615,12 @@ console.log(`ready to read db`)
  * */
 var search=async function ({eCurrentColl,req,res}){
     // console.log(`dbmodel is ${JSON.stringify(dbModel[eCurrentColl].modelName)}`)
-console.log(`search params is ${JSON.stringify(req.body.values)}`)
+    consoleDebug('search params is ',req.body.values)
+// console.log(`search params is ${JSON.stringify(req.body.values)}`)
     let fkConfig=fkAdditionalFieldsConfig[eCurrentColl]
     let sanitizedInputValue=unifiedHelper.sanitySearchInput(req.body.values,fkConfig,eCurrentColl,inputRule)
-     console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
+    consoleDebug('santiy result is ',sanitizedInputValue)
+     // console.log(`santiy result is ${JSON.stringify(sanitizedInputValue)}`)
     if(sanitizedInputValue.rc>0){
 
         return Promise.reject(unifiedHelper.returnResult(sanitizedInputValue))
@@ -625,7 +629,8 @@ console.log(`search params is ${JSON.stringify(req.body.values)}`)
     let currentPage=req.body.values['currentPage']
     let clientSearchParams=req.body.values['searchParams']
     let searchParams=dataConvert.genNativeSearchCondition(clientSearchParams,eCurrentColl,fkConfig,inputRule)
-    console.log(`convert search params id ${JSON.stringify(searchParams)}`)
+    consoleDebug('convert search params id',searchParams)
+    // console.log(`convert search params id ${JSON.stringify(searchParams)}`)
     //console.log(`current coll is ${JSON.stringify(dbModel[eCurrentColl])}`)
     let paginationInfo,result
     result=await unifiedModel.calcPagination({'dbModel':dbModel[eCurrentColl],'searchParams':searchParams,'pageSize':paginationSetting[eCurrentColl]['pageSize'],'pageLength':paginationSetting[eCurrentColl]['pageLength'],'currentPage':currentPage})
@@ -633,7 +638,8 @@ console.log(`search params is ${JSON.stringify(req.body.values)}`)
         return Promise.reject(result)
     }
     paginationInfo=result.msg
-console.log(`pagination is ${JSON.stringify(result.msg)}`)
+    consoleDebug('pagination is ',result.msg)
+// console.log(`pagination is ${JSON.stringify(result.msg)}`)
 
     result=await unifiedModel.search({'dbModel':dbModel[eCurrentColl],populateOpt:populateOpt[eCurrentColl],'searchParams':searchParams,'paginationInfo':paginationInfo})
     if(result.rc>0){
@@ -689,12 +695,12 @@ var getCurrentCapital=async function({req,res}){
     //console.log(`groupData is ${JSON.stringify(groupData)}`)
     //计算统计数据（根据billType的结构进行计算）
     let billTypeStructure=await getStaticBillType()
-    console.log(`billTypeStructure  is ${JSON.stringify(billTypeStructure)}`)
+    // console.log(`billTypeStructure  is ${JSON.stringify(billTypeStructure)}`)
     let dateTemplate=unifiedHelper.genDataStructureBaseOnBillType(billTypeStructure)
-    console.log(`dateTemplate  is ${JSON.stringify(dateTemplate)}`)
+    // console.log(`dateTemplate  is ${JSON.stringify(dateTemplate)}`)
     // 将数据放入template
     unifiedHelper.matchCurrentCaptialIntoTemplateArray(billTypeStructure,dateTemplate,groupData.msg)
-    console.log(`after exec matchDataIntoTemplateArray ${JSON.stringify(dateTemplate)}`)
+    // console.log(`after exec matchDataIntoTemplateArray ${JSON.stringify(dateTemplate)}`)
 //billType的结构在和 当前资金额一起返回。因为结构和资金额都只需要在页面载入时执行一次即可
     return Promise.resolve({rc:0,msg:{structure:billTypeStructure,data:dateTemplate}})
 }

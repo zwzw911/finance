@@ -3,8 +3,8 @@
  * dbstructure==>inputRule==>clientInputRule/clientInputAttr==>deleteNonNeededObject==>objectIdToRealField==>最终结果
  */
     'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 var genClientFunc=require("../server/assist/genClientConfigFunc")
 var ruleDefine=require("../server/define/validateRule/inputRule").inputRule
 var fieldDefine=require("../server/model/mongo/common/structure").fieldDefine

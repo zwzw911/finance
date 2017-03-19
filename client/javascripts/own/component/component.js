@@ -3,9 +3,7 @@
  * 通用函数（可供finance调用）
  */
     'use strict'
-/************************  for webpack **********************/
-var moment=require('moment')
-/**************************************************************/
+
 var componentApp=angular.module('component',['angularMoment']);
 //var moment=require('moment')
 //common的程序
@@ -170,7 +168,7 @@ componentApp.factory('validateHelper',function(){
                 dataTypeCheckResult=dataTypeCheck.isString(currentValue)
                 break;
             case 'date':
-                console.log(`value to be check is ${JSON.stringify(currentValue)}`)
+                // console.log(`value to be check is ${JSON.stringify(currentValue)}`)
                 dataTypeCheckResult=dataTypeCheck.isDate(currentValue)
                 break;
         }
@@ -376,7 +374,7 @@ componentApp.factory('queryHelper',function(contEnum) {
     //field: 字段的英文名
     //queryField: constant的queryField中coll的定义
     function getQueryFiledChineseName(field,queryField){
-        console.log(`getQueryFiledChineseName in`)
+        // console.log(`getQueryFiledChineseName in`)
         for(let singleQueryField of queryField){
             if(field===singleQueryField['key']){
                 return singleQueryField['value']
@@ -403,8 +401,8 @@ componentApp.factory('queryHelper',function(contEnum) {
         //     console.log(`in to init activea vlauy`)
         //     activateQueryFieldAndValue={}
         // }
-        console.log(`field is ${JSON.stringify(field)}`)
-        console.log(`field is ${JSON.stringify(value)}`)
+        // console.log(`field is ${JSON.stringify(field)}`)
+        // console.log(`field is ${JSON.stringify(value)}`)
 
 /*        let eleValue={'value':value}
         //是外键，需要找到对应的冗余字段
@@ -534,7 +532,7 @@ componentApp.factory('queryHelper',function(contEnum) {
     //实际要传送到server端的 查询 数据，可能在前端显示给用户看的时候需要格式化（例如时间，可能只要显示YYYY-DD-MM，而不要HH:mm）
     let formatQueryValue={
         'date':function(fieldValue){
-            console.log(`date tiem stamp ${fieldValue}`)
+            // console.log(`date tiem stamp ${fieldValue}`)
             return moment(fieldValue,'x').format('YYYY-MM-DD') //小x说明是以ms为单位
         },
         'dateTime':function(){}
@@ -626,12 +624,12 @@ componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTime
 
     //对一个inputAttr中所有field进行初始化
     function initAllFieldInputAttrUpdate(inputAttr){
-        console.log(`inputAttrinputAttr is ${JSON.stringify(inputAttr)}`)
+        // console.log(`inputAttrinputAttr is ${JSON.stringify(inputAttr)}`)
         for(let singleField in inputAttr){
             // console.log(singleField)
             initSingleFieldInputAttrUpdate(singleField,inputAttr)
         }
-         console.log(`after init ${JSON.stringify(inputAttr)}`)
+         // console.log(`after init ${JSON.stringify(inputAttr)}`)
     }
     //除了被initAllFieldInputAttrUpdate调用，也会在mainController中被直接调用，所以参数必须是field/inputAttr
     function initSingleFieldInputAttrUpdate(field,inputAttr){
@@ -647,7 +645,7 @@ componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTime
 
     //是否所有的input检测都通过了，如果是require，且validated属性为undefined的字段，需要进行validate
     function allInputValidCheck(inputAttr,inputRule){
-        console.log(`all input check validate in`)
+        // console.log(`all input check validate in`)
         for(let field in inputAttr){
 /*            if(undefined===inputAttr[field]['validated']){
                 validateHelper.checkInput(field,inputRule,inputAttr)
@@ -662,7 +660,7 @@ componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTime
     }
     //将当前的记录载入到inputAttr
     function loadCurrentData(idx,inputAttr,recorder,fkConfig,selectedAC){
-        console.log(`recorder to be loaded is ${JSON.stringify(recorder[idx])}`)
+        // console.log(`recorder to be loaded is ${JSON.stringify(recorder[idx])}`)
         for(var field in inputAttr){
 
             if(undefined===recorder[idx][field] || null===recorder[idx][field]){
@@ -682,7 +680,7 @@ componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTime
                     selectedAC[field]._id = recorder[idx][field]['_id']
                     selectedAC[field].value = recorder[idx][field][fkConfig[field]['fields'][0]]
                     //无需直接赋值给$scope.allData.inputAttr，而是通过acBlur判断通过后才赋值
-                    console.log(`load selectedAC is ${JSON.stringify(selectedAC)}`)
+                    // console.log(`load selectedAC is ${JSON.stringify(selectedAC)}`)
                 }
 
                 //如果是日期，除了把值放入inputAttr，还需要手工在页面上显示日期（ng-model对datetimepicker不起作用）
@@ -709,7 +707,7 @@ componentApp.factory('inputAttrHelper',function(contEnum,validateHelper,dateTime
             }
 
         }
-        console.log(`inputAttr to be loaded is ${JSON.stringify(inputAttr)}`)
+        // console.log(`inputAttr to be loaded is ${JSON.stringify(inputAttr)}`)
         // console.log(`selectInitValue to be loaded is ${JSON.stringify(selectInitValue)}`)
     }
 
@@ -1111,7 +1109,7 @@ componentApp.service('dateTimePickerHelper',function(){
         ).on(
             'dp.change',function(e){
                 //$('#'+eleId+'>input').val(e.date)
-                console.log(`ele ${eleId} on change result is ${JSON.stringify(e.date)}`)
+                // console.log(`ele ${eleId} on change result is ${JSON.stringify(e.date)}`)
         }
         )
 
@@ -1127,7 +1125,7 @@ componentApp.service('dateTimePickerHelper',function(){
     }
 
     this.setDate=function(eleId,date){
-        console.log(`setDate date is ${date}`)
+        // console.log(`setDate date is ${date}`)
         $('#'+eleId).data("DateTimePicker").date(date)
     }
     this.getDate=function(eleId){
@@ -1138,7 +1136,7 @@ componentApp.service('dateTimePickerHelper',function(){
         // let [year,month]=[moment().get('year'),moment().get('month')]
         // let firstDay=year+'-'+month+'-01'
         let d=moment().startOf("month")
-        console.log(`first day is ${d}`)
+        // console.log(`first day is ${d}`)
         $('#'+eleId).data("DateTimePicker").date(d)
         //$('#'+eleId).data("DateTimePicker").setValue(d)
     }
@@ -1153,7 +1151,7 @@ componentApp.service('dateTimePickerHelper',function(){
         // let [year,month]=[moment().get('year'),moment().get('month')]
         // let firstDay=year+'-'+month+'-01'
         let d=moment(currentDate).subtract(1,'years')
-        console.log(`last year today is ${d}`)
+        // console.log(`last year today is ${d}`)
         $('#'+eleId).data("DateTimePicker").date(d)
         //$('#'+eleId).data("DateTimePicker").setValue(d)
     }

@@ -2,8 +2,8 @@
  * Created by wzhan039 on 2016-07-07.
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
 var testModule=require('../../server/assist/validateInput/validateHelper');
 //var miscError=require('../../server/define/error/nodeError').nodeError.assistError
 var ruleFormatCheckFormatError=require('../../server/define/error/node/validateError').validateError.validateHelper

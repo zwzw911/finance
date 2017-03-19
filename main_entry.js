@@ -1,1 +1,0 @@
-require('./client/javascripts/own/main/mainController.js')

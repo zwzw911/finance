@@ -4,8 +4,8 @@
  * 定义mogoose操作错误
  */
 'use strict'
-require("babel-polyfill");
-require("babel-core/register")
+//require("babel-polyfill");
+//require("babel-core/register")
     //用来或侧chineseName，以便返回错误给client
 var inputRule=require('../validateRule/inputRule').inputRule
 var mongooseOpEnum=require('../enum/node').node.mongooseOp

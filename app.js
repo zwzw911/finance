@@ -2,7 +2,7 @@
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
+
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var lessMiddleware = require('less-middleware');
@@ -26,21 +26,47 @@ for(let singleKey in appSetting){
 app.set('views', path.join(__dirname, 'server/views'));
 app.set('view engine', 'ejs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
-app.use(logger('dev'));
+
+/********************        记录log       **************************************/
+var logger = require('morgan');
+var fs = require('fs')
+var FileStreamRotator = require('file-stream-rotator')
+
+// console.log(app.get('env'))
+
+if(app.get('env') === 'development'){
+  app.use(logger('dev'));
+
+}else if(app.get('env') === 'production'){
+  let logDirectory = __dirname + '/logs'
+  // ensure log directory exists
+  fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
+
+// create a rotating write stream
+  let accessLogStream = FileStreamRotator.getStream({
+    filename: logDirectory + '/access-%DATE%.log',
+    frequency: 'daily',//1h, 5m
+    date_format: "YYYY-MM-DD",
+    size: "5M",
+    verbose: false
+  })
+  app.use(logger('combined', {stream: accessLogStream}))
+}
+/**************************************************************************/
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 //使用和express.static一样的路径（举例，必须是/cliect而不能是/client/stylesheets）
 //force：每次请求都重新编译
-var force=false
+// var force=false
 if(app.get('env') === 'development'){
-  force=true
+  let force=true
+  app.use(lessMiddleware(path.join(__dirname + '/client'),[{debug:true,force:force,render:{compress:'false', 'yuicompress':false}}]))
 }
 
-app.use(lessMiddleware(path.join(__dirname + '/client'),[{debug:true,force:force,render:{compress:'false', 'yuicompress':false}}]))
+
 
 
 //开发环境，使用express自带的功能；生产环境，使用nginx
