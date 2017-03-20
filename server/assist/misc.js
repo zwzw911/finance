@@ -28,7 +28,7 @@ async function checkInterval(req){
 
     if(req.session && req.session.id){
         if(!regex.sessionId.test(req.session.id)){
-            return miscError.checkInterval.sessionIdWrong
+            return Promise.reject(miscError.checkInterval.sessionIdWrong)
         }
         identify=req.session.id
     }else{
@@ -44,7 +44,7 @@ async function checkInterval(req){
         if (identify && identify.substr(0, 7) == "::ffff:") {
             identify = identify.substr(7)
             if(!regex.ip.test(identify)){
-                return miscError.checkInterval.IPWrong
+                return Promise.reject(miscError.checkInterval.IPWrong)
             }
         }
 
@@ -52,7 +52,7 @@ async function checkInterval(req){
 
 
     if(undefined===identify){
-        return miscError.checkInterval.unknownRequestIdentify
+        return Promise.reject(miscError.checkInterval.unknownRequestIdentify)
         //return cb(null,)
     }
 
@@ -70,20 +70,20 @@ async function checkInterval(req){
     //result=JSON.parse(result)
     switch (result['rc']) {
         case 0:
-            return result
+            return Promise.resolve(result)
         case 10:
             let rc = {}
             rc['rc'] = miscError.checkInterval.tooMuchReq.rc
             rc['msg'] = `${miscError.checkInterval.forbiddenReq.msg.client}，请在${result['msg']}秒后重试`
             //console.log(rc)
-            return  rc
+            return  Promise.reject(rc)
         case 11:
             //console.log(intervalCheckBaseIPNodeError.between2ReqCheckFail)
-            return  miscError.checkInterval.between2ReqCheckFail
+            return  Promise.reject(miscError.checkInterval.between2ReqCheckFail)
             break;
         case 12:
             //console.log(intervalCheckBaseIPNodeError.exceedMaxTimesInDuration)
-            return miscError.checkInterval.exceedMaxTimesInDuration
+            return Promise.reject(miscError.checkInterval.exceedMaxTimesInDuration)
             break;
         default:
     }

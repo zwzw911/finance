@@ -73,13 +73,22 @@ gulp.task('maintain-es6', function() {
 });
 
 gulp.task('client-es6', function() {
-    gulp.src(['client/**.js'])
+    gulp.src(['client/own**.js'])
+        .pipe($G.babel({
+            presets: ["es2015","stage-0"],
+            compact:false,
+        }))
+        .pipe($G.ngmin({})) //对angular的注入进行处理，以便可以uglify（压缩变量名）
+        .pipe($G.uglify({
+
+        }))
+        .pipe(gulp.dest('dist/client/'));
+	gulp.src(['client/vendor**.js'])
         .pipe($G.babel({
             presets: ["es2015","stage-0"],
             compact:false,
         }))
         .pipe($G.uglify({
-
         }))
         .pipe(gulp.dest('dist/client/'));
 });

@@ -28,7 +28,7 @@ var checkInterval=require('../../assist/misc').checkInterval
 
 // import * as unifiedRouterController from './unifiedRouterController-compiled'
 var unifiedRouterController=require('./routerController')
-router.use(function(req,res,next){
+router.use(async function(req,res,next){
 /*    console.log(req.ips)
     console.log(req.ip)*/
     console.log('router use')
@@ -38,18 +38,13 @@ router.use(function(req,res,next){
     }
 
     if("production"===envSetting) {
-        console.log('production, check interval')
         next()
- /*       let result=checkInterval(req)
-        if(result.rc>0){
-            return res.render('helper/reqReject', {
-                title: '拒绝请求',
-                content: result['msg'],
-                year: new Date().getFullYear()
-            });
-        }*/
+    /*    console.log('production, check interval')
+
+
         //判断请求的是页面还是静态资源（css/js），还没有想好如何处理
-        /*if (req.path) {
+        if (req.path) {
+            console.log(`req.path is ${JSON.stringify(req.path)}`)
             let tmp = req.path.split('.')
             let suffix = tmp[tmp.length - 1]
             //console.log(suffix)
@@ -67,25 +62,15 @@ router.use(function(req,res,next){
                     next()
                     break;
                 default:
-                    common(req, res, next).then(
-                        (v)=> {
-                            if (0 !== v['rc']) {
-                                return res.render('helper/reqReject', {
-                                    title: '拒绝请求',
-                                    content: v['msg'],
-                                    year: new Date().getFullYear()
-                                });
-                            }
-                            next()
-                        }
-                    ).catch(
-                        (e)=> {
-                            console.log(`router error is ${e}`)
-                        }
-                    )
-
+                    let result=await checkInterval(req)
+                    if(result.rc>0){
+                        return res.render('helper/reqReject', {
+                            title: '拒绝请求',
+                            content: result['msg'],
+                            year: new Date().getFullYear()
+                        });
+                    }
             }
-
         }*/
     }
 
@@ -145,7 +130,7 @@ router.post('/employee',function(req,res,next){
 })*/
 //read single field
 router.post('/employee/name',function(req,res,next){
-    console.log('get no name ')
+    // console.log('get no name ')
     unifiedRouterController.readName({eCurrentColl:coll.employee, 'req':req,'res':res}).then(
         (v)=>{
             console.log(`read all employee name success, result: ${JSON.stringify(v)}`)

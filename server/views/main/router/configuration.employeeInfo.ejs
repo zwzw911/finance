@@ -7,8 +7,13 @@
         <h4 class="modal-title" >{{modal.title[allData.currentOpType]}}</h4>
       </div>
       <div class="modal-body">
-        <!--<div >-->
-        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id' && allData.inputRule[field]['require']['define']" ng-class="{'has-error': 0<value.errorMsg.length}">
+
+          <div class=" h4 text-muted" sytle="">
+              必填信息
+              <span class="fa fa-angle-double-down marginL_3 cursor_pointer" data-toggle="popover" title="显示必填信息" data-content="test" data-placement="right" ng-show="false===allData.showMandatoryField" ng-init="allData.showMandatoryField=true" ng-click="allFunc.switchMandatoryFields()"></span>
+              <span class="fa fa-angle-double-up marginL_3 cursor_pointer" data-toggle="popover" title="隐藏必填信息" data-content="test1" data-placement="right" ng-show="true===allData.showMandatoryField" ng-click="allFunc.switchMandatoryFields()"></span>
+          </div>
+        <div class="form-group"  ng-repeat="(field,value) in allData.inputAttr" ng-if="field!=='id' && allData.inputRule[field]['require']['define']" ng-show="true===allData.showMandatoryField" ng-class="{'has-error': 0<value.errorMsg.length}">
             <!--<div>-->
                 <label class="control-label" >{{value['chineseName']}}<span style="color:red" class="marginL_1">*</span></label>
             <!--普通字段-->
@@ -31,8 +36,8 @@
               <span class="input-group-addon" >
                         <span class="fa fa-calendar" ></span>
                     </span>
-            </div>
-          <p class="text-danger" style="height:20px">{{value.errorMsg}}</p>
+                </div>
+          <p class="text-danger" style="height:4px">{{value.errorMsg}}</p>
         </div>
           <div class=" h4 text-muted" sytle="">
               其他信息
