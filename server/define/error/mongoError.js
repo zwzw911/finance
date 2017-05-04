@@ -8,7 +8,7 @@
 //require("babel-core/register")
     //用来或侧chineseName，以便返回错误给client
 var inputRule=require('../validateRule/inputRule').inputRule
-var mongooseOpEnum=require('../enum/node').node.mongooseOp
+var mongooseOpEnum=require('../enum/node').mongooseOp
 
 /*
 * mongoose操作错误（不包含validator的错误？？）
@@ -16,18 +16,24 @@ var mongooseOpEnum=require('../enum/node').node.mongooseOp
 * fieldName：如果是validto人返回的错误，需要fieldName来获得err中的errormsg
 * */
 var mongooseErrorHandler=function(mongooseOp,err={}){
+    // console.log(`mongoose err handler in`)
     //对特殊的操作做pre操作，如果有具体的error code，返回对应的error
-    switch (mongooseOp){
-        case mongooseOpEnum.insertMany:
-            if(err.code && 11000===err.code){
-                return errorDefine.common.duplicate(err.errmsg)
-            }
-            break;
-        default:
-            if(err.code ){
-                return errorDefine.common.unknownErrorType(err)
-            }
+    if(!err.errors){
+        switch (mongooseOp){
+            case mongooseOpEnum.insertMany:
+                // console.log(`mongoose err is ${JSON.stringify(err)}`)
+                if(err.code && 11000===err.code){
+                    // console.log(`mongoose err handler ${JSON.stringify(errorDefine.common.duplicate(err.errmsg))}`)
+                    return errorDefine.common.duplicate(err.errmsg)
+                }
+                break;
+            default:
+                if(err.code ){
+                    return errorDefine.common.unknownErrorType(err)
+                }
+        }
     }
+
     //mongo validator错误。将错误 "错误代码20046:父类别不能为空" 转换成{rc:20046,msg:‘父类别不能为空’}
     if(err.errors){
         for(let single in err.errors){
@@ -58,15 +64,17 @@ var errorDefine={
         duplicate:function(errmsg){
             //'E11000 duplicate key error index: finance.billtypes.$name_1 dup key: { : \"aa\" }'=======>finance  billType   name
             //3.2.9   E11000 duplicate key error collection: finance.billtypes index: name_1 dup key: { : "aa" }
-            console.log(`mongoError->errorDefine: ${errmsg}`)
-            let regex=/E11000 duplicate key error index:(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
+            // console.log(`mongoError->errorDefine: ${errmsg}`)
+            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
             let match=errmsg.match(regex)
+            // console.log(`match is ${JSON.stringify(match)}`)
             let matchResult=match[1]
+            // console.log(`match resultis ${JSON.stringify(matchResult)}`)
             let tmp=matchResult.split('.')
-            let [db,coll,field]=tmp
-            field=field.split("_")[0].replace("$","") //$name_1===>$name
-            let dupValue=matchResult[2]
-
+            // console.log(`tmp is ${JSON.stringify(tmp)}`)
+            let [db,coll]=tmp
+            let field=match[2].split("_")[0].replace("$","") //$name_1===>$name
+            let dupValue=match[3]
 /*            let regex=/.*collection:\s(.*)\sindex:\s(.*)\sdup\skey:\s{\s:\s\"(.*)\"\s\}/
             let matchResult=errmsg.match(regex)
             let [db,coll]=matchResult[1].split(".")
@@ -78,7 +86,7 @@ var errorDefine={
             if('s'===coll[coll.length-1]){
                 coll=coll.substring(0,coll.length-1)
             }
-
+            // console.log(`dup2`)
 /*            let fieldRegex=/\$(\w+)_.*!/
             tmp=field.match(fieldRegex)
             field=tmp[1]*/
@@ -93,8 +101,8 @@ var errorDefine={
                     chineseName=inputRule[singleColl][field]['chineseName']
                 }
             }
-            console.log(`ready to return mongooseErrorHandler`)
-            return {rc:30002,msg:{client:`${chineseName}的值已经存在`,server:`集合${coll}的字段${field}的值${dupValue}重复`}}
+            // console.log(`ready to return mongooseErrorHandler`)
+            return {rc:30002,msg:{client:`${chineseName}的值已经存在`,server:`集合:${coll}-字段$:{field}:值-${dupValue},重复`}}
         },
         findById:function(err){
             return {rc:30004,msg:{client:`数据库错误，请联系管理员`,server:`findById err is ${JSON.stringify(err)}`}}

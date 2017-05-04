@@ -36,6 +36,6 @@ module.exports={
         reimburserNotExist:{rc:60400,msg:{client:'报销员工不存在',server:'employee id 不存在'}},
         billTypeNotExist:{rc:60402,msg:{client:'报销类型不存在',server:'billType id 不存在'}},
         billNotExists:{rc:60406,msg:{client:'报销不存在',server:'bill id 不存在'}},
-        billTypeInCorrect:{rc:60408,msg:{client:'单据类型不正确',server:'单据类型必须有parentBillType和inOut字段'}},
+
     },
 }

@@ -9,11 +9,101 @@ var testModule=require('../../server/assist/validateInput/validateFormat');
 var validateFormatError=require('../../server/define/error/node/validateError').validateError.validateFormat
 /*          for generateRandomString test       */
 var regex=require('../../server/define/regex/regex').regex
-var dataType=require('../../server/define/enum/validEnum').enum.dataType
+var dataType=require('../../server/define/enum/validEnum').dataType
+var validatePart=require('../../server/define/enum/validEnum').validatePart
+/***************************************************************************/
+/***************   validatePartFormat   *******************/
+/***************************************************************************/
+var validatePartFormat=function(test){
+    let func=testModule.validatePartFormat
+    let inputValue,result,exceptPart
+    test.expect(12)
 
-/***************************************************************************/
-/***************   validateCreateUpdateInputFormat   *******************/
-/***************************************************************************/
+    //1. inputValue is not object
+    inputValue=[]
+    exceptPart=[]
+    result=func(inputValue,exceptPart)
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'inputValue must be object')
+    inputValue=null
+    exceptPart=[]
+    result=func(inputValue,exceptPart)
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'inputValue must be object')
+
+    //3 inputValue part exceed ecxeptPart
+    inputValue={'unkonwnPart1':{},'unkonwnPart2':{}}
+    exceptPart=[exceptPart.currentPage]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartNumNotExcepted.rc,'part number exceed exceptPart')
+
+    //4 undefined part
+    inputValue={'unkonwnPart':{}}
+    exceptPart=['unkonwnPart']
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartNotExcepted.rc,'unknown part')
+
+    //5. inputValue has part not define in exceptPart
+    inputValue={'currentColl':"test"}
+    exceptPart=[validatePart.currentPage]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartMiss.rc,'miss part define in exceptPart')
+
+
+    //6. currentColl必须是string
+    inputValue={'currentColl':1}
+    exceptPart=[validatePart.currentColl]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartCurrentCollValueFormatWrong.rc,'currentColl part value is not string')
+    //7. currentPage必须是整数
+    inputValue={'currentPage':1.1}
+    exceptPart=[validatePart.currentPage]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc,'currentPage part value is not int')
+    //8. recorderId必须是字符
+    inputValue={'recorderId':1.1}
+    exceptPart=[validatePart.recorderId]
+    result=func(inputValue,exceptPart)
+    console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartRecorderIdValueFormatWrong.rc,'recorderId part value is not string')
+    //9. recorderId必须是字符
+    inputValue={'recorderId':'asdf'}
+    exceptPart=[validatePart.recorderId]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0,'recorderId part value is not string')
+
+    //10. recorderInfo必须是object
+    inputValue={'recorderInfo':1.1}
+    exceptPart=[validatePart.recorderInfo]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartRecorderInfoValueFormatWrong.rc,'recorderInfo part value is not object')
+    //11. searchParams必须是object
+    inputValue={'searchParams':1}
+    exceptPart=[validatePart.searchParams]
+    result=func(inputValue,exceptPart)
+    // console.log(`result searchParams is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.inputValuePartSearchParamsValueFormatWrong.rc,'searchParams part value is not object')
+
+
+    //12. all part correct
+    inputValue={'currentColl':'coll',currentPage:1,'recorderInfo':{},'searchParams':{}}
+    exceptPart=[validatePart.currentColl,validatePart.currentPage,validatePart.recorderInfo,validatePart.searchParams]
+    result=func(inputValue,exceptPart)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0,'all 4 part check fail')
+
+
+    test.done()
+}
+
+/*/!***************************************************************************!/
+/!***************   validateCreateUpdateInputFormat   *******************!/
+/!***************************************************************************!/
 var validateCreateUpdateInputFormat=function(test){
     let func=testModule.validateCUDInputFormat
     let values,result
@@ -21,129 +111,349 @@ var validateCreateUpdateInputFormat=function(test){
 
     values=null
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
     values=[]
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
 
-    values={}
+    values={currentPage:1,currentColl:'test'}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesFormatMissRecorderInfo.rc,'values must contain recorderInfo')
+    test.equal(result.rc,validateFormatError.inputValuePartMiss.rc,'values must contain recorderInfo')
 
-    values={'recorderInfo':null}
+    values={'recorderInfo':null,currentPage:1}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesRecorderInfoMustBeObject.rc,' recorderInfo must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartRecorderInfoValueFormatWrong.rc,' recorderInfo must be object')
 
-    values={'recorderInfo':{}}
+    values={'recorderInfo':{},currentColl:'tret'}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesFormatMisCurrentPage.rc,'values must contain currentPage')
+    test.equal(result.rc,validateFormatError.inputValuePartMiss.rc,'values must contain currentPage')
 
     values={'recorderInfo':{},'currentPage':'test'}
     result=func(values)
-    test.equal(result.rc,validateFormatError.CUDValuesCurrentPageMustBeInt.rc,'currentPage must be int')
+    test.equal(result.rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc,'currentPage must be int')
 
     values={'recorderInfo':{},'currentPage':1}
     result=func(values)
     test.equal(result.rc,0)
 
     test.done()
-}
+}*/
 /***************************************************************************/
 /***************  validateRecorderInfoFormat   *******************/
 /***************************************************************************/
 var validateRecorderInfoFormat=function(test){
-    let func=testModule.validateRecorderInfoFormat
-    let recorder,rules,result
-    let maxFieldNum=5
-    test.expect(5)
+    let func=testModule.validateCURecorderInfoFormat
+    let value,rules,result
+
+    //标号5，实际5（dup key无法测试）
+    test.expect(8)
+
     rules={field1:{}}//只是为了检测是否有对应的rule存在
 
-     //3 不能为空对象
-    recorder={}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.recorderInfoCantEmpty.rc,'recorder {} check fail')
+    //1. create/update的时候，输入值没有任何字段
+     value={}
+     result=func(value,rules)
+     // console.log(`resul is ${JSON.stringify(result)}`)
+     test.equal(result.rc,validateFormatError.recorderInfoCantEmpty.rc,'create/update recorder, inputValue fields in empty')
 
-    //4. 键值对数量不能超出预订数量
-    recorder={a:1,b:2,c:3,d:4,e:5,f:6}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.recorderInfoFieldNumExceed.rc,'recorder key num check fail')
+    //2 value的field数量超过rule定义的field数量
+    rules={name:{}}
+    value={name:{value:'a'},age:{value:10}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.recorderInfoFieldNumExceed.rc,"value fields number exceed rule fields number")
 
-    //5. 键值对的格式为key:{value:'val1'}
-    recorder={a:1}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.recorderInfoFormatWrong.rc,'recorder miss key value check fail')
-/*    recorder={a:{value:undefined}}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.inputValuesFormatWrong.rc,'recorder key value is undefined check fail')*/
-    //null值表示update的时候，要删除这个field
-/*    value={a:{value:null}}
-    result=func(value,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.valueNotDefineWithRequireTrue.rc,'value key value is undefined check fail')*/
-
-    //6. 键必须在rule中定义
-    recorder={'notDefinedInRule':{value:''}}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.recorderInfoFiledRuleNotDefine.rc,'field not define in rule check fail')
-/*    //6.1 不能包含skipFiled中定义的字段（默认是['cDate','uDate','dDate']）
-    //无法测试，因为cDate没有包含在inputRUle中，会因为recorderInfoFiledRuleNotDefine而先报错
-    recorder={'cDate':{value:''}}
-    result=func(recorder,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.recorderInfoIncludeSkipFiled.rc,'can not contain skip filed')*/
-/*    //7. 重复key（无法测试，因为重复key会报错）
-    value={'field1':{value:''},'field1':{value:''}}
-    result=func(value,rules,maxFieldNum)
-    test.equal(result.rc,validateFormatError.inputValueHasDuplicateField.rc,'duplicated key check fail')*/
+    //3. 重复key无法测试
+    //3. value中字段没有在rule中定义
+    rules={name:{}}
+    value={age:{value:10}}
+    result=func(value,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.recorderInfoFiledRuleNotDefine.rc,"value field not defined in  rule")
 
 
-    recorder={'field1':{value:''}}
-    result=func(recorder,rules,maxFieldNum)
+    //4. 键值不是对象
+    rules={field1:{}}
+    value={field1:1}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.recorderInfoFormatWrong.rc,'recorder field value should be object')
+    //5. 键值为空对象
+    rules={field1:{}}
+    value={field1:{}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.recorderInfoFieldValueFiledNumNot1.rc,'recorder field value should be object, and only contain 1 key')
+
+    //6. 键值包含多余field
+    rules={field1:{}}
+    value={field1:{value:1,'anyKey':2}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.recorderInfoFieldValueFiledNumNot1.rc,'recorder field value should be object, and only contain 1 key')
+
+    //7. 键值的field不是value
+    rules={field1:{}}
+    value={field1:{'anyKey':2}}
+    result=func(value,rules)
+    test.equal(result.rc,validateFormatError.recorderInfoFieldValueFiledWrong.rc,'recorder field value should be object, and only contain value')
+
+
+    //8. corrent case
+    rules={field1:{}}
+    value={'field1':{value:''}}
+    result=func(value,rules)
     test.equal(result.rc,0,'correct value check fail')
 
     test.done()
 }
 
+/*                  filterFieldValue    {field1:keyword} or {billType:{name:keyword}}              */
+//
+var validateFilterFieldValueFormat=function (test){
+    let func=testModule.validateFilterFieldValueFormat
+    let value,rules,fkConfig,result
+    rules={
+            name:{},
+            age:{}
+    }
+    fkConfig={
+            name:{forSetValue:['fkName']}
+    }
+
+    test.expect(12)
+
+    //1 value必须是object
+    value=[]
+    result=func(value,fkConfig,rules)
+    test.equal(result.rc,validateFormatError.filterFieldValueNotObject.rc,"filter field value must be object")
+
+    //2 value的field数量不为1
+     value={name:{value:'a'},age:{value:10}}
+     result=func(value,fkConfig,rules)
+     test.equal(result.rc,validateFormatError.filterFieldValueFieldNumNot1.rc,"filter field value fields number not 1")
+
+    //3 value的field数量不为1
+    value={}
+    result=func(value)
+    test.equal(result.rc,validateFormatError.filterFieldValueFieldNumNot1.rc,"filter field value fields number not 1")
+
+     //4 key未在rule中定义
+     value={id:{value:10}}
+     result=func(value,fkConfig,rules)
+     // console.log(`error0 is ${JSON.stringify(result)}`)
+     test.equal(result.rc,validateFormatError.filterFieldValueFieldNotInRule.rc,"field defined in rule")
+
+    //5  value必须是字符数字，对象
+    value={name:[]}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueTypeWrong.rc," field  value should be number/string/object")
+    //6  value必须是字符数字，对象
+    value={name:null}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueTypeWrong.rc," field  value should be number/string/object")
+    //7  value必须是字符数字，对象
+    value={name:1}
+    result=func(value,fkConfig,rules)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0," field  value should be number/string/object")
+
+    //8 fk field未在forSetValue中
+    value={name:{'any':1}}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldNoRelateField.rc," field fk field not in forSetValue")
+
+    //9 value是object，但其中key未在fkConfig中定义
+    value={age:{'any':1}}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldNotFK.rc," non fk field with value object")
+
+    //10 fk的value是object，只能包含一个key
+    value={name:{fkName:1,fkName2:2}}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueFKFieldNumNot1.rc," fk value only contain 1 field")
+
+    //11 id或者_id的值只能包含一个key，且名称为value
+    value={name:{fkName:{}}}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.filterFieldValueTypeWrong.rc," fk field value must be number/string")
+
+    //12 正确格式
+    value={name:{fkName:1}}
+    result=func(value,fkConfig,rules)
+    // console.log(`error0 is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0," correct format")
 
 
-/***************************************************************************/
-/***************   validateSearchInputFormat   *******************/
-/***************************************************************************/
+    test.done()
+}
+
+/*/!***************************************************************************!/
+/!***************   validateSearchInputFormat
+ * 当search的是或，验证输入的整体格式（是否包含seachParams/currentpage等）*******************!/
+/!***************************************************************************!/
 var validateSearchInputFormat=function(test){
     let func=testModule.validateSearchInputFormat
     let values,result
-    test.expect(7)
+    test.expect(8)
 
+    //1. 输入必须是object
     values=null
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
+    //2. 输入必须是object
     values=[]
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesTypeWrong.rc,'values must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartFormatWrong.rc,'values must be object')
 
+    //3.输入必须的object的key数量必须和exceptParts一致（2个：searchparams和currentpage）
     values={}
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesFormatMissSearchParams.rc,'values must contain SearchParams')
+    test.equal(result.rc,validateFormatError.inputValuePartNumNotExcepted.rc,'values must contain 2 keys')
 
-    values={'searchParams':null}
+    //4.输入必须的object的key数量必须和exceptParts一致（2个：searchparams和currentpage）
+    values={'any1':null,'any2':"null",'any3':null}
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesSearchParamsMustBeObject.rc,' SearchParams must be object')
+    test.equal(result.rc,validateFormatError.inputValuePartNumNotExcepted.rc,'values must contain 2 keys')
 
-    values={'searchParams':{}}
+    //5 未定义字段
+    values={'searchParams':{},'any':null}
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesFormatMisCurrentPage.rc,'values must contain currentPage')
+    test.equal(result.rc,validateFormatError.inputValuePartMiss.rc,' any not expect part')
 
+    //6. searchPamrs必须为object
+    values={'searchParams':null,'currentPage':1}
+    result=func(values)
+    test.equal(result.rc,validateFormatError.inputValuePartSearchParamsValueFormatWrong.rc,' SearchParams must be object')
+
+    //7. currentPage必须是整数
     values={'searchParams':{},'currentPage':'test'}
     result=func(values)
-    test.equal(result.rc,validateFormatError.SValuesCurrentPageMustBeInt.rc,'currentPage must be int')
+    test.equal(result.rc,validateFormatError.inputValuePartCurrentPageValueFormatWrong.rc,'currentPage must be int')
 
+    //8 整体格式正常
     values={'searchParams':{},'currentPage':1}
     result=func(values)
     test.equal(result.rc,0)
 
     test.done()
+}*/
+
+/***************************************************************************/
+/***************  part: earchParamsFormat   *******************/
+/***************************************************************************/
+var validateSearchParamsFormat=function(test){
+    test.expect(9)
+
+    let func = testModule.validateSearchParamsFormat
+    //let error = miscError.validateFunc.validateInputSearchFormat
+    let rules = require('../../server/define/validateRule/inputRule').inputRule
+    let coll = require('../../server/define/enum/node').coll
+    rules.billType.age = {}
+    rules.billType.age['type'] = dataType.number
+    //console.log(`test rule is ${JSON.stringify(rules.billType.age.type.toString())}`)
+    let fkAdditionalFieldsConfig =
+        {
+            //冗余字段（nested）的名称：具体冗余那几个字段
+            //parentBillType:此字段为外键，需要冗余字段
+            //relatedColl：外键对应的coll
+            //nestedPrefix： 冗余字段一般放在nested结构中
+            //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
+            parentBillType: {
+                relatedColl: coll.billType,
+                nestedPrefix: 'parentBillTypeFields',
+                forSelect: 'name age',
+                forSetValue: ['name', 'age']
+            }
+        }
+    // let searchSetting=require('../../server/config/global/globalSettingRule').searchSetting
+    //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
+    let value, result, tmp
+
+    /*    /!*                必须是对象  通过validateSearchInputFormat检测                *!/
+     value = '1234'
+     result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
+     //console.log(result)
+     test.equal(result.rc, validateFormatError.inputSearchNotObject.rc, 'search input is string check fail')
+
+     value = ['1234']
+     result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
+     //console.log(result)
+     test.equal(result.rc, validateFormatError.inputSearchNotObject.rc, 'search input is array check fail')
+
+
+     /!*              对象不能为空   可以为空，选择所有记录               *!/
+     value = {}
+     result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
+     //console.log(result)
+     test.equal(result.rc, validateFormatError.inputSearchCanNotEmpty.rc, 'search input is {} check fail')*/
+
+    //1, no any search fields
+    value={}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0,'search input field zero')
+
+    //2, search field is not defined in rule
+    value={'field1':[{value:1}],'field2':[{value:1}],'field3':[{value:1}],'field4':[{value:1}],'field5':[{value:1}],'field6':[{value:1}],'field7':[{value:1}]}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.searchParamsFieldsExceed.rc,'search input fields exceed')
+
+    //3, search field is not defined in rule
+    value={'undefined':[{value:1}]}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    // console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,validateFormatError.searchParamsFieldNoRelatedRule.rc,'search input fields undefined')
+
+    /*              对象的key必须在rule中定义           */
+    value = {'notExistField': ['a']}
+    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
+    //console.log(result)
+    test.equal(result.rc, validateFormatError.searchParamsFieldNoRelatedRule.rc, 'search input value key not exist check fail')
+    /*              字段的值不能为空           */
+    value = {'name': null}
+    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
+    //console.log(result)
+    test.equal(result.rc, validateFormatError.searchParamsFiledValueCantEmpty.rc, 'search input value filed value empty check fail')
+
+    /*              外键的冗余字段必须是对象           */
+    value={'parentBillType':1}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    //console.log(result)
+    test.equal(result.rc,validateFormatError.searchParamsFKFiledValueNotObject.rc,'search input value FK key not object check fail')
+    /*              外键的冗余字段必须在rule中定义           */
+    value={'parentBillType':{'notExistFiled':1}}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    //console.log(result)
+    test.equal(result.rc,validateFormatError.searchParamsFKNoRelatedRule.rc,'search input value FK key not exist check fail')
+    /*              外键的冗余字段不能为空           */
+    value={'parentBillType':{'name':null}}
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    //console.log(result)
+    test.equal(result.rc,validateFormatError.searchParamsFKFiledValueCantEmpty.rc,'search input value FK key not exist check fail')
+
+
+    /*          正确的值（当前函数+子函数subvalidateInputSearchFormat）          */
+    value={
+        name:[{value:'zw'},{value:'zw1'},{value:'zw2'}],
+        parentBillType:{
+            name:[{value:'zw'}],
+            age:[{value:12,compOp:'gt'}]
+        }
+    }
+    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
+    //console.log(`result is ${JSON.stringify(result)}`)
+    test.equal(result.rc,0,'search input value success check fail')
+
+
+    test.done()
 }
 
 /***************************************************************************/
-/***************   validateSingleSearchParamsFormat   *******************/
+/***************   singleSearchParams   *******************/
 /***************************************************************************/
 var validateSingleSearchParamsFormat=function(test){
     test.expect(14)
@@ -151,7 +461,7 @@ var validateSingleSearchParamsFormat=function(test){
     let func = testModule.validateSingleSearchParamsFormat
     //let error = miscError.validateFunc.validateInputSearchFormat
     let rules = require('../../server/define/validateRule/inputRule').inputRule
-    let coll = require('../../server/define/enum/node').node.coll
+    let coll = require('../../server/define/enum/node').coll
     rules.billType.age = {}
     rules.billType.age['type'] = dataType.number
     //console.log(`test rule is ${JSON.stringify(rules.billType.age.type.toString())}`)
@@ -253,99 +563,7 @@ var validateSingleSearchParamsFormat=function(test){
 }
 
 
-/***************************************************************************/
-/***************  validateSearchParamsFormat   *******************/
-/***************************************************************************/
-var validateSearchParamsFormat=function(test){
-    test.expect(6)
 
-    let func = testModule.validateSearchParamsFormat
-    //let error = miscError.validateFunc.validateInputSearchFormat
-    let rules = require('../../server/define/validateRule/inputRule').inputRule
-    let coll = require('../../server/define/enum/node').node.coll
-    rules.billType.age = {}
-    rules.billType.age['type'] = dataType.number
-    //console.log(`test rule is ${JSON.stringify(rules.billType.age.type.toString())}`)
-    let fkAdditionalFieldsConfig =
-    {
-        //冗余字段（nested）的名称：具体冗余那几个字段
-        //parentBillType:此字段为外键，需要冗余字段
-        //relatedColl：外键对应的coll
-        //nestedPrefix： 冗余字段一般放在nested结构中
-        //荣誉字段是nested结构，分成2种格式，字符和数组，只是为了方便操作。 forSelect，根据外键find到document后，需要返回值的字段；forSetValue：需要设置value的冗余字段（一般是nested结构）
-        parentBillType: {
-            relatedColl: coll.billType,
-            nestedPrefix: 'parentBillTypeFields',
-            forSelect: 'name age',
-            forSetValue: ['name', 'age']
-        }
-    }
-    // let searchSetting=require('../../server/config/global/globalSettingRule').searchSetting
-    //let preFunc=testModule.validate._private.checkRuleBaseOnRuleDefine
-    let value, result, tmp
-
-/*    /!*                必须是对象  通过validateSearchInputFormat检测                *!/
-    value = '1234'
-    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.inputSearchNotObject.rc, 'search input is string check fail')
-
-    value = ['1234']
-    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.inputSearchNotObject.rc, 'search input is array check fail')
-
-
-    /!*              对象不能为空   可以为空，选择所有记录               *!/
-    value = {}
-    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.inputSearchCanNotEmpty.rc, 'search input is {} check fail')*/
-
-
-    /*              对象的key必须在rule中定义           */
-    value = {'notExistField': ['a']}
-    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.searchParamsFieldNoRelatedRule.rc, 'search input value key not exist check fail')
-    /*              字段的值不能为空           */
-    value = {'name': null}
-    result = func(value, fkAdditionalFieldsConfig, coll.billType, rules)
-    //console.log(result)
-    test.equal(result.rc, validateFormatError.searchParamsFiledValueCantEmpty.rc, 'search input value filed value empty check fail')
-
-    /*              外键的冗余字段必须是对象           */
-    value={'parentBillType':1}
-    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
-    //console.log(result)
-    test.equal(result.rc,validateFormatError.searchParamsFKFiledValueNotObject.rc,'search input value FK key not object check fail')
-    /*              外键的冗余字段必须在rule中定义           */
-    value={'parentBillType':{'notExistFiled':1}}
-    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
-    //console.log(result)
-    test.equal(result.rc,validateFormatError.searchParamsFKNoRelatedRule.rc,'search input value FK key not exist check fail')
-    /*              外键的冗余字段不能为空           */
-    value={'parentBillType':{'name':null}}
-    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
-    //console.log(result)
-    test.equal(result.rc,validateFormatError.searchParamsFKFiledValueCantEmpty.rc,'search input value FK key not exist check fail')
-
-
-    /*          正确的值（当前函数+子函数subvalidateInputSearchFormat）          */
-    value={
-        name:[{value:'zw'},{value:'zw1'},{value:'zw2'}],
-        parentBillType:{
-            name:[{value:'zw'}],
-            age:[{value:12,compOp:'gt'}]
-        }
-    }
-    result=func(value,fkAdditionalFieldsConfig,coll.billType,rules)
-    //console.log(`result is ${JSON.stringify(result)}`)
-    test.equal(result.rc,0,'search input value success check fail')
-
-
-    test.done()
-}
 
 
 
@@ -585,9 +803,9 @@ var checkInputAdditional=function(test){
 }
 
 exports.validate={
-    validateCreateUpdateInputFormat,
-    validateRecorderInfoFormat,
-    validateSearchInputFormat,
+    validatePartFormat,
+    validateRecorderInfoFormat, //create/update的时候的recorderInfo
+    validateFilterFieldValueFormat,  //part：filterFieldValue，
     validateSingleSearchParamsFormat,
     validateSearchParamsFormat,
 

@@ -25,59 +25,151 @@ var inputRule=require('../define/validateRule/inputRule').inputRule
 
 var fs=require('fs')
 
-/*//obj：inputRule
-// level：level的数量
-//resultObj：存储结果的变量
-var generateClientRule=function(obj,level,resultObj){
-    // let resultObj={}
-    //client还需要type，以便判断类型
-    clientRuleType['type']='type'
-    console.log(`ojb is ${JSON.stringify(obj)}`)
-    if('object'===typeof obj){
-        for(let key in obj){
-            console.log(  `key is ${key}`)
-            resultObj[key]={}
-            //深度为1,达到subItem
-            if(1===level){
-                for(let field in clientRuleType){
-                    console.log(  `field is ${field}`)
-                    //rule有定义，
-                    if(undefined!==obj[key][field] && null!==obj[key][field]){
-                        let [newColl,newField]=[key,field]
-                        //如果是外键，读取对应的外键字段
-                        if(true=== 'ref' in dbStructure[key][field]){
-                            newColl=dbStructure[key][field]['ref']
-                        }
-                        //读取type
-                        if('type'===field && obj[key][field]){
-                            resultObj[key][field]=obj[key][field]
-                        }
-                        //读取rule定义
-                        if(undefined!==obj[key][field]['define'] && null!==obj[key][field]['define']){
-                            resultObj[key][field]={}
-
-                            resultObj[key][field]['define']=obj[key][field]['define']
+var vueAsyncValidatorDateType=require('../define/enum/validEnum').enum.vueAsyncValidatorDateType
 
 
-                            //产生错误信息，以便angularjs检查input错误时使用
-                            resultObj[key][field]['msg']=validateInputValue.generateErrorMsg[field](obj[key]['chineseName'],obj[key][field]['define'],obj[key]['default'])
+//根据inputRule，产生vue async-validator的datatype
+var genVueAsyncValidatorDateType=function(){
+    let result={}
+    for(let coll in inputRule){
+        result[coll]={}
+        for(let field in inputRule[coll]){
+            result[coll][field]={}
+            //检查是否为外键,是外键的话，要重定向rule对应的coll/field
+            let [newColl,newField]=[coll,field]
+            // console.log(`db field is ${JSON.stringify(dbStructure[coll][field])}`)
+            //使用获得coll/field在dbstructue中检查是否为外键
+            if(dbStructure[coll] && dbStructure[coll][field] && true==='ref' in dbStructure[coll][field]){
+                // console.log(`orig coll field is ${newColl}  ${newField}`)
+                let ref=dbStructure[coll][field]['ref']
+                newColl=ref.substring(0,ref.length-1) //去除最后一个字符s
+                newField='name' //如果是外键，对应的字符字段一般都是name
+                // console.log(`new coll field is ${newColl}  ${newField}`)
+            }
+
+            let type
+            if(inputRule[newColl][newField]['type']){
+                switch(inputRule[newColl][newField]['type']){
+                    case dataType.date:
+                        type=vueAsyncValidatorDateType.date
+                        break;
+                    case dataType.string:
+                        type=vueAsyncValidatorDateType.string
+                        if(true==='enum' in inputRule[newColl][newField]){
+                            type=vueAsyncValidatorDateType.enum
                         }
+                        break;
+                    case dataType.int:
+                        type=vueAsyncValidatorDateType.integer
+                        break;
+                    case dataType.file:
+                        break;
+                    case dataType.folder:
+                        break;
+/*                    case dataType.password:
+                        type=vueAsyncValidatorDateType.string
+/!*                        if(true==='format' in inputRule[newColl][newField]){
+                            type=vueAsyncValidatorDateType.regexp
+                        }*!/
+                        break;*/
+                    case dataType.objectId:
+                        type=vueAsyncValidatorDateType.string
+                        break;
+                    default://自定义和async-validator一致
+                        type=inputRule[newColl][newField]['type']
+                }
+            }
+            result[coll][field]=type
+        }
+    }
+    return result
+}
+//根据dbstructure，以inputRule为基础，生成对应iView的Rule
+/*[
+	{required:true,type:'date array',message:'',trigger:'blur'}
+]*/
+var generateClientRuleForVue=function(){
+    let inputRuleVueAsyncValidatorDateType=genVueAsyncValidatorDateType()
+    let result={}
+    //需要提取到client的rule
+    // clientRuleType['type']='type'
+
+    //从inputRule中提取coll/field
+    for(let coll in inputRule){
+        result[coll]={}
+        for(let field in inputRule[coll]){
+            result[coll][field]=[]
+            //检查是否为外键,是外键的话，要重定向rule对应的coll/field
+            let [newColl,newField]=[coll,field]
+            // console.log(`db field is ${JSON.stringify(dbStructure[coll][field])}`)
+            //使用获得coll/field在dbstructue中检查是否为外键
+            if(dbStructure[coll] && dbStructure[coll][field] && true==='ref' in dbStructure[coll][field]){
+                // console.log(`orig coll field is ${newColl}  ${newField}`)
+                let ref=dbStructure[coll][field]['ref']
+                newColl=ref.substring(0,ref.length-1) //去除最后一个字符s
+                newField='name' //如果是外键，对应的字符字段一般都是name
+                // console.log(`new coll field is ${newColl}  ${newField}`)
+            }
+
+            let vueFiledType=inputRuleVueAsyncValidatorDateType[newColl][newField]
+
+            for(let singleRule in clientRuleType){
+				let singleClientRule={type:vueFiledType}
+                if(inputRule[newColl][newField][singleRule]){
+                // console.log(`ready coll field is ${newColl}  ${newField}`)
+                    if(clientRuleType.maxLength===singleRule){
+                        switch (vueFiledType) {
+                            case vueAsyncValidatorDateType.string:
+                                singleClientRule['max'] = inputRule[newColl][newField][singleRule]['define'];
+                                break;
+                            default:
+                                continue
+                        }
+                    }else if(clientRuleType.minLength===singleRule) {
+                        switch (vueFiledType) {
+                            case vueAsyncValidatorDateType.string:
+                                singleClientRule['min'] = inputRule[newColl][newField][singleRule]['define']
+                                break;
+                            default:
+                                continue
+                        }
+                    }else if(clientRuleType.require===singleRule) {
+                        singleClientRule['required'] = inputRule[newColl][newField][singleRule]['define']
                     }
+                    else{
+                        if(singleRule===vueFiledType){
+                            singleClientRule[singleRule]=inputRule[newColl][newField][singleRule]['define']
+                        }
+
+                    }
+                    console.log(`coll is ${newColl},field is ${newField},rule name is ${singleRule}, rule is ${JSON.stringify(inputRule[newColl][newField][singleRule])}`)
+                    singleClientRule['message']=validateHelper.generateErrorMsg[singleRule](inputRule[coll][field]['chineseName'],inputRule[newColl][newField][singleRule]['define'],inputRule[newColl][newField]['default'])
+                    //result[coll][field][singleRule]={}
+                    //result[coll][field][singleRule]['define']=inputRule[newColl][newField][singleRule]['define']
+                    //result[coll][field][singleRule]['msg']=validateHelper.generateErrorMsg[singleRule](inputRule[coll][field]['chineseName'],inputRule[newColl][newField][singleRule]['define'],inputRule[newColl][newField]['default'])
+					singleClientRule['trigger']='blur'
+					
+                    result[coll][field].push(singleClientRule)
                 }
-            }else{
-                //如果值是对象，递归调用
-                if('object'===typeof obj[key]){
-                    let currentLvl=level-1
-                    generateClientRule(obj[key],currentLvl,resultObj[key])
-                }
+
 
             }
         }
     }
+    return result
+}
 
-}*/
-
-
+//iview使用async-validator进行验证，所以，所有输入值要放在filed;value的格式
+var genVueClientInputValue=function(){
+    let result={}
+    for(let coll in inputRule){
+        result[coll]={}
+        for(let field in inputRule[coll]){
+            result[coll][field]=''
+        }
+    }
+    return result
+}
 //根据dbstructure，以inputRule为基础，生成对应的clientRule
 var generateClientRule=function(){
     let result={}
@@ -93,7 +185,7 @@ var generateClientRule=function(){
             let [newColl,newField]=[coll,field]
             // console.log(`db field is ${JSON.stringify(dbStructure[coll][field])}`)
             //使用获得coll/field在dbstructue中检查是否为外键
-            if(dbStructure[coll][field] && true==='ref' in dbStructure[coll][field]){
+            if(dbStructure[coll] && dbStructure[coll][field] && true==='ref' in dbStructure[coll][field]){
                 // console.log(`orig coll field is ${newColl}  ${newField}`)
                 let ref=dbStructure[coll][field]['ref']
                 newColl=ref.substring(0,ref.length-1) //去除最后一个字符s
@@ -260,7 +352,7 @@ var generateSingleCollInputAttr=function(inputRule,fieldDefine){
                 //isCRUDAutoComplete：在CRUD时，字段值是否可以通过AC获得
                 //isSelect:input是否为select
                 resultObj[singleField]={
-                    value:'',
+                    // value:'',
                     originalValue:'',
                     isFKField:false,//是否为外键（如果是外键的话，存储的值格式为对象{show:'',id:''}。show：显示给用户看的内容，id；实际对应的记录的objectId
                     inputType:inputType.normal,//代替isSelect/isCRUDAutoComplete，决定使用何种input用来处理field的数据
@@ -375,6 +467,9 @@ var genSelectedAC=function(){
 }
 
 module.exports={
+    genVueAsyncValidatorDateType,
+	generateClientRuleForVue,
+    genVueClientInputValue,
     generateClientRule,
     deleteNonNeededObject,
     objectIdToRealField,

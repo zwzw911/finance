@@ -54,6 +54,8 @@ var matchList={
     }
 }
 
+let vueInputValue=genClientFunc.genVueClientInputValue()
+fs.writeFile('vueInputRule.txt',JSON.stringify(vueInputValue))
 inputAttr=genClientFunc.generateClientInputAttr(ruleDefine,fieldDefine)
 // console.log(inputAttr['department'])
 genClientFunc.deleteNonNeededObject(inputAttr,skipListForAttr)
@@ -62,7 +64,9 @@ genClientFunc.objectIdToRealField(inputAttr,matchList)
 // console.log(inputAttr['department'])
 fs.writeFile('inputAttr.txt',JSON.stringify(inputAttr))
 
-clientInputRule=genClientFunc.generateClientRule()
+// clientInputRule=genClientFunc.generateClientRule()
+clientInputRule=genClientFunc.generateClientRuleForVue()
+// clientInputRule=genClientFunc.genVueAsyncValidatorDateType()
 genClientFunc.deleteNonNeededObject(clientInputRule,skipListForRule)
 genClientFunc.objectIdToRealField(clientInputRule,matchList)
 fs.writeFile('clientInputRule.txt',JSON.stringify(clientInputRule))

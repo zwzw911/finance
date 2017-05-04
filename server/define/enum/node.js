@@ -45,9 +45,9 @@ var mongooseOp={
 }
 
 
-exports.node={
-    randomStringType:randomStringType,
-    userState:userState,
+module.exports={
+    randomStringType,
+    userState,
     coll,
     env,
     compOp,

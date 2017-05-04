@@ -21,32 +21,7 @@ var assistError={
         fileSizeEmpty:{rc:69608,msg:{client:'图片的大小为空',server:'图片的大小为空'}},
         invalidFileSizeInByte:{rc:69609,msg:{client:'无法读取图片文件的大小',server:'图片文件的大小转换成byte后，不正确'}}
     },
-    validateFunc:{
-        validateInputRuleFormat:{
 
-
-
-        },
-        validateInputFormat:{
-            //rule chekc fail
-            //rule的error（rc，msg）和具体rule定义有关（即定义在rule中，保证对于相同的rule（7个总共）每个input的check都有唯一的rc和msg）
-            /*        maxLengthCheckFail:{rc:68844,msg:{client:'输入值长度超出最大定义的长度'}},
-             minLengthCheckFail:{rc:68846,msg:{client:'输入值长度小于最小定义的长度'}},
-             exactLengthCheckFail:{rc:68848,msg:{client:'输入值的长度不等于定义的长度'}},
-             minCheckFail:{rc:68850,msg:{client:'输入值小于定义的最小值'}},
-             maxCheckFail:{rc:68852,msg:{client:'输入值大于定义的最小值'}},
-             formatCheckFail:{rc:68854,msg:{client:'输入值的格式不正确'}},
-             equalToCheckFail:{rc:68856,msg:{client:'两个输入值不相等'}},*/
-
-            //mongo的id没有在rule中定义，需要在misc中单独定义一个函数进行判别，如果格式不正确，返回如下错误
-            //idWrong:{rc:68870,msg:'id格式不正确'},
-            //以下只需返回给client，因此只要msg:'error'的格式，而不要client/server
-
-        },
-        validateInputSearchFormat:{
-
-        },
-    },
     misc:{
         checkInterval:{
             sessionIdWrong:{rc:69900,msg:{client:'请求格式不正确',server:'session格式不正确'}},
@@ -78,7 +53,8 @@ var assistError={
             origObjTypeWrong:{rc:69004,msg:{client:'无法匹配对象中的内容',server:'函数objectIdToRealField中的参数origObj不是对象'}},
             matchListTypeWrong:{rc:69006,msg:{client:'无法匹配对象中的内容',server:'函数objectIdToRealField中的参数matchList不是对象'}},
         }
-    }
+    },
+
 }
 
 exports.nodeError={

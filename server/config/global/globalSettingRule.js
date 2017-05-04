@@ -12,7 +12,7 @@
 * 不能把object的value当成另外一个object的key（ruleType.require:value是不允许的）
 * */
 //var ruleType=require('../../define/enum/validEnum').enum.ruleType
-var dataType=require('../../define/enum/validEnum').enum.dataType
+var dataType=require('../../define/enum/validEnum').dataType
 var regex=require('../../define/regex/regex').regex
 
 //maxAge:ms;  负数（-1）：临时cookie，关闭网页就删除cookie；0：立刻删除；正整数：多少毫秒后失效
@@ -88,7 +88,9 @@ var internalSetting={
     globalSettingBackupSize:10*1024,//byte
 
 }
-
+var searchMaxPage={
+    readName:10,
+}
 /*//设置每次读取的记录数量===》用paginationSetting的pageSize代替
 var pageSetting={
     department:{
@@ -599,5 +601,6 @@ module.exports={
     // pageSetting,
     paginationSetting,
     suggestLimit,
+    searchMaxPage,//search时，最大的页码
 }
 

@@ -11,15 +11,26 @@
 //require("babel-polyfill");
 //require("babel-core/register")
 
+/*import * as fs from 'fs'
+import {ruleType} from '../../define/enum/validEnum'
+import {regex} from '../../define/regex/regex'
+ import {dataType,ruleType} from '../../define/enum/validEnum'
+ */
+
 var fs=require('fs')
+var ruleType=require('../../define/enum/validEnum').ruleType
+var regex=require('../../define/regex/regex').regex
+var validateHelperError=require('../../define/error/node/validateError').validateError.validateHelper
 
-
+var validEnum=require('../../define/enum/validEnum')
+var dataType=validEnum.dataType
+var ruleType=validEnum.ruleType
 //var input_validate=require('../error_define/input_validate').input_validate
 
 
 
 
-var regex=require('../../define/regex/regex').regex
+
 
 
 /*      for CRUDGlobalSetting       */
@@ -32,8 +43,8 @@ var regex=require('../../define/regex/regex').regex
 //var inputValid=require('./valid').inputValid
 
 /*              for input valid         */
-//var regex=require('../define/regex/regex').regex.regex
-var validateHelperError=require('../../define/error/node/validateError').validateError.validateHelper
+// var regex=require('../define/regex/regex').regex.regex
+
 // var validateInputFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputFormat
 // var validateInputSearchFormatError=require('../define/error/nodeError').nodeError.assistError.validateFunc.validateInputSearchFormat
 
@@ -41,8 +52,9 @@ var validateHelperError=require('../../define/error/node/validateError').validat
  var valueMatchRuleDefineCheck=require('../assist/misc').func.valueMatchRuleDefineCheck*/
 
 //var fs=require('fs')
-var dataType=require('../../define/enum/validEnum').enum.dataType
-var ruleType=require('../../define/enum/validEnum').enum.ruleType
+
+/*var dataType=require('../../define/enum/validEnum').enum.dataType
+var ruleType=require('../../define/enum/validEnum').enum.ruleType*/
 // var compOp=require('../../define/enum/node').node.compOp
 
 //var otherFiledNameEnum=require('../define/enum/validEnum').enum.otherFiledName
@@ -175,11 +187,15 @@ var dataTypeCheck= {
     },
     //整数，但是超出int所能表示的范围（无法处理，大数会变成科学计数法，从而无法用regex判断）。所以只能处理string类型
     isNumber(value) {
+        //非字符，直接用isInt和isFloat判断
         if('string' !== typeof value){
             //value=value.toString()
             return false //无法处理数字，因为大数字在赋值时被转换成科学计数法，从而无法用regex判断
+        }else{
+            //字符，使用
+            return regex.number.test(value)
         }
-        return regex.number.test(value)
+
     },
 
     //对于大的数字，parseFloat会转换成科学计数法(1.23e+56)
@@ -540,21 +556,21 @@ function ruleFormatCheck(collName,singleFieldName,singleFieldInputRules){
 /*
  *   如果某个rule检查失败，返回对应的 msg（可读性更强点）
  */
-var generateErrorMsg={
+var generateErrorMsg_old={
     //itemDefine无用，只是为了格式统一
-    require(chineseName, itemDefine, useDefaultValueFlag){
-        if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+    require(fieldRule){
+/*        if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
             useDefaultValueFlag = false
         }
-        let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
-        return `${chineseName}${defaultMsg}不能为空`
+        let defaultMsg = useDefaultValueFlag ? '的默认值' : '';*/
+        return `${fieldRule.chineseName}不能为空`
     },
-    maxLength(chineseName, itemDefine, useDefaultValueFlag){
-        if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
+    maxLength( fieldRule){
+/*        if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
             useDefaultValueFlag = false
         }
-        let defaultMsg = useDefaultValueFlag ? '的默认值' : '';
-        return `${chineseName}${defaultMsg}所包含的字符数不能超过${itemDefine}个`
+        let defaultMsg = useDefaultValueFlag ? '的默认值' : '';*/
+        return `${chineseName}所包含的字符数不能超过${itemDefine}个`
     },
     minLength(chineseName, itemDefine, useDefaultValueFlag){
         if (undefined === useDefaultValueFlag || null === useDefaultValueFlag) {
@@ -622,6 +638,55 @@ var generateErrorMsg={
     }
 }
 
+/*      产生人性化的errorMsg
+* params：
+* 1. fieldRule：对象，字段的所有rule，提供chineseName，和singleRule的define
+* 2. currentSingleRule： enum，当前要检测的rule
+*
+* return：
+* 字符串
+* */
+var generateErrorMsg=function(fieldRule,currentSingleRule){
+    let ruleDefine=fieldRule[currentSingleRule]['define']
+    let chineseName=fieldRule['chineseName']
+    switch(currentSingleRule){
+        case ruleType.require:
+            return `${chineseName}不能为空`
+        case ruleType.maxLength:
+            return `${chineseName}所包含的字符数不能超过${ruleDefine}个`
+        case ruleType.minLength:
+            return `${chineseName}所包含的字符数不能少于${ruleDefine}个`
+        case ruleType.exactLength:
+            return `${chineseName}所包含的字符数不等于${ruleDefine}个`
+        case ruleType.max:
+            return `${chineseName}所包含的字符数不能大于${ruleDefine}`
+        case ruleType.min:
+            return `${chineseName}所包含的字符数不能小于${ruleDefine}`
+        case ruleType.format:
+            switch (ruleDefine) {
+                case regex.password:
+                    return `${chineseName}的格式不正确，必须由6至20个字母数字和特殊符号组成`
+                //break;
+                case regex.objectId:
+                    return `${chineseName}的格式不正确，必须是objectId`
+                //break;
+                case regex.userName:
+                    return `${chineseName}的格式不正确，必须由2至20个字符组成`
+                case regex.mobilePhone:
+                    return `${chineseName}的格式不正确，必须由11至13个数字组成`
+                case regex.originalThumbnail:
+                    return `${chineseName}的格式不正确，文件名由2到20个字符组成`
+                //hashedThumbnail不用单独列出，是内部检查，使用default错误消息即可
+                default:
+                    return `${chineseName}的格式不正确`
+            }
+        case ruleType:
+            return `${chineseName}(枚举值)不正确`
+    }
+
+
+
+}
 /*
  *   值是否满足对应的rule
  */

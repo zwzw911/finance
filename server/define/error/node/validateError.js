@@ -8,6 +8,7 @@ var validateError={
         //valueTypeCheck
         unknownDataType:{rc:69500,msg:'未知数据类型'},
 
+
         //ruleFormatCheck
         ruleMustBeObject:{rc:69510,msg:'rule定义必须是对象'},
         mandatoryFiledNotExist:{rc:69512,msg:'字段必需存在'},
@@ -38,30 +39,49 @@ var validateError={
         // rcFormatWrong:{rc:69842,msg:'错误代码格式不正确'},
     },
     validateFormat:{
+        valuesNotExist:{rc:69600,msg:'输入值为空'},
         /*              checkInput              */
         //CUD总结构
-        CUDValuesTypeWrong:{rc:69600,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
-        CUDValuesFormatMissRecorderInfo:{rc:69602,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含recorderInfo'}},
-        CUDValuesRecorderInfoMustBeObject:{rc:69604,msg:{client:'参数格式不正确',server:'参数格式不正确，recorderInfo必须是对象'}},
-        CUDValuesFormatMisCurrentPage:{rc:69606,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
-        CUDValuesCurrentPageMustBeInt:{rc:69608,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
+        // CUDValuesTypeWrong:{rc:69600,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
+        // CUDValuesFormatMissRecorderInfo:{rc:69602,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含recorderInfo'}},
+        // CUDValuesRecorderInfoMustBeObject:{rc:69604,msg:{client:'参数格式不正确',server:'参数格式不正确，recorderInfo必须是对象'}},
+        // CUDValuesFormatMisCurrentPage:{rc:69606,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
+        // CUDValuesCurrentPageMustBeInt:{rc:69608,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
         //recorderInfo(独立的部分，可以在CDU中进行检查)
-        recorderInfoCantEmpty:{rc:69610,msg:'待检测的输入值不能为空'},
-        recorderInfoFieldNumExceed:{rc:69612,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},
-        recorderInfoFormatWrong:{rc:69614,msg:{client:'参数格式不正确',server:'参数格式必须是field:{value:val}'}},
-        recorderInfoFiledRuleNotDefine:{rc:69616,msg:'待检测的输入值没有对应的检测规则'},
+        recorderInfoCantEmpty:{rc:69601,msg:'待检测的输入值不能为空'},
+        recorderInfoFieldNumExceed:{rc:69602,msg:{client:'参数格式不正确',server:'参数中的字段数量超出定义的数量'}},//inputValue中的字段数量超出rule中定义的字段数量
+        recorderInfoFormatWrong:{rc:69604,msg:{client:'参数格式不正确',server:'字段的值必须是object'}},
+        recorderInfoFieldValueFiledNumNot1:{rc:69606,msg:{client:'参数格式不正确',server:'字段值（object），必须只包含一个key'}},
+        recorderInfoFieldValueFiledWrong:{rc:69608,msg:{client:'参数格式不正确',server:'字段值（object）的key必须是value'}}, //{field:{value;xxxx}}
+        recorderInfoFiledRuleNotDefine:{rc:69610,msg:'待检测的输入值没有对应的检测规则'},
         //recorderInfoIncludeSkipFiled:{rc:69711,msg:'不能包含需要略过的字段'},
-        recorderInfoHasDuplicateField:{rc:69618,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
+        recorderInfoHasDuplicateField:{rc:69612,msg:{client:'参数格式不正确',server:'参数中的有重复字段'}},
 
+        filterFieldValueNotObject:{rc:69613,msg:{client:'参数格式不正确',server:'参数必须是object'}},//
+        filterFieldValueFieldNumNot1:{rc:69614,msg:{client:'参数格式不正确',server:'参数中的字段数量不是1'}},//只能包含id或者_id一个field
+        filterFieldValueTypeWrong:{rc:69616,msg:{client:'参数格式不正确',server:'参数中的字段的值类型不正确'}},//只能是字符/数字/对象（外键）
+        filterFieldValueFieldNotInRule:{rc:69618,msg:{client:'参数格式不正确',server:'参数中的字段未在rule中定义'}},//字段名称不再rule中
+        filterFieldValueFKFieldNumNot1:{rc:69620,msg:{client:'参数格式不正确',server:'外键数量不为1'}},//如果是对象，则此对象的key不是外键对应的字段
+        filterFieldValueFKFieldNotFK:{rc:69621,msg:{client:'参数格式不正确',server:'非外键'}},//value是object，但是其中的key不在fkConfig
+        filterFieldValueFKFieldNoRelateField:{rc:69622,msg:{client:'参数格式不正确',server:'外键的定义不正确'}},//如果是对象，则此对象的key不是外键对应的字段
+        // delRecorderInfoFieldNumNot1:{rc:69614,msg:{client:'参数格式不正确',server:'参数中的字段数量不是1'}},//只能包含id或者_id一个field
+        // delRecorderInfoFieldNameWrong:{rc:69616,msg:{client:'参数格式不正确',server:'参数中的字段必须是id或者_id'}},
+        // delRecorderInfoFormatWrong:{rc:69618,msg:{client:'参数格式不正确',server:'参数中的字段的值必须是object'}},
+        // delRecorderInfoFieldValueFiledNumNot1:{rc:69620,msg:{client:'参数格式不正确',server:'字段值（object），必须只包含一个key'}},
+        // delRecorderInfoFieldValueFiledWrong:{rc:69624,msg:{client:'参数格式不正确',server:'字段值（object）的key必须是value'}}, //{field:{value;xxxx}}
+        //
+        // delRecorderInfoFiledRuleNotDefine:{rc:69626,msg:'待检测的输入值没有对应的检测规则'},//预留，一般delete只有一个id
 
         //search(read)总结构
-        SValuesTypeWrong:{rc:69620,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
-        SValuesFormatMissSearchParams:{rc:69622,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含SearchParams'}},
-        SValuesSearchParamsMustBeObject:{rc:69624,msg:{client:'参数格式不正确',server:'参数格式不正确，SearchParams必须是对象'}},
-        SValuesFormatMisCurrentPage:{rc:69626,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
-        SValuesCurrentPageMustBeInt:{rc:69628,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
+        // SValuesTypeWrong:{rc:69620,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
+        // SValuesFormatMissSearchParams:{rc:69622,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含SearchParams'}},
+        // SValuesSearchParamsMustBeObject:{rc:69624,msg:{client:'参数格式不正确',server:'参数格式不正确，SearchParams必须是对象'}},
+        // SValuesFormatMisCurrentPage:{rc:69626,msg:{client:'参数格式不正确',server:'参数格式不正确，必须必须包含currentPage'}},
+        // SValuesCurrentPageMustBeInt:{rc:69628,msg:{client:'参数格式不正确',server:'参数格式不正确，currentPage必须是整数'}},
+
         //searchParams(独立的部分，可以在S中进行检查)
         searchParamsCantEmpty:{rc:69630,msg:{client:`查询参数格式不正确`,server:`查询参数不能为空对象`}},
+        searchParamsFieldsExceed:{rc:69731,msg:'值的字段数过大'},//输入值的字段数超过rule中定义的字段数
         searchParamsFieldNoRelatedRule:{rc:69632,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
         searchParamsFiledValueCantEmpty:{rc:69633,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
         searchParamsFKFiledValueNotObject:{rc:69634,msg:{client:`查询参数格式不正确`,server:`查询参数的外键字段的（搜索）值必须是对象`}},//外键是对象，里面是对应的字段，已经字段对应的数组
@@ -73,9 +93,12 @@ var validateError={
         singleSearchParamsValueLengthExceed:{rc:69644,msg:{client:`查询参数数量过多`,server:`查询参数的键值中的值数量过多`}},
         singleSearchParamsElementMustBeObject:{rc:69646,msg:{client:`查询字符不正确`,server:`查询参数的键值中的单个查询条件必须是对象`}},
         singleSearchParamsElementKeysLengthExceed:{rc:69648,msg:{client:`查询字符不正确`,server:`查询参数的键值中的查询元素的键数量超出`}},//一般是value和compOp
-        singleSearchParamsElementMissKeyValue:{rc:69650,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含value`}},
+        singleSearchParamsElementContainUnexpectKey:{rc:69649,msg:{client:`查询字符格式不正确`,server:`查询参数中，查询元素的键不是预定的`}},
+        singleSearchParamsElementMissKeyValue:{rc:69650,msg:{client:`查询字符格式不正确`,server:`查询参数中，必须包含value`}},
         singleSearchParamsElementMissKeyCompOp:{rc:69652,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型为数字或者日期，必须包含操作符`}},
+        singleSearchParamsElementCantContainCompOp:{rc:69653,msg:{client:`查询字符格式不正确`,server:`查询参数中，字段类型非数字或者日期，不能包含操作符`}},
         singleSearchParamsElementCompOpWrong:{rc:69654,msg:{client:`查询字符格式不正确`,server:`查询参数中，操作符不是预定义的符号之一`}},
+
 
         //static（总结构）
         staticValuesTypeWrong:{rc:69660,msg:{client:'参数格式不正确',server:'参数类型不正确，必须是JSON'}},
@@ -86,6 +109,22 @@ var validateError={
         //static->searchParams format check
         staticSearchParamsFieldNoRelatedRule:{rc:69670,msg:{client:`查询字符不正确`,server:`查询参数的键无对应的rule`}},
         staticSearchParamsFiledValueCantEmpty:{rc:69672,msg:{client:`查询参数格式不正确`,server:`查询参数的普通字段（的查询参数）不能为空`}},
+
+        //inputValue part：post的输入中，是否包含且只包含指定的部分（例如searchParsm）
+        inputValuePartFormatWrong:{rc:69680,msg:{client:`输入参数格式不正确`,server:`输入参数必须是对象`}},
+        inputValuePartNotExcepted:{rc:69682,msg:{client:`输入参数格式不正确`,server:`输入参数中，期望的参数未定义`}},
+        inputValuePartNumNotExcepted:{rc:69684,msg:{client:`输入参数格式不正确`,server:`输入参数中，期望的参数数量不正确`}},
+        inputValuePartMiss:{rc:69686,msg:{client:`输入参数格式不正确`,server:`输入参数中，某个参数并非期望的参数`}},
+        inputValuePartSearchParamsValueFormatWrong:{rc:69688,msg:{client:`输入参数格式不正确`,server:`输入参数中，searchParams的值必须为object`}},
+        inputValuePartRecorderInfoValueFormatWrong:{rc:69690,msg:{client:`输入参数格式不正确`,server:`输入参数中，RecorderInfo的值必须为object`}},
+        inputValuePartCurrentPageValueFormatWrong:{rc:69692,msg:{client:`输入参数格式不正确`,server:`输入参数中，currentPage的值必须为整数`}},
+        inputValuePartCurrentCollValueFormatWrong:{rc:69694,msg:{client:`输入参数格式不正确`,server:`输入参数中，currentColl的值必须为字符串`}},
+        inputValuePartRecorderIdValueFormatWrong:{rc:69695,msg:{client:`输入参数格式不正确`,server:`输入参数中，RecorderId的值必须为字符`}},
+        inputValuePartUndefinedPart:{rc:69696,msg:{client:`输入参数格式不正确`,server:`输入参数中，part未定义`}},
+/*        inputValuePartSearchParamsMiss:{rc:69688,msg:{client:`输入参数格式不正确`,server:`输入参数中，searchParams不存在`}},
+        inputValuePartRecorderInfoMiss:{rc:69690,msg:{client:`输入参数格式不正确`,server:`输入参数中，RecorderInfo不存在`}},
+        inputValuePartCurrentPageMiss:{rc:69692,msg:{client:`输入参数格式不正确`,server:`输入参数中，currentPage不存在`}},
+        inputValuePartCurrentCollMiss:{rc:69694,msg:{client:`输入参数格式不正确`,server:`输入参数中，currentColl不存在`}},*/
 
 
 
@@ -132,18 +171,43 @@ var validateError={
 
 
 
-        deleteFormatWrong:{rc:69728,msg:{client:"格式不正确，无法删除失败",server:"删除的参数必须在URL中"}},
+        // deleteFormatWrong:{rc:69728,msg:{client:"格式不正确，无法删除失败",server:"删除的参数必须在URL中"}},
     },
     validateValue:{
         //validateCreateUpdateInputValue
-        CUDObjectIdEmpty:{rc:69700,msg:'objectId不能为空'},
+        // CUDFieldsZero:{rc:69700,msg:'字段的数量不能为空'}, //放入validateFormat
+        CUDObjectIdEmpty:{rc:69701,msg:'objectId不能为空'},
         CUDObjectIdWrong:{rc:69702,msg:'objectId的格式不正确'},
-        CUDValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
+        // inputValueFilesExceed:{rc:69703,msg:'值的字段数过大'},//输入值的字段数超过rule中定义的字段数
+        mandatoryFieldMiss(fieldName){
+            return {rc:69704,msg:`缺少必填字段${fieldName}`}//create的时候，某些必填字段没有填入
+        },
+/*        unexceptInputField(fieldName){
+            return {rc:69705,msg:`未知字段${fieldName}`}//inputValue中的字段，没有在inputRule中定义（即client试图传入db中没有的字段）
+        },*/
+        // CUDValueNotDefineWithRequireTrue:{rc:69704,msg:'待检测的输入值未定义，而rule中require为true'},
         CUDTypeWrong:{rc:69706,msg:'类型不正确'},
-        STypeWrong:{rc:69708,msg:'类型不正确'},
 
+
+
+        SValueEmpty:{rc:69714,msg:'查询值为空'},
+        STypeWrong:{rc:69716,msg:'类型不正确'},
+        // SRangeOutRange:{rc:69718,msg:'查询值超出范围'},
+        filterFieldValueOutRange:{rc:69718,msg:'查询值超出范围'},//超出min/max/MaxLength，则可以skip查询过程，直接放回空数组给client
+        /*      delete          */
+        // deleteValueFieldNumWrong:{rc:69720,msg:'输入键值数量不正确'},
+        // deleteValueFieldNameWrong:{rc:69722,msg:'输入键值名称不正确'},
+        //deleteValueFieldValueWrong:{rc:69710,msg:'输入键值不正确'},//必须是mongodb objectid
         /*          static          */
-        staticTypeWrong:{rc:69710,msg:'类型不正确'},
+        staticTypeWrong:{rc:69730,msg:'类型不正确'},
+
+        /*          currentColl         */
+        undefinedCurrentColl:{rc:69740,msg:'未定义的coll'},
+        /*          currentPage         */
+        invalidCurrentPage:{rc:69750,msg:'页码超出范围'},
+
+        //
+        unknownRuleType:{rc:69716,msg:'未知rule类型'},
     }
 }
 

@@ -5,7 +5,7 @@ var mongoose=require('mongoose');
 mongoose.Promise=Promise
 
 //var url='mongodb://localhost/ss';
-var url='mongodb://localhost/finance';
+var url='mongodb://127.0.0.1:27017/finance';
 var options={db: { native_parser: true }};
 var dbFinance=mongoose.createConnection(url,options)
 //dbFinance.Promise = Promise

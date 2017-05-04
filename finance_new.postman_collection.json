@@ -1,0 +1,1982 @@
+{
+	"variables": [],
+	"info": {
+		"name": "finance_new",
+		"_postman_id": "0892b01f-081e-2e90-0f70-b4fe76a92894",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1-create",
+			"description": "",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable(\"bt_name_1\", \"bt1\");",
+									"postman.setEnvironmentVariable(\"bt_name_2\", \"bt2\");",
+									"postman.setEnvironmentVariable(\"bt_name_3\", \"bt3\");",
+									"postman.setEnvironmentVariable(\"bt_name_4\", \"bt4\");",
+									"",
+									"postman.setEnvironmentVariable(\"dep_name_1\", \"dep1\");",
+									"postman.setEnvironmentVariable(\"emp_name_1\", \"emp1\");",
+									"postman.setEnvironmentVariable(\"nulltype\", null);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part values null(not object)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"null values\"] = jsonData.rc === 69680;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part values empty object {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69684;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: values with non exist part",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69686;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType\",\"notExistPart\":1}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype:part dataType wrong: recorderInfo not object",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69690;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":1,\"currentColl\":\"billType\",\"currentPage\":1}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part dataType wrong: currentColl not string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69694;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":1,\"currentPage\":1}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part dataType wrong: currentPage not int",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69692;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType\",\"currentPage\":\"string\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: currentColl unknown",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69692;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"unknown\",\"currentPage\":\"1 \"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: currentColl  contain blank",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69740;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType \",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: currentPage exceed range",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69750;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_1}}\"}},\"currentColl\":\"billType\",\"currentPage\":\"0\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: currentPage contain blank",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69750;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_1}}\"}},\"currentColl\":\"billType\",\"currentPage\":\"0\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: recorderInfo: name all blank",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"input value check\"] = jsonData.rc === 99999;",
+									"tests[\"input value name check\"] = jsonData.msg.name.rc === 10041;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"      \"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: recorderInfo: name LR blank",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"LR blank rc success\"] = jsonData.rc === 0;",
+									"tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === \"ab\";",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\" ab     \"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: part value wrong: recorderInfo: name is not string",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"parent billtype with name not string\"] = jsonData.msg.name.rc === 69706;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":1},\"inOut\":{\"value\":\"in\"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create parent bt1 with inOut",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"parent billtype with  inOut\"] = jsonData.rc === 80000;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_1}}\"},\"inOut\":{\"value\":\"in\"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create parent bt1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"LR blank rc success\"] = jsonData.rc === 0;",
+									"tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"postman.setEnvironmentVariable(\"bt_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_1}}\"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create child bt2 without inOut",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"child bill type without inOut\"] = jsonData.rc === 80002;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_2}}\"},\"parentBillType\":{\"value\":\"{{bt_id_1}}\"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create child bt2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"LR blank rc success\"] = jsonData.rc === 0;",
+									"tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_2;",
+									"postman.setEnvironmentVariable(\"bt_id_2\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_name_2}}\"},\"inOut\":{\"value\":\"in\"},\"parentBillType\":{\"value\":\"{{bt_id_1}}\"}},\"currentColl\":\"billType\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department create dep1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"dep1 success\"] = jsonData.rc === 0;",
+									"tests[\"dep1 name success\"] = jsonData.msg.recorder[0].name === environment.dep_name_1;",
+									"postman.setEnvironmentVariable(\"dep_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{dep_name_1}}\"}},\"currentColl\":\"department\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "eployee:  create emp1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"emp1 success\"] = jsonData.rc === 0;",
+									"tests[\"emp1 name success\"] = jsonData.msg.recorder[0].name === environment.emp_name_1;",
+									"postman.setEnvironmentVariable(\"emp_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp_name_1}}\"},\"department\":{\"value\":\"{{dep_id_1}}\"}},\"currentColl\":\"employee\",\"currentPage\":\"1\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create with billType(no inOut;parent)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 80100;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"title\":{\"value\":\"test\"},\"billType\":{\"value\":\"{{bt_id_1}}\"},\"reimburser\":{\"value\":\"{{emp_id_1}}\"},\"amount\":{\"value\":10}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"title\":{\"value\":\"test\"},\"content\":{\"value\":\"asdfasdf\"},\"billType\":{\"value\":\"{{bt_id_2}}\"},\"reimburser\":{\"value\":\"{{emp_id_1}}\"},\"amount\":{\"value\":10}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2-update",
+			"description": "",
+			"item": [
+				{
+					"name": "billType: part values null(not object)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69600;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: Miss 1 part",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69684;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: not except part",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69686;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType\",\"currentPage\":1}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: recorderId format wrong",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69702;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{},\"currentColl\":\"billType\",\"recorderId\":\"asdf\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: require field update to null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 99999;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":null}},\"currentColl\":\"billType\",\"recorderId\":\"{{bt_id_1}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: update parent with inOut",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 80000;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"inOut\":{\"value\":\"in\"}},\"currentColl\":\"billType\",\"recorderId\":\"{{bt_id_1}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: update child without inOut",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 80002;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"inOut\":{\"value\":null}},\"currentColl\":\"billType\",\"recorderId\":\"{{bt_id_2}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billType: update child with nont exist parentBillType",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 60100;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"parentBillType\":{\"value\":\"69094789f72bc1734c227b8f\"}},\"currentColl\":\"billType\",\"recorderId\":\"{{bt_id_2}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update with parentBillType(no inOut)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 80100;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_id_1}}\"}},\"recorderId\":\"{{bill_id_1}}\",\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update with content null--normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"update billcontent null rc\"] = jsonData.rc === 0;",
+									"tests[\"update billcontent null \"] = jsonData.msg.content === undefined;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"content\":{\"value\":null}},\"recorderId\":\"{{bill_id_1}}\",\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update with content new--normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"tests[\"update billcontent null \"] = jsonData.msg.content === \"aerg\";",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"content\":{\"value\":\"aerg\"}},\"recorderId\":\"{{bill_id_1}}\",\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: update with content \"\"--normal",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bt1_id\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/update",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"content\":{\"value\":\"\"}},\"recorderId\":\"{{bill_id_1}}\",\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3-search",
+			"description": "",
+			"item": [
+				{
+					"name": "bill: part values {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69600;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69680;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values miss part currentPage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69684;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values contain unknown part",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69686;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1,\"unknown\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: searchParams format wrong(null)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69688;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":null,\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: searchParams field value not array",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69640;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"content\":\"asdf\"},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: searchParams field search element not field value",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69649;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"content\":[{\"unknown\":\"asdf\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: searchParams field search element value is null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"content\":[{\"value\":null}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: searchParams field not exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69632;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"unkonw\":[{\"value\":\"asdf\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: normal search with single field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"content\":[{\"value\":\"asdf\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: element contain more than 2 key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69648;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"value\":9,\"compOp\":\"gt\",\"unknow\":\"unknown\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: element contain unexcept key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69649;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"unkwn\":9}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: filed type string, element contain compOp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69653;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"content\":[{\"value\":\"9\",\"compOp\":\"any\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: filed type int, element no compOp",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69652;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"value\":9}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: filed type int, element compOp not defined",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69654;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"value\":9,\"compOp\":\"any\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: normal search with field amount-not found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"search: not found recorder, rc 0\"] = jsonData.rc === 0;",
+									"tests[\"search: not found recorder,recorder 0\"] = jsonData.msg.recorder.length === 0;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"value\":9,\"compOp\":\"lt\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: normal search with 2 fields-found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"search bill rc 0\"] = jsonData.rc === 0;",
+									"tests[\"create bill recorder 1\"] = jsonData.msg.recorder.length === 1",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{\"amount\":[{\"value\":9,\"compOp\":\"lt\"}],\"content\":[{\"value\":\"a\"}]},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4-delete",
+			"description": "",
+			"item": [
+				{
+					"name": "bill: part values {} copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69600;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values null copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69680;",
+									"// tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":null}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values miss part currentPage copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69684;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: part values contain unknown part copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69686;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1,\"unknown\":\"bill\",\"recorderId\":\"\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: recorderId null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69695;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1,\"currentColl\":\"bill\",\"recorderId\":null}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: recorderId \"\"",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 69701;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1,\"currentColl\":\"bill\",\"recorderId\":\"\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: delete normally",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create bill rc fail\"] = jsonData.rc === 0;",
+									"// // tests[\"LR blank name success\"] = jsonData.msg.recorder[0].name === environment.bt_name_1;",
+									"// postman.setEnvironmentVariable(\"bill_id_1\", jsonData.msg.recorder[0]._id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/delete",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1,\"currentColl\":\"bill\",\"recorderId\":\"{{bill_id_1}}\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

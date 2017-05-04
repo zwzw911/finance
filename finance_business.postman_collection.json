@@ -1,0 +1,723 @@
+{
+	"variables": [],
+	"info": {
+		"name": "finance_business",
+		"_postman_id": "9f9939a1-8943-cd46-01dd-780dd5fd2494",
+		"description": "\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "bill",
+			"description": "",
+			"item": [
+				{
+					"name": "init env",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable(\"dep1\", \"dep1\");",
+									"postman.setEnvironmentVariable(\"dep2\", \"dep2\");",
+									"postman.setEnvironmentVariable(\"emp1\", \"emp1\");",
+									"postman.setEnvironmentVariable(\"emp2\", \"emp2\");",
+									"postman.setEnvironmentVariable(\"bt1\", \"bt1\");",
+									"postman.setEnvironmentVariable(\"bt2\", \"bt2\");",
+									"",
+									"postman.setEnvironmentVariable(\"amount1\", 10);",
+									"postman.setEnvironmentVariable(\"amount2\", 20);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create dep1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"dep1 insert\"] = result.name === environment.dep1;",
+									"postman.setEnvironmentVariable(\"dep1_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{dep1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create dep2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"dep2 insert\"] = result.name === environment.dep2;",
+									"postman.setEnvironmentVariable(\"dep2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{dep2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create emp1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"emp1 insert\"] = result.name === environment.emp1;",
+									"postman.setEnvironmentVariable(\"emp1_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{emp1}}\"},\"department\":{\"value\":\"{{dep1_id}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create emp2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"emp2 insert\"] = result.name === environment.emp2;",
+									"postman.setEnvironmentVariable(\"emp2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{emp2}}\"},\"department\":{\"value\":\"{{dep2_id}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bt1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"bt1 insert\"] = result.name === environment.bt1;",
+									"postman.setEnvironmentVariable(\"bt1_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{bt1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bt2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"bt2 insert\"] = result.name === environment.bt2;",
+									"postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{bt2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp1 bt1 amount1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData[\"msg\"]",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount1;",
+									"// console.log(result.amount)",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt1_id}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"},\"amount\":{\"value\":{{amount1}}}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp1 bt2 amount1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount1;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt2_id}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"},\"amount\":{\"value\":\"{{amount1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp1 bt2 amount2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount2;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt2_id}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"},\"amount\":{\"value\":\"{{amount2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp2 bt2 amount2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount2;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt2_id}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"},\"amount\":{\"value\":\"{{amount2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp2 bt1 amount2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount2;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt1_id}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"},\"amount\":{\"value\":\"{{amount2}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp2 bt1 amount1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount1;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt1_id}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"},\"amount\":{\"value\":\"{{amount1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create bill with emp1 bt1 amount1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"insert\"] = jsonData.rc === 0;",
+									"// tests[\"bt2 insert\"] = result.amount === environment.amount1;",
+									"// postman.setEnvironmentVariable(\"bt2_id\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"billType\":{\"value\":\"{{bt1_id}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"},\"amount\":{\"value\":\"{{amount1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "billtype",
+			"description": "",
+			"item": [
+				{
+					"name": "init env",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"postman.setEnvironmentVariable(\"billtype_name_son\", \"son\");",
+									"postman.setEnvironmentVariable(\"billtype_name_father\", \"father\");",
+									"postman.setEnvironmentVariable(\"billtype_name_grandfather\", \"grandfather\");",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create grandfather",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"grandfather insert\"] = result.name === environment.billtype_name_grandfather;",
+									"postman.setEnvironmentVariable(\"billtype_id_grandfather\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_grandfather}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "create father",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"father insert\"] = result.name === environment.billtype_name_father;",
+									"tests[\"father insert1\"] = result.parentBillType._id === environment.billtype_id_grandfather;",
+									"postman.setEnvironmentVariable(\"billtype_id_father\", result[\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_father}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_grandfather}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "delete grandfather",
+					"request": {
+						"url": "127.0.0.1:3000/billType/{{billtype_id_grandfather}}",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "grandfather can't be search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"grandfather delete\"] = result.length === 0;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":[{\"value\":\"{{billtype_name_grandfather}}\"}]}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "father can be search with grandfather exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"father exists\"] = result.length > 0;",
+									"tests[\"father exists1\"] = result[0][\"name\"] === environment.billtype_name_father;",
+									"tests[\"grandfather exists\"] = result[0][\"parentBillType\"][\"name\"] === environment.billtype_name_grandfather;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":[{\"value\":\"{{billtype_name_father}}\"}]}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "father can be search with part grandfather name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"father exists\"] = result.length > 0;",
+									"tests[\"father exists1\"] = result[0][\"name\"] === environment.billtype_name_father;",
+									"tests[\"grandfather exists\"] = result[0][\"parentBillType\"][\"name\"] === environment.billtype_name_grandfather;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentBillType\":{\"name\":[{\"value\":\"r\"}]}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

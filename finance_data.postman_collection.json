@@ -1,0 +1,1148 @@
+{
+	"variables": [],
+	"info": {
+		"name": "finance_data",
+		"_postman_id": "edf7c595-a8cf-8115-b9db-bd1ad10335ec",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "add_test_data",
+			"description": "",
+			"item": [
+				{
+					"name": "DELETE ALL init",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//类型",
+									"postman.setEnvironmentVariable(\"bt_manger_parent\", \"经理\");",
+									"postman.setEnvironmentVariable(\"bt_manger_incoming\", \"经理（取入）\");",
+									"postman.setEnvironmentVariable(\"bt_manger_outgoing1\", \"津贴\");",
+									"postman.setEnvironmentVariable(\"bt_manger_outgoing2\", \"白条\");",
+									"",
+									"postman.setEnvironmentVariable(\"bt_accountant_parent\", \"会计\");",
+									"postman.setEnvironmentVariable(\"bt_accountant_incoming\", \"会计（取入）\");",
+									"postman.setEnvironmentVariable(\"bt_accountant_outgoing1\", \"加班\");",
+									"postman.setEnvironmentVariable(\"bt_accountant_outgoing2\", \"交金\");",
+									"",
+									"//员工",
+									"postman.setEnvironmentVariable(\"emp1\", \"记账\");",
+									"postman.setEnvironmentVariable(\"emp2\", \"张三\");",
+									"postman.setEnvironmentVariable(\"emp3\", \"李四\");",
+									"postman.setEnvironmentVariable(\"emp4\", \"王五\");",
+									"postman.setEnvironmentVariable(\"emp5\", \"赵六\");",
+									"",
+									"//部门",
+									"postman.setEnvironmentVariable(\"department_name_1\", \"基地\");",
+									"postman.setEnvironmentVariable(\"department_name_2\", \"办公室\");",
+									"",
+									"",
+									"/*      部门      */",
+									"postman.setEnvironmentVariable(\"dep1\", \"基地\");",
+									"postman.setEnvironmentVariable(\"dep2\", \"办公室\");",
+									"",
+									"/*      账单        */",
+									"postman.setEnvironmentVariable(\"bill1\", 10000);//经理初始  ",
+									"postman.setEnvironmentVariable(\"bill2\", 12000);//会计初始",
+									"",
+									"postman.setEnvironmentVariable(\"bill3\", 1000);//张三（津贴）",
+									"postman.setEnvironmentVariable(\"bill4\", 560);//张三 （白条）",
+									"postman.setEnvironmentVariable(\"bill5\", 750);//张三（加班）",
+									"postman.setEnvironmentVariable(\"bill6\", 3580);//张三 （交金）",
+									"",
+									"postman.setEnvironmentVariable(\"bill7\", 890);//李四（津贴）",
+									"postman.setEnvironmentVariable(\"bill8\", 2140);//李四 （白条）",
+									"postman.setEnvironmentVariable(\"bill9\", 579);//李四（加班）",
+									"postman.setEnvironmentVariable(\"bill10\", 1467);//李四 （交金）"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create 经理",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_manger_parent;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_manger_parent_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_manger_parent}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create 经理 （取入）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_manger_incoming;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_manger_incoming_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_manger_incoming}}\"},\"inOut\":{\"value\":\"in\"},\"parentBillType\":{\"value\":\"{{bt_manger_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create  津贴",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_manger_outgoing1;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_manger_outgoing1_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_manger_outgoing1}}\"},\"inOut\":{\"value\":\"out\"},\"parentBillType\":{\"value\":\"{{bt_manger_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create  白条",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_manger_outgoing2;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_manger_outgoing2_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_manger_outgoing2}}\"},\"inOut\":{\"value\":\"out\"},\"parentBillType\":{\"value\":\"{{bt_manger_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create 会计",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_accountant_parent;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_accountant_parent_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_accountant_parent}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create 会计（取入）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_accountant_incoming;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_accountant_incoming_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_accountant_incoming}}\"},\"inOut\":{\"value\":\"in\"},\"parentBillType\":{\"value\":\"{{bt_accountant_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create  加班",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_accountant_outgoing1;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_accountant_outgoing1_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_accountant_outgoing1}}\"},\"inOut\":{\"value\":\"out\"},\"parentBillType\":{\"value\":\"{{bt_accountant_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: create  交金",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.bt_accountant_outgoing2;",
+									"",
+									"postman.setEnvironmentVariable(\"bt_accountant_outgoing2_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{bt_accountant_outgoing2}}\"},\"inOut\":{\"value\":\"out\"},\"parentBillType\":{\"value\":\"{{bt_accountant_parent_id}}\"}},\"currentPage\":1,\"currentColl\":\"billType\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "deparmtnet: create 基地",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.dep1;",
+									"",
+									"postman.setEnvironmentVariable(\"dep1_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{dep1}}\"}},\"currentPage\":1,\"currentColl\":\"department\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "deparmtnet: create 办公室",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.dep2;",
+									"",
+									"postman.setEnvironmentVariable(\"dep2_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{dep2}}\"}},\"currentPage\":1,\"currentColl\":\"department\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create记账",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.emp1;",
+									"",
+									"postman.setEnvironmentVariable(\"emp1_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp1}}\"},\"department\":{\"value\":\"{{dep1_id}}\"}},\"currentPage\":1,\"currentColl\":\"employee\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create张三",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.emp2;",
+									"",
+									"postman.setEnvironmentVariable(\"emp2_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp2}}\"},\"department\":{\"value\":\"{{dep1_id}}\"}},\"currentPage\":1,\"currentColl\":\"employee\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create李四with上级张三",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.emp3;",
+									"",
+									"postman.setEnvironmentVariable(\"emp3_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp3}}\"},\"department\":{\"value\":\"{{dep1_id}}\"},\"leader\":{\"value\":\"{{emp2_id}}\"}},\"currentPage\":1,\"currentColl\":\"employee\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create王五with办公室",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.emp4;",
+									"",
+									"postman.setEnvironmentVariable(\"emp4_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp4}}\"},\"department\":{\"value\":\"{{dep2_id}}\"}},\"currentPage\":1,\"currentColl\":\"employee\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create赵六with上级王五",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.name === environment.emp5;",
+									"",
+									"postman.setEnvironmentVariable(\"emp5_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"name\":{\"value\":\"{{emp5}}\"},\"department\":{\"value\":\"{{dep2_id}}\"},\"leader\":{\"value\":\"{{emp4_id}}\"}},\"currentPage\":1,\"currentColl\":\"employee\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create经理（起始）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"check amount\"] = result.amount == environment.bill1;",
+									"",
+									"postman.setEnvironmentVariable(\"bill1_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_manger_incoming_id}}\"},\"amount\":{\"value\":\"{{bill1}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create会计（起始） ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == environment.bill2;",
+									"",
+									"postman.setEnvironmentVariable(\"bill2_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_accountant_incoming_id}}\"},\"amount\":{\"value\":\"{{bill2}}\"},\"reimburser\":{\"value\":\"{{emp1_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create张三（津贴 ）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill3;",
+									"",
+									"postman.setEnvironmentVariable(\"bill3_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_manger_outgoing1_id}}\"},\"amount\":{\"value\":\"{{bill3}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create张三（白条） ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill4;",
+									"",
+									"postman.setEnvironmentVariable(\"bill4_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_manger_outgoing2_id}}\"},\"amount\":{\"value\":\"{{bill4}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create张三（加班）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill5;",
+									"",
+									"postman.setEnvironmentVariable(\"bill5_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_accountant_outgoing1_id}}\"},\"amount\":{\"value\":\"{{bill5}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create张三（交金）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill6;",
+									"",
+									"postman.setEnvironmentVariable(\"bill6_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_accountant_outgoing2_id}}\"},\"amount\":{\"value\":\"{{bill6}}\"},\"reimburser\":{\"value\":\"{{emp2_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create李四（津贴 ） ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill7;",
+									"",
+									"postman.setEnvironmentVariable(\"bill7_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_manger_outgoing1_id}}\"},\"amount\":{\"value\":\"{{bill7}}\"},\"reimburser\":{\"value\":\"{{emp3_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create李四（白条）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill8;",
+									"",
+									"postman.setEnvironmentVariable(\"bill8_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_manger_outgoing2_id}}\"},\"amount\":{\"value\":\"{{bill8}}\"},\"reimburser\":{\"value\":\"{{emp3_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create李四（加班）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill9;",
+									"",
+									"postman.setEnvironmentVariable(\"bill9_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_accountant_outgoing1_id}}\"},\"amount\":{\"value\":\"{{bill9}}\"},\"reimburser\":{\"value\":\"{{emp3_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: create李四（交金）",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill10;",
+									"",
+									"postman.setEnvironmentVariable(\"bill10_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/create",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"recorderInfo\":{\"billType\":{\"value\":\"{{bt_accountant_outgoing2_id}}\"},\"amount\":{\"value\":\"{{bill10}}\"},\"reimburser\":{\"value\":\"{{emp3_id}}\"}},\"currentPage\":1,\"currentColl\":\"bill\"}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "static_function_test",
+			"description": "",
+			"item": [
+				{
+					"name": "bill: get bill type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill10;",
+									"",
+									"postman.setEnvironmentVariable(\"bill10_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/static/getStaticBillType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: getGroupCapital",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']['recorder'][0]",
+									"tests[\"empty values\"] = result.amount == 0-environment.bill10;",
+									"",
+									"postman.setEnvironmentVariable(\"bill10_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/static/getGroupCapital",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{},\"currentPage\":1}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: getCurrentCapital",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"// var jsonData = JSON.parse(responseBody);",
+									"// var result=jsonData['msg']['recorder'][0]",
+									"// tests[\"empty values\"] = result.amount == 0-environment.bill10;",
+									"",
+									"// postman.setEnvironmentVariable(\"bill10_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/static/getCurrentCapital",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"searchParams\":{}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

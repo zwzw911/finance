@@ -10,7 +10,7 @@
 
 var appSetting=require('../../config/global/appSetting')
 
-// var inputRule=require('../../define/validateRule/inputRule').inputRule
+var inputRule=require('../../define/validateRule/inputRule').inputRule
 //var validateFunc=require('../../assist/not_used_validateFunc').func
 var validateHelper=require('../../assist/validateInput/validateHelper')
 var validateFormat=require('../../assist/validateInput/validateFormat')
@@ -33,40 +33,80 @@ var billdbModel=require('../../model/mongo/billModel')*/
 /*                      func                   */
 var populateSingleDoc=require('../../assist/misc').populateSingleDoc
 /*                      regex               */
-var coll=require('../../define/enum/node').node.coll
+var coll=require('../../define/enum/node').coll
 /*                      enum                */
-var nodeEnum=require('../../define/enum/node').node
+var nodeEnum=require('../../define/enum/node')
 var envEnum=nodeEnum.env
+var validatePart=require('../../define/enum/validEnum').validatePart
 
-
-
+var dbModel=require('../../model/mongo/common/structure').model
 //1. checkInterval，在main中执行，所以必须定义在非main文件，否则无法编译
 async function common(req,res,next){
     let result=await checkInterval(req)
     return result
 }
 
-//对create/update方法输入的value进行检查和转换（字符串的话）
+//对create/update方法输入的value进行检查(format和rule)
 //create:false     update:true
-function sanityCUInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNum){
+function sanityCUInput(originalInputValue,ifCreate){
+
      //console.log(`input value type is ${typeof originalInputValue}`)
-    //console.log(`input value is ${JSON.stringify( originalInputValue)}`)
+    console.log(`input value is ${JSON.stringify( originalInputValue)}`)
+    let exceptPart
+    if(ifCreate){
+        exceptPart=[validatePart.currentColl,validatePart.currentPage,validatePart.recorderInfo]
+    }else{
+        exceptPart=[validatePart.currentColl,validatePart.recorderInfo,validatePart.recorderId] //validatePart.currentPage
+    }
     //1. 检查总体格式
-    let checkWholeFormatResult=validateFormat.validateCUDInputFormat(originalInputValue)
+    let checkWholeFormatResult=validateFormat.validatePartFormat(originalInputValue,exceptPart)
     // console.log(`check whole format is ${JSON.stringify(checkWholeFormatResult)}`)
     if(checkWholeFormatResult.rc>0){
         return checkWholeFormatResult
     }
-    //2 检查recorderInfo格式
-    let checkRecorderInfoResult=validateFormat.validateRecorderInfoFormat(originalInputValue['recorderInfo'],inputRule,maxFieldNum)
-    // console.log(`check recorderInfo format is ${JSON.stringify(checkRecorderInfoResult)}`)
+    /*              先验证简单的part的value(format直接在validatePartFormat中实现)：其中coll是为validateCreateRecorderInfo做准备（使用哪个coll的inputRule）*/
+    let checkValueResult
+    //2.1 检查page是否正确
+    if(-1!==exceptPart.indexOf(validatePart.currentPage)){
+        checkValueResult=validateValue.validateCurrentPageValue(originalInputValue[validatePart.currentPage])
+        if(checkValueResult.rc>0){
+            return checkValueResult
+        }
+    }
+
+    //2.2 检查coll是否正确
+    // console.log(`originalInputValue[validatePart.currentColl] ${JSON.stringify(originalInputValue[validatePart.currentColl])}`)
+    if(-1!==exceptPart.indexOf(validatePart.currentColl)){
+        checkValueResult=validateValue.validateCurrentCollValue(originalInputValue[validatePart.currentColl])
+        if(checkValueResult.rc>0){
+            return checkValueResult
+        }
+    }
+
+    //2.3 如果是update，还需要检查recorderId
+    if(-1!==exceptPart.indexOf(validatePart.recorderId)){
+        checkValueResult=validateValue.validateRecorderId(originalInputValue[validatePart.recorderId])
+        if(checkValueResult.rc>0){
+            return checkValueResult
+        }
+    }
+
+    let collRule=inputRule[originalInputValue[validatePart.currentColl]]
+
+    //3 检查part: recorderInfo格式(page和coll的format在validatePartFormat中直接检查了，无需单独函数处理)
+    let checkRecorderInfoResult=validateFormat.validateCURecorderInfoFormat(originalInputValue[validatePart.recorderInfo],collRule)
+// console.log(`check recorderInfo format is ${JSON.stringify(checkRecorderInfoResult)}`)
     if(checkRecorderInfoResult.rc>0){
         return checkRecorderInfoResult
     }
 
-    //3 检查输入值的内容是否正确
-    let checkValueResult=validateValue.validateRecorderInfoValue(originalInputValue['recorderInfo'],inputRule,basedOnInputValue)
-     // console.log(`check input  result is ${JSON.stringify(checkValueResult)}`)
+    //4 检查RecorderInfo的value是否符合rule定义
+    if(ifCreate){
+        checkValueResult=validateValue.validateCreateRecorderValue(originalInputValue[validatePart.recorderInfo],collRule)
+    }else{
+        checkValueResult=validateValue.validateUpdateRecorderValue(originalInputValue[validatePart.recorderInfo],collRule)
+    }
+// console.log(`check input on rule result is ${JSON.stringify(checkValueResult)}`)
     for(let singleField in checkValueResult){
         if(checkValueResult[singleField].rc>0){
 /*            returnResult(checkResult[singleField])
@@ -76,66 +116,178 @@ function sanityCUInput(originalInputValue,inputRule,basedOnInputValue,maxFieldNu
         }
     }
 
-    return {rc:0}
+    return checkValueResult
 }
 
 /*
 * 参数：
-*       1.  inputSearch:{field:[value1,value2]}
-*       2.  fkAdditionalFieldsConfig:外键的一些设置，包括此外键对应到那个coll的哪个field
-*       3.  collName
-*       4.  inputRules：整个个inputRules，因为可能有字段是外键字段，此时需要检查外键对应的coll/field
+*       1.  inputSearch:{field:[value1,value2]}    values的值
+*       2.  fkAdditionalFieldsConfig:所有外键设置，通过currentColl读取当前对应的fkConfig
 *
 * */
-function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules){
+function sanitySearchInput(inputSearch,fkAdditionalFieldsConfig){
      // console.log(   `sanitySearchInput in`)
+    let exceptPart=[validatePart.currentColl,validatePart.currentPage,validatePart.searchParams]
     //1 检查总体格式
-    let checkWholeFormatResult=validateFormat.validateSearchInputFormat(inputSearch)
-    //console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
+    // console.log(`sanitySearchInput exceptPart ${JSON.stringify(validatePart)}`)
+    let checkWholeFormatResult=validateFormat.validatePartFormat(inputSearch,exceptPart)
+    // console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
     if(checkWholeFormatResult.rc>0){
         return checkWholeFormatResult
     }
+    /*              先验证简单的part的value：其中coll是为validateCreateRecorderInfo做准备（使用哪个coll的inputRule）*/
+    let checkValueResult
+    //2.1 检查page是否正确
+    checkValueResult=validateValue.validateCurrentPageValue(inputSearch[validatePart.currentPage])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+    //2.2 检查coll是否正确
+    checkValueResult=validateValue.validateCurrentCollValue(inputSearch[validatePart.currentColl])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+    // console.log(  ` checkValueResult is ${JSON.stringify(checkValueResult)}`)
+    let currentColl=inputSearch[validatePart.currentColl]
+    let collRule=inputRule[currentColl]
+    let fkConfig=fkAdditionalFieldsConfig[currentColl]
     //2 检查搜索参数格式
-    let checkSearchParamsFormatResult=validateFormat.validateSearchParamsFormat(inputSearch['searchParams'],fkAdditionalFieldsConfig,collName,inputRules)
-     //console.log(   `format resuot is ${checkSearchParamsFormatResult}`)
+    // console.log(   `before format resuot `)
+    let checkSearchParamsFormatResult=validateFormat.validateSearchParamsFormat(inputSearch[validatePart.searchParams],fkConfig,currentColl,inputRule)
+     console.log(   `search params format result is ${JSON.stringify(checkSearchParamsFormatResult)}`)
     if(checkSearchParamsFormatResult.rc>0){
         return checkSearchParamsFormatResult
     }
-    //2 检查搜索值是否正确
-    let validateValueResult=validateValue.validateSearchParamsValue(inputSearch['searchParams'],fkAdditionalFieldsConfig,collName,inputRules)
-     //console.log(   `value result is ${validateValueResult}`)
+
+    //3 检查搜索值是否正确
+    let validateValueResult=validateValue.validateSearchParamsValue(inputSearch[validatePart.searchParams],fkAdditionalFieldsConfig,currentColl,inputRule)
+     console.log(   `search params value result is ${JSON.stringify(validateValueResult)}`)
     for(let singleFieldName in validateValueResult){
         if(validateValueResult[singleFieldName]['rc']>0){
             return {rc:9999,msg:validateValueResult}
         }
     }
-    return {rc:0}
+    //4 检查currentPage
+    // validateValueResult=validateValue.validateCurrentPageValue(inputSearch[validatePart.currentPage])
+
+    return validateValueResult
 }
 
 /* 和sanitySearchInput类似，只是多一部，要求检查objectID
  * 参数：
- *       1.  inputSearch:{field:[value1,value2]}
+ *       1.  inputSearch:{field:[value1,value2]}，当前设置哪些查询参数，以便获取删除后的记录使用
  *       2.  fkAdditionalFieldsConfig:外键的一些设置，包括此外键对应到那个coll的哪个field
- *       3.  collName
- *       4.  inputRules：整个个inputRules，因为可能有字段是外键字段，此时需要检查外键对应的coll/field
  *
  * */
-function sanityDeleteValue(inputSearch,fkAdditionalFieldsConfig,collName,inputRules,objectId){
-    //1 检查URL中objectId是否正确
-    let objectIdResult=validateValue.validateDeleteObjectId(objectId)
-    if(objectIdResult.rc>0){
-        return objectIdResult
+function sanityDeleteValue(inputSearch,fkAdditionalFieldsConfig){
+    let exceptPart=[validatePart.currentPage,validatePart.currentColl,validatePart.searchParams,validatePart.recorderId]
+    //1 检查总体格式
+    let checkWholeFormatResult=validateFormat.validatePartFormat(inputSearch,exceptPart)
+    //console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
+    if(checkWholeFormatResult.rc>0){
+        return checkWholeFormatResult
     }
 
-    //2. 其他body中的参数和searchParams一样
-    let searchParamsResult=sanitySearchInput(inputSearch,fkAdditionalFieldsConfig,collName,inputRules)
+    /*              先验证简单的part的value：其中coll是为validateCreateRecorderInfo做准备（使用哪个coll的inputRule）*/
+    let checkValueResult
+    //2.1 检查page是否正确
+    checkValueResult=validateValue.validateCurrentPageValue(inputSearch[validatePart.currentPage])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+    //2.2 检查coll是否正确
+    checkValueResult=validateValue.validateCurrentCollValue(inputSearch[validatePart.currentColl])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+    //2.3 检查recorderId是值否正确
+    checkValueResult=validateValue.validateRecorderId(inputSearch[validatePart.recorderId])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+
+    let currentColl=inputSearch[validatePart.currentColl]
+    let collRule=inputRule[currentColl]
+    let fkConfig=fkAdditionalFieldsConfig[currentColl]
+    //2 检查搜索参数格式
+    let checkSearchParamsFormatResult=validateFormat.validateSearchParamsFormat(inputSearch[validatePart.searchParams],fkConfig,currentColl,inputRule)
+    //console.log(   `format resuot is ${checkSearchParamsFormatResult}`)
+    if(checkSearchParamsFormatResult.rc>0){
+        return checkSearchParamsFormatResult
+    }
+
+/*    //2. 其他body中的参数和searchParams一样
+    let searchParamsResult=validateValue.validateSearchParamsValue(inputSearch,fkAdditionalFieldsConfig,currentColl,inputRule)
     if(searchParamsResult.rc>0){
         return searchParamsResult
+    }*/
+
+    //3 检查搜索值是否正确
+    let validateValueResult=validateValue.validateSearchParamsValue(inputSearch[validatePart.searchParams],fkAdditionalFieldsConfig,currentColl,inputRule)
+    //console.log(   `value result is ${validateValueResult}`)
+    for(let singleFieldName in validateValueResult){
+        if(validateValueResult[singleFieldName]['rc']>0){
+            return {rc:9999,msg:validateValueResult}
+        }
     }
-    return {rc:0}
+    //4 检查currentPage
+    // validateValueResult=validateValue.validateCurrentPageValue(inputSearch[validatePart.currentPage])
+
+    return validateValueResult
+    // return searchParamsResult
 }
 
 
+/*          对用来过滤字段值的输入进行format/value验证（完成utoComplete的功能）       */
+/*
+* 输入：
+* inputValue：2个part
+*       currentColl
+*       filterFieldValue: {field:xxxx}或者{field:{fk:xxxxx}}
+*
+* step:
+* 1. 检查总体格式
+* 2，获得coll名
+* 3. 检查filterFieldValue的format和value
+*
+*
+* return:
+*   1. rc:0
+*   2. validateValueError.filterFieldValueOutRange: 说明无需继续搜做，直接返回空数组
+*   3. 其他，错误
+* */
+function sanityFilterFieldValue(inputValue,fkConfig) {
+    let exceptPart=[validatePart.currentColl,validatePart.filterFieldValue]
+    //1 检查总体格式
+    let checkWholeFormatResult=validateFormat.validatePartFormat(inputValue,exceptPart)
+    //console.log(   `whole format check result is  ${JSON.stringify(checkWholeFormatResult)}`)
+    if(checkWholeFormatResult.rc>0){
+        return checkWholeFormatResult
+    }
+
+    /*              先验证简单的part的value：其中coll是为validateCreateRecorderInfo做准备（使用哪个coll的inputRule）*/
+    let checkValueResult
+    //2.1 检查coll是否正确
+    checkValueResult=validateValue.validateCurrentCollValue(inputValue[validatePart.currentColl])
+    if(checkValueResult.rc>0){
+        return checkValueResult
+    }
+    //获得coll
+    let currentColl=inputValue[validatePart.currentColl]
+
+    let checkFilterFieldFormatResult,checkFilterFieldValueResult
+    //3.1 检查filterFieldValue的format
+    checkFilterFieldFormatResult=validateFormat.validateFilterFieldValueFormat(inputValue[validatePart.filterFieldValue],fkConfig[currentColl],inputRule[currentColl])
+    if(checkFilterFieldFormatResult.rc>0){
+        return checkFilterFieldFormatResult
+    }
+    //3.2 检查filterFieldValue的和value
+    checkFilterFieldValueResult=validateValue.validateFilterFieldValue(inputValue[validatePart.filterFieldValue],fkConfig[currentColl],currentColl,inputRule)
+    if(checkFilterFieldValueResult.rc>0){
+        return checkFilterFieldValueResult
+    }
+    return {rc:0}
+}
 /*
 * 对传入的字段，返回所有匹配的值，完成autoComplete的功能
 * 参数
@@ -178,32 +330,47 @@ function returnResult(rc,clientFlag=true){
 * 说明：根据外键，查找到对应的记录，并把记录中的字段保存到冗余字段中
 * 输入参数：
 * 1.singleDoc：当前要操作的doc（create或者update，从client输入的数据）
-* 2. fkAdditionalConfig: 外键冗余字段的设置（已coll为单位进行设置，可能有多个fk），包括relatedColl(当前fk对应的coll)，nestedPrefix（外键冗余字段一般放在一个nested结构中，此结构的名称），forSelect：需要返回并设置的冗余字段（用在mongoose的查询中），forSetValue（在arrayResult中设置的字段名）
+* 2. collFkConfig: 外键冗余字段的设置（已coll为单位进行设置，可能有多个fk），包括relatedColl(当前fk对应的coll)，nestedPrefix（外键冗余字段一般放在一个nested结构中，此结构的名称），forSelect：需要返回并设置的冗余字段（用在mongoose的查询中），forSetValue（在arrayResult中设置的字段名）
 * 3. model；所有的model，以便选择对应的model进行操作
 * 无返回值
 * */
-async function getFkAdditionalFields(doc,fkAdditionalConfig,dbModel){
+var getFkAdditionalFields=async function (doc,collFkConfig){
 
-        for(let fkFieldName in fkAdditionalConfig){
+        for(let fkFieldName in collFkConfig){
             // console.log(`configed fk field name is ${fkFieldName}`)
             //如果文档中外键存在（例如，objectId存在）
             if(doc[fkFieldName]){
-                //console.log(`configed fk  is ${doc[fkFieldName]}`)
-                //console.log(`fk related coll is ${fkAdditionalConfig[fkFieldName]['relatedColl']}`)
-                let nestedPrefix=fkAdditionalConfig[fkFieldName].nestedPrefix //外键冗余字段要存入那个字段中（这个字段是nested结构，下面是具体的冗余字段名称）
+                console.log(`configed fk  is ${doc[fkFieldName]}`)
+                //console.log(`fk related coll is ${collFkConfig[fkFieldName]['relatedColl']}`)
+                let nestedPrefix=collFkConfig[fkFieldName].nestedPrefix //外键冗余字段要存入那个字段中（这个字段是nested结构，下面是具体的冗余字段名称）
                 let fkId=doc[fkFieldName]   //外键的id（通过Id在对应的coll中进行查找）
-                let fkRelatedCollName=fkAdditionalConfig[fkFieldName]['relatedColl'] //外键对应在那个coll中
-                let fkAdditionalFields=fkAdditionalConfig[fkFieldName].forSelect    //外键对应的coll中，需要获得哪些field的值，使用mongodb的操作
-                let fkAdditionalFieldsArray=fkAdditionalConfig[fkFieldName].forSetValue //同上，只是格式是array，以便for操作
+                let fkRelatedCollName=collFkConfig[fkFieldName]['relatedColl'] //外键对应在那个coll中
+                let fkAdditionalFields=collFkConfig[fkFieldName].forSelect    //外键对应的coll中，需要获得哪些field的值，使用mongodb的操作
+                let fkAdditionalFieldsArray=collFkConfig[fkFieldName].forSetValue //同上，只是格式是array，以便for操作
 // console.log(`getFkAdditionalFields:fkAdditionalFieldsArray is ${JSON.stringify(fkAdditionalFieldsArray)}`)
                 // let fkAdditionalFieldsResult=await dbModel[fkRelatedCollName]['findById'](fkId,fkAdditionalFields)
-                //console.log(`findByID result is ${JSON.stringify(result)}`)
-                let fkAdditionalFieldsResult=await unifiedModel.findById({'dbModel':dbModel[fkRelatedCollName],'id':fkId})
-                if(null===fkAdditionalFieldsResult.msg){
-                    return pageError[fkRelatedCollName][fkFieldName+'NotExist']
+                console.log(`fkId is ${JSON.stringify(fkId)}`)
+                // console.log(`fkRelatedCollName is ${JSON.stringify(fkRelatedCollName)}`)
+                // console.log(`dbModel[fkRelatedCollName] is ${JSON.stringify(dbModel[fkRelatedCollName].modelName)}`)
+                // try{
+                // let fkAdditionalFieldsResult=await unifiedModel.findById({'dbModel':dbModel[fkRelatedCollName],'id':fkId})
+                let tmpResult=await  unifiedModel.findById({'dbModel':dbModel.billType,'id':fkId})
+                // }
+                // catch(err)
+                // {
+                //     console.log(`find by id err is ${JSON.stringify(err)}`)
+                // }
+                    .catch(
+                        err=>{
+                            console.log(`fkAdditionalFieldsResult err is ${JSON.stringify(err)}`)
+                        }
+                    )
+                console.log(`getFkAdditionalFields:fkAdditionalFieldsResult is ${JSON.stringify(tmpResult)}`)
+                if(null===tmpResult.msg){
+                    return Promise.resolve(pageError[fkRelatedCollName][fkFieldName+'NotExist'])
                 }
 
-                //let fkAdditionalFields=await getAdditionalFields(fkFieldName,doc[fkFieldName],fkAdditionalConfig[fkFieldName]['relatedColl'],fkAdditionalConfig[fkFieldName].forSelect)
+                //let fkAdditionalFields=await getAdditionalFields(fkFieldName,doc[fkFieldName],collFkConfig[fkFieldName]['relatedColl'],collFkConfig[fkFieldName].forSelect)
                 // console.log(`get fk doc ${JSON.stringify(fkAdditionalFieldsResult)}`)
 /*                if(fkAdditionalFields.rc>0){
                     return fkAdditionalFields
@@ -215,11 +382,11 @@ async function getFkAdditionalFields(doc,fkAdditionalConfig,dbModel){
                      // console.log(`add field is ${field}`)
                     //需要转换成parentBillTypeFields.name的格式，因为是nested
                     // let tmpField='parentBillTypeFields.'+field
-                    doc[nestedPrefix][field]=fkAdditionalFieldsResult['msg'][field]
+                    doc[nestedPrefix][field]=tmpResult['msg'][field]
                 }
             }
         }
-        return {rc:0}
+        return Promise.resolve({rc:0})
         // console.log(`added result is ${JSON.stringify(doc)}`)
 
 }
@@ -338,6 +505,7 @@ module.exports= {
     sanityCUInput,//create/update/remove等请求，传入参数的检查。{field1:{value:'xxx'},field2:{value:'yyy'}}
     sanitySearchInput,//当客户端传入的搜索参数的检查，格式见 doc 文档
     sanityDeleteValue,//和sanitySearchInput一样，除了额外添加一个URL中objectId的检查
+    sanityFilterFieldValue,//对字段值过滤（为字段提供autoComplete），format和value进行验证
     //sanityAutoCompleteInput, //format采用inputValue的函数，值验证采用inputSearch的方式
     returnResult,//是否需要将结果转换成客户端能够处理的格式
     // checkIdExist,//检查外键对应的记录是否存在

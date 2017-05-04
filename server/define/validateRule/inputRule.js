@@ -5,7 +5,7 @@
 
 var regex=require('../regex/regex').regex
 
-var inputDataType=require('../enum/validEnum').enum.dataType
+var inputDataType=require('../enum/validEnum').dataType
 /*********************************************/
 /* input定义，理论上应该定义单独文件中       */
 /*              人工根据dbschema定义         */
@@ -131,7 +131,7 @@ var inputRule={
             'default':'male',
             'type':inputDataType.string,
             'require': {define: false, error: {rc: 10027},mongoError:{rc:20027,msg:'性别不能为空'}},
-            'enum':{define:[null,'male','female'],error:{rc:10028},mongoError:{rc:20028,msg:'性别不正确'}},
+            'enum':{define:['male','female'],error:{rc:10028},mongoError:{rc:20028,msg:'性别不正确'}},
         },
         birthDay:{
             'chineseName': '出生日期',
@@ -178,7 +178,7 @@ var inputRule={
             //'default':'male',
             'type':inputDataType.string,
             'require': {define: false, error: {rc: 10045},mongoError:{rc:20045,msg:'支取类型不能为空'}},
-            'enum':{define:[null,'in','out'],error:{rc:10046},mongoError:{rc:20046,msg:'支取类型不正确'}},
+            'enum':{define:['in','out'],error:{rc:10046},mongoError:{rc:20046,msg:'支取类型不正确'}},
         },
         parentBillType:{
             'chineseName':'父类别',

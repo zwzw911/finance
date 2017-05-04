@@ -8,8 +8,9 @@
  */
 
 var dataTypeCheck=require('./validateInput/validateHelper').dataTypeCheck
-var dataType=require('../define/enum/validEnum').enum.dataType
-var compOp=require('../define/enum/node').node.compOp
+var dataType=require('../define/enum/validEnum').dataType
+var compOp=require('../define/enum/node').compOp
+var inputRules=require('../define/validateRule/inputRule').inputRule //genNativeSearchCondition
 /*将前端传入的search value转换成mongodb对应的select condition（如此方便在mongodb中直接使用，来进行调试）。
  *  返回一个object {field；{condition}}
  * 分成2个函数，好处是层次清楚：
@@ -30,14 +31,12 @@ var compOp=require('../define/enum/node').node.compOp
  *           搜索参数，如果有外键，从中获得外键对应的coll.field，查询得知对应inputRule。以coll为单位
  *           3. collName
  *           当前对哪一个coll进行搜索
- *           4 inputRules
- *           整个inputRule，因为外键可能对应在其他coll
  * */
-var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFieldsConfig,rules){
+var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFieldsConfig){
     //所有的查询条件都是 或
     let fieldsType={} //{name:dataType.string,age:dataType.int}  普通字段，只有一个key，外键：可能有一个以上的key
     let result={}
-
+console.log(`dataTypeCheck.isEmpty(clientSearchParams) is ${JSON.stringify(dataTypeCheck.isEmpty(clientSearchParams))}`)
     //有search参数传入，则进行转换
     if(false===dataTypeCheck.isEmpty(clientSearchParams)){
         result={'$or':[]}
@@ -48,7 +47,7 @@ var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFi
                 //普通的外键的变量分开（外键的必须在冗余字段的for中定义，否则会重复使用）
                 let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
                 fieldValue=clientSearchParams[singleField]
-                fieldRule=rules[collName][singleField]
+                fieldRule=inputRules[collName][singleField]
                 /*            fieldValueType=fieldRule['type']
                  if(dataType.string===fieldValueType){
                  fieldValue=new RegExp(fieldValue,'i')
@@ -64,7 +63,7 @@ var genNativeSearchCondition=function(clientSearchParams,collName,fkAdditionalFi
                     //每个外键字段的变量要重新定义，否则fieldResult会重复push
                     let fieldValue,fieldRule,fieldValueType,fieldCondition,fieldResult={}
                     fieldValue=clientSearchParams[singleField][fkRedundantField]
-                    fieldRule=rules[fkConfig['relatedColl']][fkRedundantField]
+                    fieldRule=inputRules[fkConfig['relatedColl']][fkRedundantField]
                     // console.log(`rules is ${JSON.stringify(rules)}`)
                     // console.log(`field rule is ${JSON.stringify(fieldRule)}`)
                     /*                console.log(`field value is ${JSON.stringify(fieldValue)}`)
@@ -172,29 +171,31 @@ var convertCreateUpdateValueToServerFormat=function(values){
     return result
 }
 
-//对update传入的参数进行检测，如果设置为null，就认为是控制端，无需传入db
+//对create传入的参数进行检测，如果设置为null或者空值（空对象，空数组，空字符串），就认为无需传入db而直接删除
 var constructCreateCriteria=function(formattedValues){
     for(let key in formattedValues){
-        //如果不是null，而是""或者"   "等，会在checkInput被检测到并拒绝
-        if(formattedValues[key]===null){
+        if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
             delete formattedValues[key]
+            continue
         }
+
+
     }
 
 }
 
-//对update传入的参数进行检测，如果设置为null，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
+//对update传入的参数进行检测，如果设置为null或者空对象/数字/字符，就认为对应的field是要删除的，放入$unset中（如果此field是外键，还要把对应的冗余字段$unset掉）
 //formattedValues: 经过convertClientValueToServerFormat处理的输入条件
 var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
-    //console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
+    // console.log(`fkconfig is ${JSON.stringify(singleCollFKConfig)}`)
     for(let key in formattedValues){
-        if(formattedValues[key]===null){
-            //当前键设为$undefine
+        if(formattedValues[key]===null || dataTypeCheck.isEmpty(formattedValues[key])){
+            //{field1:null,field2:xxx}======>{'$unset':{field1;any},field2:xxx}
+            //如果没有$unset字段，则新建一个
             if(undefined===formattedValues['$unset']){
                 formattedValues['$unset']={}
             }
-            //formattedValues['$unset'][key]=formattedValues[key]
-            //$unset的话，字段后的值就无所谓了
+            //把null值字段放入$unset字段
             formattedValues['$unset'][key]=1
             delete formattedValues[key]
             //检查当前键是否有对应的外键设置，有的话删除对应的冗余字段
@@ -208,11 +209,19 @@ var constructUpdateCriteria=function(formattedValues,singleCollFKConfig){
 
 }
 
-
+//将mongosse的document转换成object，并删除不需要在client显示的字段
+var convertToClient=function(document,skipFields){
+    let clientDoc=document.toObject()
+    for(let fieldName of skipFields){
+        delete  clientDoc[fieldName]
+    }
+    return clientDoc
+}
 
 module.exports={
     genNativeSearchCondition,
     convertCreateUpdateValueToServerFormat,
     constructCreateCriteria,
     constructUpdateCriteria,
+    convertToClient,
 }

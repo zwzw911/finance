@@ -10,13 +10,15 @@
 //require("babel-core/register")
 
 var dbModel=require('./common/structure').model
-
+var consoleDebug=require('../../assist/misc').consoleDebug
 var mongooseErrorHandler=require('../../define/error/mongoError').mongooseErrorHandler
 
 //var pageSetting=require('../../config/global/globalSettingRule').pageSetting
 var pagination=require('../../assist/component/pagination').pagination
 
-var mongooseOpEnum=require('../../define/enum/node').node.mongooseOp
+var mongooseOpEnum=require('../../define/enum/node').mongooseOp
+
+var returnResult=require('../../controller/main/routerControllerHelper').returnResult
 //populate的选项
 //read/update/read使用
 // var populateOpt=
@@ -30,7 +32,7 @@ var updateOptions={
 }
 
 //无需返回任何paginationInfo，因为search已经返回，并存储在client端了
-var create=async function ({dbModel,values}){
+var create=async function ({dbModel,value}){
 //使用Promise方式，以便catch可能的错误
     /*          原本使用insertMany，输入参数是数据，返回结果也是数据         */
 /*    let result=await dbModel.insertMany(values).catch((err)=>{
@@ -42,13 +44,21 @@ var create=async function ({dbModel,values}){
     return Promise.resolve({rc:0,msg:result})*/
 
     /*          为了使用mongoose的pre功能（为bill，判断正负），使用save保存         */
-    let doc=new dbModel(values[0])
-    let result=await doc.save(values[0]).catch((err)=>{
-        //console.log(`model err is ${JSON.stringify(err)}`)
-        return  Promise.reject(mongooseErrorHandler(mongooseOpEnum.insertMany,err))
+    // console.log(`create value is ${JSON.stringify(value)}`)
+    let doc=new dbModel(value)
+    let result=await doc.save(doc)
+        .catch((err)=>{
+        // console.log(`create err is ${JSON.stringify(err)}`)
+        //1. mongoose返回的是reject，只能通过catch捕获
+        //     2. 捕获后，通过reject在await中返回。因为reject后，此错误会在async/await直接传递到最外层，所以需要returnResult对错误处理
+            return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.insertMany,err)))
+            // return mongooseErrorHandler(mongooseOpEnum.insertMany,err)
     })
+/*    let finalResult=result.toObject()
+    delete finalResult.__v*/
     //result.name=undefined
     //console.log(`model result is ${JSON.stringify(modelResult)}`)
+    //必须返回document，以便mongoose后续操作（而不是toObject）
     return Promise.resolve({rc:0,msg:result})
 }
 
@@ -67,7 +77,7 @@ async function update({dbModel,updateOptions,id,values}){
 /*             使用传统的findById/set/save ,以便利用save middleware（bill的amount正负设置）     */
     let doc= await dbModel.findById(id).catch(
         (err)=>{
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+            return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err)))
         }
     )
     //console.log(`update: oringal value is ${JSON.stringify(doc)}`)
@@ -80,12 +90,11 @@ async function update({dbModel,updateOptions,id,values}){
         }else{
             doc[field]=values[field]
         }
-
     }
-//console.log(`update: after set value is ${JSON.stringify(doc)}`)
+// console.log(`update: after set value is ${JSON.stringify(doc)}`)
     let result=await doc.save().catch(
         (err)=>{
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+            return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err)))
         }
     )
     //update成功，返回的是原始记录，需要转换成可辨认格式
@@ -103,7 +112,7 @@ async function remove({dbModel,updateOptions,id}){
     console.log(`dbModel is ${JSON.stringify(dbModel.modelName)}`)*/
         let result= await dbModel.findByIdAndUpdate(id,values,updateOptions).catch(
             (err)=>{
-                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err))
+                return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.findByIdAndUpdate,err)))
             }
         )
     //只需返回是否执行成功，而无需返回update后的doc
@@ -130,7 +139,7 @@ async  function removeAll({dbModel}){
         //remove放回一个promise
         await dbModel.remove({}).catch(
             function(err){
-                return Promise.reject(mongooseErrorHandler(mongooseOpEnum.remove,err))
+                return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.remove,err)))
             }
         )
         return Promise.resolve({rc:0})
@@ -183,7 +192,7 @@ async  function removeAll({dbModel}){
 
 //readName主要是为suggestList提供选项，所以无需过滤被删除的记录（因为这些记录可能作为其他记录的外键存在）
 //currentDb:在bill中选择billType时候，最上级的billType不能出现（因为这些billType只是用作统计用的）。因此需要添加这个参数，判断当前是否为bill
-async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,callerColl}){
+async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,originalColl}){
     //return new Promise(function(resolve,reject){
         //过滤标记为删除的记录
         // let condition={dDate:{$exists:false}}
@@ -193,7 +202,7 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,ca
         }
 
         /*                 patch: 当前coll为bill的时候，billType只显示inOut有设置的记录                             */
-        if('bill'===callerColl && 'billTypes'===dbModel.modelName) {
+        if('bill'===originalColl && 'billTypes'===dbModel.modelName) {
             condition['parentBillType'] = {'$exists': true}
 
         }
@@ -209,7 +218,7 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,ca
         let result = await dbModel.find(condition,readNameField,option)
             .catch(
                 function(err){
-                    return Promise.reject(mongooseErrorHandler(mongooseOpEnum.readName,err))
+                    return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.readName,err)))
                 }
             )
         return Promise.resolve({rc:0,msg:result})
@@ -227,13 +236,17 @@ async function readName({dbModel,nameToBeSearched,recorderLimit,readNameField,ca
 //作为外键时，是否存在
 //selectedFields:'-cDate -uDate -dDate'
 async function findById({dbModel,id,selectedFields='-cDate -uDate -dDate'}){
-    let result=await dbModel.findById(id).catch(
+    // console.log(`find by id :${id}`)
+    let result=await dbModel.findById(id,selectedFields)
+        .catch(
         function(err){
-/*            console.log(`findbyid errr is ${JSON.stringify(err)}`)
-            console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)*/
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.findById,err))
-        }
-    )
+            // console.log(`findbyid errr is ${JSON.stringify(err)}`)
+            // console.log(`converted err is ${JSON.stringify(mongooseErrorHandler(mongooseOpEnum.findById,err))}`)
+            return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.findById,err)))
+        })
+    // let finalResult=result.toObject()
+    // delete finalResult.__v
+    // console.log(`findbyid result is ${JSON.stringify(finalResult)}`)
     return Promise.resolve({rc:0,msg:result})
 }
 
@@ -269,14 +282,14 @@ async function search ({dbModel,populateOpt,searchParams,paginationInfo,readReco
             option.skip+=skipRecorderNumInPage
         }
     }
-console.log(`search option is ${JSON.stringify(option)}`)
+// console.log(`search option is ${JSON.stringify(option)}`)
     //finalParams
     let result=await dbModel.find(searchParams,'-dDate',option).exists('dDate',false).sort('-cDate')
         .populate(populateOpt)   //populate外键，以便直接在client显示
     .catch(
         (err)=>{
             // console.log (`search err is ${JSON.stringify(err)}`)
-            return Promise.reject(mongooseErrorHandler(mongooseOpEnum.search,err))
+            return Promise.reject(returnResult(mongooseErrorHandler(mongooseOpEnum.search,err)))
         }
     )
     //console.log(`find result is ${JSON.stringify(result)}`)
@@ -343,7 +356,7 @@ async function getGroupCapital({dbModel,match}){
 async function getStaticBillType(){
     //获得顶层billType
     let billTypeResult=await dbModel.billType.find({"$and":[{"parentBillType":{"$exists":false}},{"inOut":{"$exists":false}}]},{"_id":1,"name":1}).lean()
-
+// consoleDebug('bill tye resuylt is ',billTypeResult)
     //如果有顶层billType，获得其子billType
     if(billTypeResult.length>0){
         let finalResult=billTypeResult.map(
@@ -355,11 +368,11 @@ async function getStaticBillType(){
                     return v
                 }
             }
-
-
-
         )
         return Promise.all(finalResult)
+    }else{
+        //没有数据，直接返回空数组
+        return Promise.resolve([])
     }
 }
 

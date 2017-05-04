@@ -18,7 +18,23 @@
 							"listen": "prerequest",
 							"script": {
 								"type": "text/javascript",
-								"exec": "postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");\npostman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");\n\npostman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");\npostman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");\n\npostman.setEnvironmentVariable(\"department_name_1\", \"MIT\");\npostman.setEnvironmentVariable(\"department_name_2\", \"MODEM\");\n\npostman.setEnvironmentVariable(\"bill_title_1\", \"FDD Capa test\");\npostman.setEnvironmentVariable(\"bill_title_2\", \"TDD Capa test\");\n\npostman.setEnvironmentVariable(\"bill_amount_1\", 100);\npostman.setEnvironmentVariable(\"bill_amount_2\", 371);\n// postman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");"
+								"exec": [
+									"postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");",
+									"postman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");",
+									"",
+									"postman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");",
+									"postman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");",
+									"",
+									"postman.setEnvironmentVariable(\"department_name_1\", \"MIT\");",
+									"postman.setEnvironmentVariable(\"department_name_2\", \"MODEM\");",
+									"",
+									"postman.setEnvironmentVariable(\"bill_title_1\", \"FDD Capa test\");",
+									"postman.setEnvironmentVariable(\"bill_title_2\", \"TDD Capa test\");",
+									"",
+									"postman.setEnvironmentVariable(\"bill_amount_1\", 100);",
+									"postman.setEnvironmentVariable(\"bill_amount_2\", 371);",
+									"// postman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");"
+								]
 							}
 						}
 					],
@@ -26,10 +42,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -41,7 +54,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"department_id_2\",result._id);\n\n\n"
+								"exec": [
+									"tests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData[\"msg\"]",
+									"postman.setEnvironmentVariable(\"department_id_2\",result._id);",
+									"",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -70,7 +92,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"Contain MIT\"] = responseBody.has(environment.department_name_1);\ntests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"department_id_1\",result._id);\n\n\n"
+								"exec": [
+									"tests[\"Contain MIT\"] = responseBody.has(environment.department_name_1);",
+									"tests[\"Contain MODEM\"] = responseBody.has(environment.department_name_2);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData[\"msg\"]",
+									"postman.setEnvironmentVariable(\"department_id_1\",result._id);",
+									"",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -99,7 +131,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"Body matches string\"] = responseBody.has(environment.employee_name_2);\n\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"employee_id_2\",result._id);\n\n\n"
+								"exec": [
+									"tests[\"Body matches string\"] = responseBody.has(environment.employee_name_2);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData[\"msg\"]",
+									"postman.setEnvironmentVariable(\"employee_id_2\",result._id);",
+									"",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -128,7 +169,18 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData[\"msg\"]\ntests[\"create success\"] = jsonData.rc === 0;\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);\n\n\ntests[\"Contain emplyee wzhan039\"] = responseBody.has(environment.employee_name_1);\ntests[\"Contain emplyee leader xubol\"] = responseBody.has(environment.employee_name_2);\n\n"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData[\"msg\"]",
+									"tests[\"create success\"] = jsonData.rc === 0;",
+									"postman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"Contain emplyee wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"Contain emplyee leader xubol\"] = responseBody.has(environment.employee_name_2);",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -157,7 +209,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"create success\"] = jsonData.rc === 0;\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"billtype_id_2\",result._id);\n\n\n"
+								"exec": [
+									"tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create success\"] = jsonData.rc === 0;",
+									"var result=jsonData[\"msg\"]",
+									"postman.setEnvironmentVariable(\"billtype_id_2\",result._id);",
+									"",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -186,7 +248,18 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);\ntests[\"Contain billtype taxi\"] = responseBody.has(environment.billtype_name_1);\n\nvar jsonData = JSON.parse(responseBody);\ntests[\"create success\"] = jsonData.rc === 0;\nvar result=jsonData[\"msg\"]\npostman.setEnvironmentVariable(\"billtype_id_1\",result._id);\n\n\n"
+								"exec": [
+									"tests[\"Contain billtype transport\"] = responseBody.has(environment.billtype_name_2);",
+									"tests[\"Contain billtype taxi\"] = responseBody.has(environment.billtype_name_1);",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"create success\"] = jsonData.rc === 0;",
+									"var result=jsonData[\"msg\"]",
+									"postman.setEnvironmentVariable(\"billtype_id_1\",result._id);",
+									"",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -215,7 +288,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"rc\"] === 69710;"
+								]
 							}
 						}
 					],
@@ -244,7 +320,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69718;"
+								]
 							}
 						}
 					],
@@ -273,7 +352,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+								"exec": [
+									"//超出最大接受字段数",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"input field exceed\"] = jsonData.rc === 69724;"
+								]
 							}
 						}
 					],
@@ -302,7 +386,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.title === environment.bill_title_2;\n\npostman.setEnvironmentVariable(\"bill_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.title === environment.bill_title_2;",
+									"",
+									"postman.setEnvironmentVariable(\"bill_id_2\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -325,13 +418,16 @@
 					"response": []
 				},
 				{
-					"name": "bill: check title unique",
+					"name": "bill: check title unique(title not unique now)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);",
+									"// tests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+								]
 							}
 						}
 					],
@@ -360,7 +456,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -389,7 +488,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -418,7 +520,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -447,7 +552,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -476,7 +584,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
 							}
 						}
 					],
@@ -505,7 +618,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60406;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"rc\"] === 60406;"
+								]
 							}
 						}
 					],
@@ -534,7 +652,18 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.bill_title_2);\n\n// postman.clearEVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.bill_title_2);",
+									"",
+									"// postman.clearEVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -563,7 +692,13 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"update result\"] = jsonData.rc === 0;",
+									"",
+									"tests[\"billType null\"] = jsonData.billType === undefined;",
+									"tests[\"billTypeFields null\"] = jsonData.billTypeFields === undefined;"
+								]
 							}
 						}
 					],
@@ -592,7 +727,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"reimburser\"].rc === 10884;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"reimburser\"].rc === 10884;"
+								]
 							}
 						}
 					],
@@ -621,7 +759,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"amount\"].rc === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"mandatory field reimburser cant be null\"] = jsonData[\"msg\"][\"amount\"].rc === 69706;"
+								]
 							}
 						}
 					],
@@ -650,7 +791,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;\n\n\ntests[\"Contain xubol\"] = responseBody.has(environment.employee_name_2);\ntests[\"Contain 317\"] = responseBody.has(environment.bill_amount_2);\ntests[\"Contain transport\"] = responseBody.has(environment.billtype_name_2);\ntests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_2);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"tests[\"Contain xubol\"] = responseBody.has(environment.employee_name_2);",
+									"tests[\"Contain 317\"] = responseBody.has(environment.bill_amount_2);",
+									"tests[\"Contain transport\"] = responseBody.has(environment.billtype_name_2);",
+									"tests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_2);"
+								]
 							}
 						}
 					],
@@ -679,7 +829,20 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"Contain wzhan039\"] = responseBody.has(environment.employee_name_1);\ntests[\"Contain 317\"] = responseBody.has(environment.bill_amount_1);\ntests[\"Contain transport\"] = responseBody.has(environment.billtype_name_1);\ntests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_1);\n\npostman.setEnvironmentVariable(\"bill_id_1\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"Contain wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"Contain 317\"] = responseBody.has(environment.bill_amount_1);",
+									"tests[\"Contain transport\"] = responseBody.has(environment.billtype_name_1);",
+									"tests[\"Contain FDD capa test\"] = responseBody.has(environment.bill_title_1);",
+									"",
+									"postman.setEnvironmentVariable(\"bill_id_1\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -708,81 +871,184 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);\ntests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								"exec": [
+									"tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);",
+									"tests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/bill",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/bill/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"currentPage\":1,\"searchParams\":{}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "bill: read name",
+					"name": "bill: read bill title with exceed maxlength",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);\ntests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"exceed maxLength\"] = jsonData.rc===10064;"
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/bill/name",
-						"method": "GET",
-						"header": [],
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"12345678901234567890123456789012345678901234567890\"}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "bill: read namewith param",
+					"name": "bill: read bill title with value null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"FDD Capa test\"] = responseBody.has(environment.bill_title_1);\ntests[\"TDD Capa test\"] = responseBody.has(environment.bill_title_2);\n\n"
+								"exec": [
+									"tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);",
+									"tests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/bill/name/dd",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/bill/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":null}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "bill: delete one doc without value field",
+					"name": "bill: read bill title with value capa",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+								"exec": [
+									"tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);",
+									"tests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/bill",
+						"url": "127.0.0.1:3000/bill/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"capa\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: read bill title with value f",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"get title FDD\"] = responseBody.has(environment.bill_title_1);",
+									"// tests[\"get title TDD\"] = responseBody.has(environment.bill_title_2);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"title\":{\"value\":\"f\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "bill: delete one doc with null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//无法测试null（被postman当成字符处理）和undefined（无法找到指定路由）"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/null",
 						"method": "DELETE",
 						"header": [
 							{
@@ -793,36 +1059,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":\"{{bill_id_1}}\"}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "bill: delete one doc with wrong id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n// tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;\ntests[\"delete not exist bill id\"]=jsonData[\"rc\"]===0"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/bill",
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"}}}"
+							"raw": ""
 						},
 						"description": ""
 					},
@@ -835,12 +1072,19 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\n\n\n// tests[\"Body matches string\"] = responseBody.has(\"dDate\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"",
+									"// tests[\"Body matches string\"] = responseBody.has(\"dDate\");"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/bill",
+						"url": "127.0.0.1:3000/bill/{{bill_id_2}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -864,7 +1108,14 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n// tests[\"Body matches string\"] = !responseBody.has(environment.);\n\ntests[\"Body matches string\"] = !responseBody.has(environment.bill_id_2);"
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);",
+									"// tests[\"check doc delete\"] = jsonData.msg === null;",
+									"",
+									"// tests[\"Body matches string\"] = !responseBody.has(environment.);",
+									"",
+									"tests[\"Body matches string\"] = !responseBody.has(environment.bill_id_2);"
+								]
 							}
 						}
 					],
@@ -893,7 +1144,27 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"employee_name_1\");\npostman.clearEnvironmentVariable(\"employee_name_2\");\npostman.clearEnvironmentVariable(\"department_name_1\", \"MIT\");\npostman.clearEnvironmentVariable(\"department_name_2\", \"MODEM\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"employee_id_1\");\npostman.clearEnvironmentVariable(\"employee_id_2\");\npostman.clearEnvironmentVariable(\"department_id_1\");\npostman.clearEnvironmentVariable(\"department_id_2\");\n\n\npostman.clearEnvironmentVariable(\"bill_amount_1\", 100);\npostman.clearEnvironmentVariable(\"bill_amount_2\", 371);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;",
+									"",
+									"postman.clearEnvironmentVariable(\"billtype_name_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_2\");",
+									"postman.clearEnvironmentVariable(\"employee_name_1\");",
+									"postman.clearEnvironmentVariable(\"employee_name_2\");",
+									"postman.clearEnvironmentVariable(\"department_name_1\", \"MIT\");",
+									"postman.clearEnvironmentVariable(\"department_name_2\", \"MODEM\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_2\");",
+									"postman.clearEnvironmentVariable(\"employee_id_1\");",
+									"postman.clearEnvironmentVariable(\"employee_id_2\");",
+									"postman.clearEnvironmentVariable(\"department_id_1\");",
+									"postman.clearEnvironmentVariable(\"department_id_2\");",
+									"",
+									"",
+									"postman.clearEnvironmentVariable(\"bill_amount_1\", 100);",
+									"postman.clearEnvironmentVariable(\"bill_amount_2\", 371);"
+								]
 							}
 						}
 					],
@@ -907,10 +1178,7 @@
 								"description": ""
 							}
 						],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -928,7 +1196,15 @@
 							"listen": "prerequest",
 							"script": {
 								"type": "text/javascript",
-								"exec": "postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");\npostman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");\npostman.setEnvironmentVariable(\"billtype_name_3\", \"overtime fee\");\n\npostman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");"
+								"exec": [
+									"postman.setEnvironmentVariable(\"billtype_name_1\", \"taxi\");",
+									"postman.setEnvironmentVariable(\"billtype_name_2\", \"transport\");",
+									"postman.setEnvironmentVariable(\"billtype_name_3\", \"overtime fee\");",
+									"",
+									"postman.setEnvironmentVariable(\"billtype_name_4\", \"launch\");",
+									"",
+									"postman.setEnvironmentVariable(\"nulltype\", null);"
+								]
 							}
 						}
 					],
@@ -936,10 +1212,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -951,7 +1224,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69708;"
+								]
 							}
 						}
 					],
@@ -980,7 +1256,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"null values\"] = jsonData.rc === 69704;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"null values\"] = jsonData.rc === 69704;"
+								]
 							}
 						}
 					],
@@ -1009,7 +1288,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"null value\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"null value\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+								]
 							}
 						}
 					],
@@ -1038,7 +1320,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -1067,7 +1352,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"rc\"] === 69710;"
+								]
 							}
 						}
 					],
@@ -1090,15 +1378,52 @@
 					"response": []
 				},
 				{
+					"name": "billtype: create new with parentBillType null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.billtype_name_1;",
+									"",
+									"",
+									"",
+									"",
+									"tests[\"parentBillType null\"] = result.parentBillType === undefined;",
+									"tests[\"parentBillTypeFields null\"] = result.parentBillTypeFields === undefined;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{billtype_name_1}}\"},\"parentBillType\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "DELETE ALL",
 					"request": {
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -1110,7 +1435,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69718;"
+								]
 							}
 						}
 					],
@@ -1139,7 +1467,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+								"exec": [
+									"//超出最大接受字段数",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"input field exceed\"] = jsonData.rc === 69724;"
+								]
 							}
 						}
 					],
@@ -1168,7 +1501,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_2;\n\npostman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.billtype_name_2;",
+									"",
+									"postman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -1197,7 +1539,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"duplicate billtype name check\"] = jsonData.rc === 30002;"
+								]
 							}
 						}
 					],
@@ -1226,7 +1571,18 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_1;\n\npostman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"Body matches string\"] = responseBody.has(environment.billtype_name_2);"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.billtype_name_1;",
+									"",
+									"postman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"//返回的记录有父记录的名字（冗余字段）",
+									"tests[\"Body matches string\"] = result.parentBillTypeFields.name === environment.billtype_name_2;"
+								]
 							}
 						}
 					],
@@ -1249,13 +1605,16 @@
 					"response": []
 				},
 				{
-					"name": "billtype: update, with update null field",
+					"name": "billtype: update, except id without other field",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60002;"
+								]
 							}
 						}
 					],
@@ -1284,7 +1643,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -1313,7 +1675,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -1342,7 +1707,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -1371,7 +1739,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
 							}
 						}
 					],
@@ -1400,7 +1773,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60106;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"rc\"] === 60106;"
+								]
 							}
 						}
 					],
@@ -1429,7 +1807,18 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.billtype_name_4);\n\n// postman.clearEVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.billtype_name_4);",
+									"",
+									"// postman.clearEVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -1452,71 +1841,22 @@
 					"response": []
 				},
 				{
-					"name": "billtype: update parentBillType with wrong format '1234'",
+					"name": "billtype: create new with name3",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"parentBillType\"].rc === 10048;"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/billType",
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"1234\"}}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "billtype: update parentDepartment with self _id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60102;"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/billType",
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_1}}\"}}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "billtype_id_1: create new overtiem fee",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.billtype_name_3;\n\npostman.setEnvironmentVariable(\"billtype_id_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"name3 created\"] = result.name === environment.billtype_name_3;",
+									"",
+									"postman.setEnvironmentVariable(\"billtype_id_3\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -1539,13 +1879,123 @@
 					"response": []
 				},
 				{
+					"name": "billtype: update parentBIllType normal with name3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"parentBillType id 3 update\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"var result=jsonData.msg",
+									"tests[\"parentBillType populate\"] = result.parentBillType.name === environment.billtype_name_3;",
+									"tests[\"parentBillType reduntcy field update\"] = result.parentBillTypeFields.name === environment.billtype_name_3;",
+									"// tests[\"Body matches string\"] = responseBody.has(environment.billtype_name_4);",
+									"// postman.clearEVariable(\"variable_key\");"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_3}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update parentBillType with wrong format '1234'",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"parentBillType\"].rc === 10048;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"1234\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: update parentBillType with self _id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60102;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"_id\":{\"value\":\"{{billtype_id_1}}\"},\"parentBillType\":{\"value\":\"{{billtype_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "billtype: update parentBillType with normal ",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"update new parent billtype\"] = jsonData[\"msg\"][\"parentBillType\"][\"_id\"] === environment.billtype_id_3;\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"update new parent billtype\"] = jsonData[\"msg\"][\"parentBillType\"][\"_id\"] === environment.billtype_id_3;",
+									"",
+									"// postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -1574,7 +2024,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+								"exec": [
+									"// postman.clearGlobalVariable(\"department_id\");",
+									"// postman.clearGlobalVariable(\"department_update_value\");"
+								]
 							}
 						}
 					],
@@ -1582,10 +2035,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -1597,7 +2047,13 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.billtype_name_2;\npostman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"tranport insert\"] = result.name === environment.billtype_name_2;",
+									"postman.setEnvironmentVariable(\"billtype_id_2\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -1626,7 +2082,14 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"transport insert\"] = result.name === environment.billtype_name_1;\npostman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"transport insert\"] = result.name === environment.billtype_name_1;",
+									"tests[\"parent insert\"] = result.parentBillTypeFields.name === environment.billtype_name_2;",
+									"postman.setEnvironmentVariable(\"billtype_id_1\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -1649,13 +2112,95 @@
 					"response": []
 				},
 				{
+					"name": "billtype: search with parentBillType ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//search返回的结果是个数组",
+									"var result=jsonData['msg'][0]",
+									"",
+									"tests[\"check name taxi\"] = result.name === environment.billtype_name_1;",
+									"tests[\"check parentBillType name transport\"] = result.parentBillTypeFields.name === environment.billtype_name_2;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":[{\"value\":\"{{billtype_name_1}}\"}],\"parentBillType\":{\"name\":[{\"value\":\"{{billtype_name_2}}\"}]}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: search without parentBillType  copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//search返回的结果是个数组",
+									"var result=jsonData['msg'][0]",
+									"",
+									"tests[\"check name taxi\"] = result.name === environment.billtype_name_2;",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":[{\"value\":\"{{billtype_name_2}}\"}]}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "billtype: update doc with parentbilltype null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.parentBillType === undefined;\ntests[\"name wzhan040\"] = result.name === \"launch\";\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"parentBillType null\"] = result.parentBillType === undefined;",
+									"tests[\"parentBillTypeFields null\"] = result.parentBillTypeFields === undefined;",
+									"tests[\"name wzhan040\"] = result.name === \"launch\";",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -1684,7 +2229,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.parentBillType._id === environment.billtype_id_2;\ntests[\"name wzhan040\"] = result.name === environment.billtype_name_1;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\npostman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"leader null\"] = result.parentBillType._id === environment.billtype_id_2;",
+									"tests[\"name wzhan040\"] = result.name === environment.billtype_name_1;",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -1713,7 +2267,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"get name\"] = responseBody.has(environment.billtype_name_1);\ntests[\"get parent billtype name\"] = responseBody.has(environment.billtype_name_2);"
+								"exec": [
+									"tests[\"get name\"] = responseBody.has(environment.billtype_name_1);",
+									"tests[\"get parent billtype name\"] = responseBody.has(environment.billtype_name_2);"
+								]
 							}
 						}
 					],
@@ -1721,73 +2278,200 @@
 						"url": "127.0.0.1:3000/billType",
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "billtype: read name",
+					"name": "billtype: read name whit parentBillType value exceed maxlength",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"get name transport\"] = responseBody.has(environment.billtype_name_1);\ntests[\"get name taxi \"] = responseBody.has(environment.billtype_name_2);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"exceed maxLength\"] = jsonData.rc===10044;",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									""
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/billType/name",
-						"method": "GET",
-						"header": [],
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentBillType\":{\"value\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\"}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "billtype: read namewith param",
+					"name": "billtype: read name whit parentBillType  value null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"taxi\"] = responseBody.has(environment.billtype_name_1);\n\n"
+								"exec": [
+									"tests[\"taxi\"] = responseBody.has(environment.billtype_name_1);",
+									"tests[\"transport\"] = responseBody.has(environment.billtype_name_2);",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									""
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/billType/name/xi",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/billType/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentBillType\":{\"value\":null}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "billtype: delete one doc without value field",
+					"name": "billtype: read name whit parentBillType  value trans",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+								"exec": [
+									"",
+									"tests[\"transport\"] = responseBody.has(environment.billtype_name_2);",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									""
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/billType",
+						"url": "127.0.0.1:3000/billType/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentBillType\":{\"value\":\"trans\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: read name with parentBillType  value t",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// tests[\"MIT created\"] = responseBody.has(\"MIT\");",
+									"tests[\"taxi\"] = responseBody.has(environment.billtype_name_1);",
+									"tests[\"transport\"] = responseBody.has(environment.billtype_name_2);",
+									"// tests[\"overtime fee\"] = responseBody.has(environment.billtype_name_3);",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentBillType\":{\"value\":\"t\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "billtype: delete one doc with wrong id format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//无法测试null（被postman当成字符处理）和undefined（无法找到指定路由）"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/billType/asdf",
 						"method": "DELETE",
 						"header": [
 							{
@@ -1798,36 +2482,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "billtype: delete one doc with wrong id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/billType",
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+							"raw": ""
 						},
 						"description": ""
 					},
@@ -1840,12 +2495,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\n"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;",
+									"",
+									""
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/billType",
+						"url": "127.0.0.1:3000/billType/{{billtype_id_2}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -1863,19 +2523,26 @@
 					"response": []
 				},
 				{
-					"name": "billtype: delete one doc ",
+					"name": "billtype: check delete doc still show for readName",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n// tests[\"Body matches string\"] = !responseBody.has(environment.);\n\ntests[\"Body matches string\"] = !responseBody.has(environment.billtype_id_2);"
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);",
+									"// tests[\"check doc delete\"] = jsonData.msg === null;",
+									"",
+									"// tests[\"Body matches string\"] = !responseBody.has(environment.);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.billtype_id_2);"
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/billType/name",
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -1885,7 +2552,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+							"raw": "{\"values\":{\"name\":{\"value\":\"\"}}}"
 						},
 						"description": ""
 					},
@@ -1898,7 +2565,19 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"billtype_name_3\");\npostman.clearEnvironmentVariable(\"billtype_name_4\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"billtype_id_3\");\npostman.clearEnvironmentVariable(\"billtype_id_4\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;",
+									"",
+									"postman.clearEnvironmentVariable(\"billtype_name_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_2\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_3\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_4\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_2\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_3\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_4\");"
+								]
 							}
 						}
 					],
@@ -1912,10 +2591,7 @@
 								"description": ""
 							}
 						],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -1933,7 +2609,13 @@
 							"listen": "prerequest",
 							"script": {
 								"type": "text/javascript",
-								"exec": "postman.setEnvironmentVariable(\"department_departmentName_1\", \"MIT\");\npostman.setEnvironmentVariable(\"department_departmentName_2\", \"MODEM\");\npostman.setEnvironmentVariable(\"department_departmentName_3\", \"LTE\");\n\npostman.setEnvironmentVariable(\"department_departmentName_update\", \"FI\");"
+								"exec": [
+									"postman.setEnvironmentVariable(\"department_departmentName_1\", \"MIT\");",
+									"postman.setEnvironmentVariable(\"department_departmentName_2\", \"MODEM\");",
+									"postman.setEnvironmentVariable(\"department_departmentName_3\", \"LTE\");",
+									"",
+									"postman.setEnvironmentVariable(\"department_departmentName_update\", \"FI\");"
+								]
 							}
 						}
 					],
@@ -1941,10 +2623,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -1956,7 +2635,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69708;"
+								]
 							}
 						}
 					],
@@ -1985,7 +2667,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69704;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69704;"
+								]
 							}
 						}
 					],
@@ -2014,7 +2699,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"require field name with value null\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+								]
 							}
 						}
 					],
@@ -2043,7 +2731,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -2072,7 +2763,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"rc\"] === 69710;"
+								]
 							}
 						}
 					],
@@ -2095,15 +2789,52 @@
 					"response": []
 				},
 				{
+					"name": "billtype: create new with parentDepartment null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.department_departmentName_1;",
+									"",
+									"",
+									"",
+									"",
+									"tests[\"parentBillType null\"] = result.parentDepartment === undefined;",
+									"tests[\"parentBillTypeFields null\"] = result.parentDepartmentFields === undefined;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_departmentName_1}}\"},\"parentDepartment\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "DELETE ALL",
 					"request": {
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -2115,7 +2846,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69718;"
+								]
 							}
 						}
 					],
@@ -2144,7 +2878,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+								"exec": [
+									"//超出最大接受字段数",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"input field exceed\"] = jsonData.rc === 69724;"
+								]
 							}
 						}
 					],
@@ -2173,7 +2912,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_2;\n\npostman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.department_departmentName_2;",
+									"",
+									"postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -2202,7 +2950,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 30002;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 30002;"
+								]
 							}
 						}
 					],
@@ -2231,7 +2982,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_1;\n\npostman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_2);"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.department_departmentName_1;",
+									"",
+									"postman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);",
+									"",
+									"//返回的记录有父记录的名字",
+									"tests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_2);"
+								]
 							}
 						}
 					],
@@ -2254,13 +3015,16 @@
 					"response": []
 				},
 				{
-					"name": "department: update, with update null field",
+					"name": "department: update, except id without other field",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60002;"
+								]
 							}
 						}
 					],
@@ -2289,7 +3053,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -2318,7 +3085,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -2347,7 +3117,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -2376,7 +3149,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
 							}
 						}
 					],
@@ -2405,7 +3183,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"rc\"] === 60206;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"rc\"] === 60206;"
+								]
 							}
 						}
 					],
@@ -2421,7 +3202,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"}}}"
+							"raw": "{\"values\":{\"_id\":{\"value\":\"7802e46dc19c632c0da27111\"},\"name\":{\"value\":\"asdf\"}}}"
 						},
 						"description": ""
 					},
@@ -2434,7 +3215,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+								]
 							}
 						}
 					],
@@ -2463,7 +3249,19 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData.rc === 0;\n\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_update);\n\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData.rc === 0;",
+									"",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.department_departmentName_update);",
+									"",
+									"",
+									"// postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -2492,7 +3290,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"parentDepartment\"][\"rc\"] === 10008;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"parentDepartment\"][\"rc\"] === 10008;"
+								]
 							}
 						}
 					],
@@ -2521,7 +3322,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60202;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60202;"
+								]
 							}
 						}
 					],
@@ -2550,7 +3354,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.department_departmentName_3;\n\npostman.setEnvironmentVariable(\"department_departmentId_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.department_departmentName_3;",
+									"",
+									"postman.setEnvironmentVariable(\"department_departmentId_3\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -2579,7 +3392,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"empty values\"] = jsonData.rc === 60202;"
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);",
+									"// tests[\"empty values\"] = jsonData.rc === 60202;"
+								]
 							}
 						}
 					],
@@ -2608,7 +3424,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+								"exec": [
+									"// postman.clearGlobalVariable(\"department_id\");",
+									"// postman.clearGlobalVariable(\"department_update_value\");"
+								]
 							}
 						}
 					],
@@ -2616,10 +3435,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -2631,7 +3447,13 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.department_departmentName_1;\npostman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"MIT insert\"] = result.name === environment.department_departmentName_1;",
+									"postman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -2660,7 +3482,14 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.department_departmentName_2;\npostman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"MIT insert\"] = result.name === environment.department_departmentName_2;",
+									"tests[\"MODEM insert\"] = result.parentDepartmentFields.name === environment.department_departmentName_1;",
+									"postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -2689,7 +3518,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"parent department null\"] = result.parentDepartment === undefined;\ntests[\"department name change to test\"] = result.name === environment.department_departmentName_update;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"parent department null\"] = result.parentDepartment === undefined;",
+									"tests[\"parentDepartmentFields  null\"] = result.parentDepartmentFields === undefined;",
+									"tests[\"department name change to test\"] = result.name === environment.department_departmentName_update;",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -2718,7 +3557,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"restore parent department\"] = result.parentDepartment._id === environment.department_departmentId_1;\ntests[\"restore department name\"] = result.name === environment.department_departmentName_2;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"restore parent department\"] = result.parentDepartment._id === environment.department_departmentId_1;",
+									"tests[\"restore department name\"] = result.name === environment.department_departmentName_2;",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"// postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -2747,7 +3595,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+								"exec": [
+									"tests[\"MIT created\"] = responseBody.has(\"MIT\");",
+									"tests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+								]
 							}
 						}
 					],
@@ -2755,73 +3606,164 @@
 						"url": "127.0.0.1:3000/department",
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "department: read name",
+					"name": "department: read name with parentDepartment exceed maxLenght",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"exceed maxLength\"] = jsonData.rc===10004;"
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/department/name",
-						"method": "GET",
-						"header": [],
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentDepartment\":{\"value\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\"}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "department: read namewith param",
+					"name": "department: read name with parentDepartment value null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"MODEM created\"] = responseBody.has(\"MODEM\");"
+								"exec": [
+									"tests[\"MIT\"] = responseBody.has(environment.department_departmentName_1);",
+									"tests[\"MODEM\"] = responseBody.has(environment.department_departmentName_2);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/department/name/dem",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/department/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentDepartment\":{\"value\":null}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "department: delete one doc without value field",
+					"name": "department: read name with parentDepartment value MI",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+								"exec": [
+									"tests[\"MIT\"] = responseBody.has(environment.department_departmentName_1);",
+									"// tests[\"MODEM\"] = responseBody.has(environment.department_departmentName_2);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/department/",
+						"url": "127.0.0.1:3000/department/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentDepartment\":{\"value\":\"MI\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read name with parentDepartment value m",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"MIT\"] = responseBody.has(environment.department_departmentName_1);",
+									"tests[\"MODEM\"] = responseBody.has(environment.department_departmentName_2);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"parentDepartment\":{\"value\":\"m\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: delete one doc with wrong format id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//无法测试null（被postman当成字符处理）和undefined（无法找到指定路由）"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department/null",
 						"method": "DELETE",
 						"header": [
 							{
@@ -2832,36 +3774,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "department: delete one doc with wrong id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/department/",
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+							"raw": ""
 						},
 						"description": ""
 					},
@@ -2874,12 +3787,15 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/department/",
+						"url": "127.0.0.1:3000/department/{{department_departmentId_2}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -2897,19 +3813,26 @@
 					"response": []
 				},
 				{
-					"name": "department: delete one doc ",
+					"name": "department: check delete doc cant be read",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n\n\ntests[\"Body matches string\"] = !responseBody.has(environment.department_departmentId_2);"
+								"exec": [
+									"// var jsonData = JSON.parse(responseBody);",
+									"// tests[\"check doc delete\"] = jsonData.msg === null;",
+									"",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.department_departmentId_2);"
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/department/name",
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -2919,7 +3842,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+							"raw": "{\"values\":{\"name\":{\"value\":\"\"}}}"
 						},
 						"description": ""
 					},
@@ -2932,7 +3855,19 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"DELERE ALL OK\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"department_departmentName_1\");\npostman.clearEnvironmentVariable(\"department_departmentName_2\");\npostman.clearEnvironmentVariable(\"department_departmentName_3\");\npostman.clearEnvironmentVariable(\"department_departmentId_1\");\npostman.clearEnvironmentVariable(\"department_departmentId_2\");\npostman.clearEnvironmentVariable(\"department_departmentId_3\");\n\npostman.clearEnvironmentVariable(\"department_departmentName_update\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"DELERE ALL OK\"] = jsonData.rc === 0;",
+									"",
+									"postman.clearEnvironmentVariable(\"department_departmentName_1\");",
+									"postman.clearEnvironmentVariable(\"department_departmentName_2\");",
+									"postman.clearEnvironmentVariable(\"department_departmentName_3\");",
+									"postman.clearEnvironmentVariable(\"department_departmentId_1\");",
+									"postman.clearEnvironmentVariable(\"department_departmentId_2\");",
+									"postman.clearEnvironmentVariable(\"department_departmentId_3\");",
+									"",
+									"postman.clearEnvironmentVariable(\"department_departmentName_update\");"
+								]
 							}
 						}
 					],
@@ -2967,7 +3902,16 @@
 							"listen": "prerequest",
 							"script": {
 								"type": "text/javascript",
-								"exec": "postman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");\npostman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");\npostman.setEnvironmentVariable(\"employee_name_3\", \"juanw\");\npostman.setEnvironmentVariable(\"employee_name_4\", \"wzhan040\");\n\npostman.setEnvironmentVariable(\"department_name_1\", \"MIT\");\n\npostman.setEnvironmentVariable(\"currentCat\", \"employee\");"
+								"exec": [
+									"postman.setEnvironmentVariable(\"employee_name_1\", \"wzhan039\");",
+									"postman.setEnvironmentVariable(\"employee_name_2\", \"xubl\");",
+									"postman.setEnvironmentVariable(\"employee_name_3\", \"juanw\");",
+									"postman.setEnvironmentVariable(\"employee_name_4\", \"wzhan040\");",
+									"",
+									"postman.setEnvironmentVariable(\"department_name_1\", \"MIT\");",
+									"",
+									"postman.setEnvironmentVariable(\"currentCat\", \"employee\");"
+								]
 							}
 						}
 					],
@@ -2975,10 +3919,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -2990,7 +3931,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69708;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69708;"
+								]
 							}
 						}
 					],
@@ -3019,7 +3963,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69704;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69704;"
+								]
 							}
 						}
 					],
@@ -3048,7 +3995,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData['msg']['name'][\"rc\"] === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"name\"][\"rc\"] === 69706;"
+								]
 							}
 						}
 					],
@@ -3077,7 +4027,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -3106,7 +4059,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"notExist\"][\"rc\"] === 69710;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"rc\"] === 69710;"
+								]
 							}
 						}
 					],
@@ -3129,27 +4085,22 @@
 					"response": []
 				},
 				{
-					"name": "DELETE ALL",
-					"request": {
-						"url": "127.0.0.1:3000",
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "employee: create new department",
+					"name": "department: create new",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;\npostman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.department_name_1;",
+									"",
+									"postman.setEnvironmentVariable(\"department_departmentId_1\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -3172,13 +4123,133 @@
 					"response": []
 				},
 				{
+					"name": "billtype: create new with leader null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.employee_name_1;",
+									"",
+									"",
+									"",
+									"",
+									"tests[\"parentBillType null\"] = result.leader === undefined;",
+									"tests[\"parentBillTypeFields null\"] = result.leaderFields === undefined;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{employee_name_1}}\"},\"department\":{\"value\":\"{{department_departmentId_1}}\"},\"leader\":{\"value\":null}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE ALL",
+					"request": {
+						"url": "127.0.0.1:3000",
+						"method": "DELETE",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create new department",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;",
+									"postman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/department",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"{{department_name_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: create with birthday null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"rc 0\"] = jsonData[\"rc\"] === 0;",
+									"tests[\"birthday null delete\"] = jsonData[\"msg\"][\"birthDay\"] === undefined;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":{\"value\":\"ab\"},\"birthDay\":{\"value\":null},\"department\":{\"value\":\"{{department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "employee: create new with array",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69718;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69718;"
+								]
 							}
 						}
 					],
@@ -3207,7 +4278,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//超出最大接受字段数\nvar jsonData = JSON.parse(responseBody);\n\ntests[\"input field exceed\"] = jsonData.rc === 69724;"
+								"exec": [
+									"//超出最大接受字段数",
+									"var jsonData = JSON.parse(responseBody);",
+									"",
+									"tests[\"input field exceed\"] = jsonData.rc === 69724;"
+								]
 							}
 						}
 					],
@@ -3236,7 +4312,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"empty values\"] = result.name === environment.employee_name_2;\n\npostman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"empty values\"] = result.name === environment.employee_name_2;",
+									"",
+									"postman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -3265,7 +4350,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"duplicate name\"] = jsonData.rc === 30002;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"duplicate name\"] = jsonData.rc === 30002;"
+								]
 							}
 						}
 					],
@@ -3294,7 +4382,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"employee 1 wzhan039 created\"] = result.name === environment.employee_name_1;\n\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);\n\n//返回的记录有父记录的名字\ntests[\"xubol create with leader juanw\"] = responseBody.has(environment.employee_name_2);"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"employee 1 wzhan039 created\"] = result.name === environment.employee_name_1;",
+									"",
+									"postman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);",
+									"",
+									"//返回的记录有父记录的名字",
+									"tests[\"xubol create with leader juanw\"] = responseBody.has(environment.employee_name_2);"
+								]
 							}
 						}
 					],
@@ -3317,13 +4415,16 @@
 					"response": []
 				},
 				{
-					"name": "employee: update, with update null field",
+					"name": "employee: update, except id without other field",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60002;"
+								]
 							}
 						}
 					],
@@ -3352,7 +4453,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -3381,7 +4485,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"].rc === 69706;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"name\"].rc === 69706;"
+								]
 							}
 						}
 					],
@@ -3410,7 +4517,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -3439,7 +4549,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 69722;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 69722;"
+								]
 							}
 						}
 					],
@@ -3468,7 +4581,12 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\n//var result=jsonData['msg'][0]\n//tests[\"department MODEM update\"] = result.name === globals.department_update_value;\ntests[\"department MODEM update\"] = jsonData[\"rc\"] === 60306;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg'][0]",
+									"//tests[\"department MODEM update\"] = result.name === globals.department_update_value;",
+									"tests[\"department MODEM update\"] = jsonData[\"rc\"] === 60306;"
+								]
 							}
 						}
 					],
@@ -3497,7 +4615,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"leader\"].rc === 10026;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"leader\"].rc === 10026;"
+								]
 							}
 						}
 					],
@@ -3526,7 +4647,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData.rc === 60304;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData.rc === 60304;"
+								]
 							}
 						}
 					],
@@ -3555,7 +4679,16 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "//重复的field会在JSON.parse中被消除（后覆盖前）\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\ntests[\"create new employee juanw\"] = result.name === environment.employee_name_3;\n\npostman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);\n\n// tests[\"duplicate field\"] = result.value === 69726;"
+								"exec": [
+									"//重复的field会在JSON.parse中被消除（后覆盖前）",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"tests[\"create new employee juanw\"] = result.name === environment.employee_name_3;",
+									"",
+									"postman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);",
+									"",
+									"// tests[\"duplicate field\"] = result.value === 69726;"
+								]
 							}
 						}
 					],
@@ -3584,7 +4717,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"leader\"][\"name\"] === environment.employee_name_3;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"leader\"][\"name\"] === environment.employee_name_3;"
+								]
 							}
 						}
 					],
@@ -3613,7 +4749,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// postman.clearGlobalVariable(\"department_id\");\n// postman.clearGlobalVariable(\"department_update_value\");"
+								"exec": [
+									"// postman.clearGlobalVariable(\"department_id\");",
+									"// postman.clearGlobalVariable(\"department_update_value\");"
+								]
 							}
 						}
 					],
@@ -3621,10 +4760,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -3636,7 +4772,11 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;\npostman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"empty values\"] = jsonData[\"msg\"][\"name\"] === environment.department_name_1;",
+									"postman.setEnvironmentVariable(\"department_id_1\", jsonData[\"msg\"][\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -3665,7 +4805,13 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.employee_name_2;\npostman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"MIT insert\"] = result.name === environment.employee_name_2;",
+									"postman.setEnvironmentVariable(\"employee_id_2\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -3694,7 +4840,13 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"MIT insert\"] = result.name === environment.employee_name_3;\npostman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"MIT insert\"] = result.name === environment.employee_name_3;",
+									"postman.setEnvironmentVariable(\"employee_id_3\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -3723,7 +4875,14 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"wzhan039 insert\"] = result.name === environment.employee_name_1;\npostman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"wzhan039 insert\"] = result.name === environment.employee_name_1;",
+									"tests[\"leader xubli insert\"] = result.leaderFields.name === environment.employee_name_2;",
+									"postman.setEnvironmentVariable(\"employee_id_1\", result[\"_id\"]);"
+								]
 							}
 						}
 					],
@@ -3746,13 +4905,60 @@
 					"response": []
 				},
 				{
+					"name": "billtype: search with leader xuboli",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//search返回的结果是个数组",
+									"var result=jsonData['msg'][0]",
+									"",
+									"tests[\"check name wzhan039\"] = result.name === environment.employee_name_1;",
+									"tests[\"check leader name xuboli\"] = result.leaderFields.name === environment.employee_name_2;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee/search",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"name\":[{\"value\":\"{{employee_name_1}}\"}],\"leader\":{\"name\":[{\"value\":\"{{employee_name_2}}\"}]}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
 					"name": "employee: update wzhan039 with leader null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"leader null\"] = result.leader === undefined;\ntests[\"name wzhan040\"] = result.name === environment.employee_name_4;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"leader null\"] = result.leader === undefined;",
+									"tests[\"leaderFields null\"] = result.leaderFields === undefined;",
+									"tests[\"name wzhan040\"] = result.name === environment.employee_name_4;",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"// postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -3781,7 +4987,17 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\ntests[\"restore leader\"] = result.leader._id === environment.employee_id_2;\ntests[\"restore name\"] = result.name === environment.employee_name_1;\ntests[\"restore department\"] = result.department._id === environment.department_id_1;\n// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);\n\n// postman.clearEnvironmentVariable(\"variable_key\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"tests[\"restore leader\"] = result.leader._id === environment.employee_id_2;",
+									"tests[\"restore name\"] = result.name === environment.employee_name_1;",
+									"tests[\"restore department\"] = result.department._id === environment.department_id_1;",
+									"// postman.setEnvironmentVariable(\"department_departmentId_2\", result[\"_id\"]);",
+									"",
+									"// postman.clearEnvironmentVariable(\"variable_key\");"
+								]
 							}
 						}
 					],
@@ -3810,7 +5026,10 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"wzhan039  read\"] = responseBody.has(environment.employee_name_1);\ntests[\"xubli read\"] = responseBody.has(environment.employee_name_2);"
+								"exec": [
+									"tests[\"wzhan039  read\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"xubli read\"] = responseBody.has(environment.employee_name_2);"
+								]
 							}
 						}
 					],
@@ -3818,73 +5037,200 @@
 						"url": "127.0.0.1:3000/{{currentCat}}",
 						"method": "GET",
 						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read name with leader exceed maxLenght",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"exceed maxLength\"] = jsonData.rc===10022;"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"leader\":{\"value\":\"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890\"}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "employee: read name",
+					"name": "department: read name with leader null",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "tests[\"wzhan039  read\"] = responseBody.has(environment.employee_name_1);\ntests[\"xubli read\"] = responseBody.has(environment.employee_name_2);"
+								"exec": [
+									"tests[\"wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"xub\"] = responseBody.has(environment.employee_name_2);",
+									"tests[\"juanw\"] = responseBody.has(environment.employee_name_3);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/{{currentCat}}/name",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"leader\":{\"value\":null}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "employee: read name with param",
+					"name": "department: read name with leader xu",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// tests[\"MIT created\"] = responseBody.has(\"MIT\");\ntests[\"wzhan039 read\"] = responseBody.has(environment.employee_name_1);\ntests[\"juanw read\"] = responseBody.has(environment.employee_name_3);\n\n"
+								"exec": [
+									"// tests[\"wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"xub\"] = responseBody.has(environment.employee_name_2);",
+									"// tests[\"juanw\"] = responseBody.has(environment.employee_name_3);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/{{currentCat}}/name/w",
-						"method": "GET",
-						"header": [],
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
 						"body": {
-							"mode": "formdata",
-							"formdata": []
+							"mode": "raw",
+							"raw": "{\"values\":{\"leader\":{\"value\":\"xu\"}}}"
 						},
 						"description": ""
 					},
 					"response": []
 				},
 				{
-					"name": "employee: delete one doc without value field",
+					"name": "department: read name with leader w",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 69722;"
+								"exec": [
+									"tests[\"wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"// tests[\"xub\"] = responseBody.has(environment.employee_name_2);",
+									"tests[\"juanw\"] = responseBody.has(environment.employee_name_3);"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/{{currentCat}}/",
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"leader\":{\"value\":\"w\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "department: read department name with value MIT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"wzhan039\"] = responseBody.has(environment.department_name_1);",
+									"// tests[\"xub\"] = responseBody.has(environment.employee_name_2);",
+									"// tests[\"juanw\"] = responseBody.has(environment.employee_name_3);"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/employee/name",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{\"department\":{\"value\":\"MIT\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "employee: delete one doc with null",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"//无法测试null（被postman当成字符处理）和undefined（无法找到指定路由）"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/{{currentCat}}/null",
 						"method": "DELETE",
 						"header": [
 							{
@@ -3895,36 +5241,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":\"{{department_departmentId_2}}\"}}"
-						},
-						"description": ""
-					},
-					"response": []
-				},
-				{
-					"name": "employee: delete one doc with wrong id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData[\"msg\"][\"_id\"][\"rc\"] === 69714;"
-							}
-						}
-					],
-					"request": {
-						"url": "127.0.0.1:3000/{{currentCat}}/",
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"description": ""
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"12345678909\"}}}"
+							"raw": ""
 						},
 						"description": ""
 					},
@@ -3937,12 +5254,15 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"delete \"] = jsonData.rc === 0;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"delete \"] = jsonData.rc === 0;"
+								]
 							}
 						}
 					],
 					"request": {
-						"url": "127.0.0.1:3000/employee/",
+						"url": "127.0.0.1:3000/employee/{{employee_id_2}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -3960,19 +5280,23 @@
 					"response": []
 				},
 				{
-					"name": "employee: check deleted doc",
+					"name": "employee: check deleted  but still show for readName",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "// var jsonData = JSON.parse(responseBody);\n// tests[\"check doc delete\"] = jsonData.msg === null;\n\n\n\ntests[\"xubl not show\"] = !responseBody.has(environment.employee_name_2);"
+								"exec": [
+									"tests[\"wzhan039\"] = responseBody.has(environment.employee_name_1);",
+									"tests[\"xub\"] = responseBody.has(environment.employee_name_2);",
+									"tests[\"juanw\"] = responseBody.has(environment.employee_name_3);"
+								]
 							}
 						}
 					],
 					"request": {
 						"url": "127.0.0.1:3000/employee/name",
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -3982,7 +5306,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"values\":{\"_id\":{\"value\":\"{{department_departmentId_2}}\"}}}"
+							"raw": "{\"values\":{\"name\":{\"value\":\"\"}}}"
 						},
 						"description": ""
 					},
@@ -3995,7 +5319,23 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\ntests[\"wrong input value format\"] = jsonData.rc === 0;\n\npostman.clearEnvironmentVariable(\"billtype_name_1\");\npostman.clearEnvironmentVariable(\"billtype_name_2\");\npostman.clearEnvironmentVariable(\"billtype_name_3\");\npostman.clearEnvironmentVariable(\"billtype_name_4\");\npostman.clearEnvironmentVariable(\"billtype_id_1\");\npostman.clearEnvironmentVariable(\"billtype_id_2\");\npostman.clearEnvironmentVariable(\"billtype_id_3\");\npostman.clearEnvironmentVariable(\"billtype_id_4\");\n\npostman.clearEnvironmentVariable(\"department_name_1\");\n\npostman.clearEnvironmentVariable(\"currentCat\");"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"tests[\"wrong input value format\"] = jsonData.rc === 0;",
+									"",
+									"postman.clearEnvironmentVariable(\"billtype_name_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_2\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_3\");",
+									"postman.clearEnvironmentVariable(\"billtype_name_4\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_1\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_2\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_3\");",
+									"postman.clearEnvironmentVariable(\"billtype_id_4\");",
+									"",
+									"postman.clearEnvironmentVariable(\"department_name_1\");",
+									"",
+									"postman.clearEnvironmentVariable(\"currentCat\");"
+								]
 							}
 						}
 					],
@@ -4030,7 +5370,19 @@
 							"listen": "prerequest",
 							"script": {
 								"type": "text/javascript",
-								"exec": "postman.setEnvironmentVariable(\"normal_department_name\", \"FPGA\");\npostman.setEnvironmentVariable(\"normal_employee_name\", \"wzhan039\");\npostman.setEnvironmentVariable(\"normal_billType_name\", \"taxi\");\npostman.setEnvironmentVariable(\"normal_bill_title\", \"overtime taxi\");\npostman.setEnvironmentVariable(\"normal_bill_amount\", 10);\n\n//for update test\npostman.setEnvironmentVariable(\"normal_department_name1\", \"DSP\");\npostman.setEnvironmentVariable(\"normal_employee_name1\", \"xubl\");\npostman.setEnvironmentVariable(\"normal_billType_name1\", \"lunch\");\n"
+								"exec": [
+									"postman.setEnvironmentVariable(\"normal_department_name\", \"FPGA\");",
+									"postman.setEnvironmentVariable(\"normal_employee_name\", \"wzhan039\");",
+									"postman.setEnvironmentVariable(\"normal_billType_name\", \"taxi\");",
+									"postman.setEnvironmentVariable(\"normal_bill_title\", \"overtime taxi\");",
+									"postman.setEnvironmentVariable(\"normal_bill_amount\", 10);",
+									"",
+									"//for update test",
+									"postman.setEnvironmentVariable(\"normal_department_name1\", \"DSP\");",
+									"postman.setEnvironmentVariable(\"normal_employee_name1\", \"xubl\");",
+									"postman.setEnvironmentVariable(\"normal_billType_name1\", \"lunch\");",
+									""
+								]
 							}
 						}
 					],
@@ -4038,10 +5390,7 @@
 						"url": "127.0.0.1:3000",
 						"method": "DELETE",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -4053,7 +5402,20 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n\n// var normal=JSON.parse(environment.normal)\n// normal.department_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_department_id\", result[\"_id\"]);\n\n\ntests[\"check department create\"] = result.name === environment.normal_department_name;\n\n"
+								"exec": [
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.department_id=result[\"_id\"]",
+									"postman.setEnvironmentVariable(\"normal_department_id\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check department create\"] = result.name === environment.normal_department_name;",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -4082,7 +5444,20 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);\n\n// tests[\"check employee create\"] = result.name === environment.employee_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.employee_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_employee_id\", result[\"_id\"]);\n\n\ntests[\"check employee create\"] = result.name === environment.normal_employee_name;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"check employee create\"] = result.name === environment.employee_name;",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.employee_id=result[\"_id\"]",
+									"postman.setEnvironmentVariable(\"normal_employee_id\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check employee create\"] = result.name === environment.normal_employee_name;"
+								]
 							}
 						}
 					],
@@ -4111,7 +5486,21 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"billType_id\", result[\"_id\"]);\n\n\n// tests[\"check billType create\"] = result.name === environment.billType_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.billType_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_billType_id\", result[\"_id\"]);\n\n\ntests[\"check billType create\"] = result.name === environment.normal_billType_name;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"// postman.setEnvironmentVariable(\"billType_id\", result[\"_id\"]);",
+									"",
+									"",
+									"// tests[\"check billType create\"] = result.name === environment.billType_name;",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.billType_id=result[\"_id\"]",
+									"postman.setEnvironmentVariable(\"normal_billType_id\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check billType create\"] = result.name === environment.normal_billType_name;"
+								]
 							}
 						}
 					],
@@ -4140,7 +5529,22 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\n\n// var normal=JSON.parse(environment.normal)\n\ntests[\"check bill create:title\"] = result.title === environment.normal_bill_title;\ntests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;\ntests[\"check bill create:billType\"] = result.billType[\"_id\"] === environment.normal_billType_id;\ntests[\"check bill create:reimburser\"] = result.reimburser[\"_id\"] === environment.normal_employee_id;\n\n\ntests[\"Body matches string\"] = responseBody.has(environment.normal_employee_name);\ntests[\"Body matches string\"] = responseBody.has(environment.normal_billType_name);"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"",
+									"tests[\"check bill create:title\"] = result.title === environment.normal_bill_title;",
+									"tests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;",
+									"tests[\"check bill create:billType\"] = result.billType[\"_id\"] === environment.normal_billType_id;",
+									"tests[\"check bill create:reimburser\"] = result.reimburser[\"_id\"] === environment.normal_employee_id;",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(environment.normal_employee_name);",
+									"tests[\"Body matches string\"] = responseBody.has(environment.normal_billType_name);"
+								]
 							}
 						}
 					],
@@ -4169,7 +5573,24 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n\n\n// var normal=JSON.parse(environment.normal)\n\ntests[\"check bill create:title\"] = result.title === environment.normal_bill_title;\ntests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;\ntests[\"check bill create:billType name\"] = result.billType.name === environment.normal_billType_name;\ntests[\"check bill create:reimburser name\"] = result.reimburser.name === environment.normal_employee_name;\n\n\n\n\n// postman.clearEnvironmentVariable(\"normal\");\n"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg'][0]",
+									"",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"",
+									"tests[\"check bill create:title\"] = result.title === environment.normal_bill_title;",
+									"tests[\"check bill create:amount\"] = result.amount.toString() === environment.normal_bill_amount;",
+									"tests[\"check bill create:billType name\"] = result.billType.name === environment.normal_billType_name;",
+									"tests[\"check bill create:reimburser name\"] = result.reimburser.name === environment.normal_employee_name;",
+									"",
+									"",
+									"",
+									"",
+									"// postman.clearEnvironmentVariable(\"normal\");",
+									""
+								]
 							}
 						}
 					],
@@ -4177,10 +5598,7 @@
 						"url": "127.0.0.1:3000/bill",
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": []
-						},
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -4192,7 +5610,20 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "\nvar jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg']\n\n// var normal=JSON.parse(environment.normal)\n// normal.department_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_department_id_1\", result[\"_id\"]);\n\n\ntests[\"check department create\"] = result.name === environment.normal_department_name1;\n\n"
+								"exec": [
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.department_id=result[\"_id\"]",
+									"postman.setEnvironmentVariable(\"normal_department_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check department create\"] = result.name === environment.normal_department_name1;",
+									"",
+									""
+								]
 							}
 						}
 					],
@@ -4221,7 +5652,20 @@
 							"listen": "test",
 							"script": {
 								"type": "text/javascript",
-								"exec": "var jsonData = JSON.parse(responseBody);\nvar result=jsonData['msg'][0]\n// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);\n\n// tests[\"check employee create\"] = result.name === environment.employee_name;\n\n// var normal=JSON.parse(environment.normal)\n// normal.employee_id=result[\"_id\"]\npostman.setEnvironmentVariable(\"normal_employee_id_1\", result[\"_id\"]);\n\n\ntests[\"check employee create\"] = result.name === environment.normal_employee_name1;"
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"var result=jsonData['msg']",
+									"// postman.setEnvironmentVariable(\"employee_id\", result[\"_id\"]);",
+									"",
+									"// tests[\"check employee create\"] = result.name === environment.employee_name;",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.employee_id=result[\"_id\"]",
+									"postman.setEnvironmentVariable(\"normal_employee_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check employee create\"] = result.name === environment.normal_employee_name1;"
+								]
 							}
 						}
 					],
@@ -4238,6 +5682,92 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\"values\":{\"name\":{\"value\":\"{{normal_employee_name1}}\"},\"department\":{\"value\":\"{{normal_department_id_1}}\"}}}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "static",
+			"description": "",
+			"item": [
+				{
+					"name": "static: searchParams check : empty {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg']",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.department_id=result[\"_id\"]",
+									"//postman.setEnvironmentVariable(\"normal_department_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check {}\"] = jsonData.rc === 69662;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/static/getGroupCapital",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"values\":{}}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "static: searchParams check : searchParams {}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"//var result=jsonData['msg']",
+									"",
+									"// var normal=JSON.parse(environment.normal)",
+									"// normal.department_id=result[\"_id\"]",
+									"//postman.setEnvironmentVariable(\"normal_department_id_1\", result[\"_id\"]);",
+									"",
+									"",
+									"tests[\"check {}\"] = jsonData.rc === 69660;",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "127.0.0.1:3000/bill/static/getStaticBillType",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
 						},
 						"description": ""
 					},

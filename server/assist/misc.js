@@ -9,8 +9,8 @@ require("babel-core/register")*/
 var miscError=require('../define/error/nodeError').nodeError.assistError.misc
 var gmError=require('../define/error/nodeError').nodeError.assistError.gmImage
 var regex=require('../define/regex/regex').regex
-var randomStringType=require('../define/enum/node').node.randomStringType
-var userStateEnum=require('../define/enum/node').node.userState
+var randomStringType=require('../define/enum/node').randomStringType
+var userStateEnum=require('../define/enum/node').userState
 var LuaSHA=require('../define/Lua/LuaSHA').LuaSHA
 var redisError=require('../define/error/redisError').redisError
 var ioredisClient=require('../model/redis/connection/redis_connection').ioredisClient
@@ -291,6 +291,7 @@ var encodeHtml = function(s){
 
 var populateSingleDoc=function(singleDoc,populateOpt,populatedFields){
     return new Promise(function(resolve,reject){
+        // console.log(`populateSingleDoc in `)
         let populateFlag=false
         // let createdResult=singleDoc
         for(let singlePopulatedField of populatedFields){
@@ -299,19 +300,25 @@ var populateSingleDoc=function(singleDoc,populateOpt,populatedFields){
                 break;
             }
         }
-        // console.log(`department insert result is ${JSON.stringify(result)}`)
+        // console.log(`popu;ate flae is ${populateFlag}`)
         if(populateFlag){
             //populate无需使用promise方式返回
+            // console.log(`populate doc is ${JSON.stringify(singleDoc)}`)
+            // console.log(`populate opt is ${JSON.stringify(populateOpt)}`)
             singleDoc.populate(populateOpt,function(populateErr,populateResult){
             //    singleDoc.populate(null,function(populateErr,populateResult){
                 //console.log('create populate')
+                // console.log(`department create fail: ${JSON.stringify(populateErr)}`)
                 if(populateErr){
-                    //console.log(`department create fail: ${JSON.stringify(populateErr)}`)
+                    // console.log(`department create fail: ${JSON.stringify(populateErr)}`)
                     resolve( mongooseErrorHandler(populateErr))
                 }
+                // console.log(`populate result is : ${JSON.stringify(populateResult)}`)
                 resolve({rc:0,msg:populateResult})
             })
-        }else{
+        }
+        //不做populate，直接返回
+        else{
             resolve({rc:0,msg:singleDoc})
         }
     })
